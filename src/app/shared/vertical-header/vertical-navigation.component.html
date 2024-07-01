@@ -1,0 +1,48 @@
+<!-- ============================================================== -->
+<!-- toggle and nav items -->
+<!-- ============================================================== -->
+<!-- <ul class="navbar-nav float-left mr-auto">
+    <li class="nav-item d-none d-lg-block">
+        <a (click)="toggleSidebar.emit()" class="nav-link sidebartoggler waves-effect waves-light"
+            href="javascript:void(0)">
+            <i class="ti-menu"></i>
+        </a>
+    </li>
+</ul> -->
+<!-- ============================================================== -->
+<!-- Right side toggle and nav items -->
+<!-- ============================================================== -->
+<ul class="navbar-nav float-right">
+
+    <!-- ============================================================== -->
+    <!-- Search -->
+    <!-- ============================================================== -->
+
+    <!-- ============================================================== -->
+    <!-- User profile and search -->
+    <!-- ============================================================== -->
+
+    <li class="nav-item" ngbDropdown placement="bottom-right">
+        
+        <a ngbDropdownToggle class="nav-link text-muted waves-effect waves-dark pro-pic" href="javascript:void(0)"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="assets/images/users/1.jpg" alt="user" class="rounded-circle" width="31">
+        </a>
+        <div  class="dropdown-menu-right user-dd" ngbDropdownMenu>
+            <div class="d-flex no-block align-items-center p-15  m-b-10">
+                <div class="">
+                    <img src="assets/images/users/1.jpg" alt="user" class="rounded" width="70">
+                </div>
+                <div class="m-l-10">
+                    <h4 class="m-b-0 font-15">{{this.nombre}}</h4>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item cursor" (click)="logout()">
+                <i class="fa fa-power-off m-r-5 m-l-5"></i> Logout</a>
+        </div>
+    </li>
+    <!-- ============================================================== -->
+    <!-- User profile and search -->
+    <!-- ============================================================== -->
+</ul>

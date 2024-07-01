@@ -1,0 +1,129 @@
+::ng-deep .mostly-customized-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: #f2f2f2; /* or add it to the track */
+  }
+  
+  /* Add a thumb */
+  ::ng-deep .mostly-customized-scrollbar::-webkit-scrollbar-thumb {
+    //background: linear-gradient(to right, #f2f2f2 0%, #b6b5b5 60%);
+    background: linear-gradient(
+      to right,
+      #f2f2f2 0%,
+      #f2f2f2 40%,
+      #b6b5b5 40%,
+      #b6b5b5 100%
+    );
+    border-radius: 5px;
+  }
+  
+  ::ng-deep .mostly-customized-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #848484;
+  }
+  
+  
+  
+  
+  ::ng-deep .modal-dialog{
+    margin: 1.65rem auto;
+  }
+  
+  ::ng-deep .form-control{
+    height: 30px;
+    border: 1px solid #ccc;
+    
+  }
+  ::ng-deep dx-date-box{
+    height: 30px;
+  }
+  
+  ::ng-deep .ng-select.ng-select-single .ng-select-container{
+    min-height: 30px;
+    height: 30px;
+  }
+  
+  
+  ::ng-deep .autocomplete-container{
+    max-height: 30px;
+  }
+  ::ng-deep .autocomplete-container .input-container input{
+    max-height: 30px;
+  }
+  
+  ::ng-deep dx-date-box .dx-texteditor-input-container{
+    align-items: center;
+  }
+  
+  ::ng-deep .dx-widget input, .dx-widget textarea{
+    font-size: 12px;
+    font-family: 'arial';
+    font-weight: normal;
+  }
+  
+  
+  
+  
+  ::ng-deep .form-group {
+    margin-bottom: 0.08rem;
+  }
+  
+  ::ng-deep fieldset{
+    margin-bottom: 0.4em;
+  }
+  ::ng-deep legend{
+    font-size: 1.1em;
+    font-weight: bold;
+  }
+  
+  ::ng-deep .center-checkbox{
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    right: 0px;
+  }
+  
+  
+  
+  ::ng-deep .form-check {
+    padding-left: 2rem;
+  }
+  
+  
+  ::ng-deep .ng-dropdown-panel{
+    width: auto!important;
+  }
+  
+  
+  ::ng-deep .dx-datagrid-table-fixed{
+    font-size: 12px;
+    font-family: 'arial';
+    font-weight: normal;
+  }
+  
+  ::ng-deep .dx-header-row > td{
+    white-space: pre-wrap;
+  }
+  
+  ::ng-deep dx-data-grid{
+    position: relative;
+    z-index: 0;
+  }
+  ::ng-deep .dx-button-has-text .dx-button-content{
+    padding: 7px;
+  }
+  
+  ::ng-deep ngb-modal-backdrop{
+    z-index: 1000!important;
+  }
+  
+  //style button devextreme
+  ::ng-deep dx-drop-down-button .dx-button-mode-outlined.dx-buttongroup-last-item.dx-button{
+      border-color: #969a9d;
+  }
+  
+  ::ng-deep .dx-button-mode-contained{
+      border-color: #969a9d;
+  }
+  

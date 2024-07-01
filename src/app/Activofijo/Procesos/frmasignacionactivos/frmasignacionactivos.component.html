@@ -1,0 +1,275 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="showLoading"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div class="row" style="padding-top: 1%;">
+    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 pb-1">
+        <button type="button" style="width: 100%;" class="btn btn-outline-secondary"
+            (click)="onClickNuevo()"><i class="fa fa-retweet" style="padding-right: 15px;"></i>Nuevo</button>
+    </div>
+    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 pb-1">
+        <button type="button" style="width: 100%;" class="btn btn-success"
+            (click)="onClickGrabar()"><i class="fa fa-save" style="padding-right: 15px;"></i>Grabar</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header" style="font-weight: bold;border: 2px solid #d9dbdd;border-radius: 4px; color: #0087B9;">
+        Asignación Activo Fijo
+    </div>
+    <div class="card-body" style="border: 2px solid #d9dbdd;border-radius: 4px;">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="form-group row"  style="padding-bottom: 0px;">
+                    <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label">Cód. Activo</label>
+                    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display:flex;">
+                        <button type="button" style="width: 40px; height: 30px;" class="btn btn-outline-secondary btn-sm"
+                                (click)="onClickOpenCamara(contentCamara)"><i class="fa fa-camera"></i>
+                        </button>
+                        <input type="text" class="form-control" (keypress)="onKeyPressCodActivo($event)" [(ngModel)]="txtCodActivo">
+                        <button type="button" style="width: 40px; height: 30px;" class="btn btn-outline-secondary btn-sm"
+                                (click)="onClickCargarItem()"><i class="fa fa-stack-overflow "></i>
+                        </button>
+                        
+                    </div>
+                    <div class="w-100 d-lg-block d-md-none"></div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+
+                    <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label">Descripción</label>
+                    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-6 pb-1">
+                        <input type="text" class="form-control" [(ngModel)]="txtDescriActivo">
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-1 pb-1">
+                        <i class="dx-icon-info" style="font-size: 25px;color: #337ab7;"  (click)="toggleClick()"></i>
+                        <a id="link3"></a>
+                    </div>
+
+                    <div class="w-100 d-lg-block d-md-none"></div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+
+                    <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label">Empleado</label>
+                    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display:flex;">
+                        <button type="button" style="width: 40px; height: 30px;" class="btn btn-outline-secondary btn-sm"
+                                (click)="onClickOpenCamaraEmpl(contentCamara)"><i class="fa fa-camera"></i>
+                        </button>
+                        <input type="text" class="form-control" (keypress)="onKeyPressCodEmpleado($event)" [(ngModel)]="txtCodEmpleado">
+                        <button type="button" style="width: 40px; height: 30px;" class="btn btn-outline-secondary btn-sm"
+                                (click)="onClickCargarEmpleado()"><i class="fa fa-newspaper-o"></i>
+                        </button>
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-9 pb-1" style="display:flex;">
+                        <input type="text" class="form-control" [(ngModel)]="txtEmpleado">
+                    </div>
+                    <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label">Tipo Asignación</label>
+                    <div class="col-xs-12 col-sm-12 col-md-3 col-lg-2 pb-1">
+                        <ng-select style="width: 100%;" [(ngModel)]="cmbtipoAsignacion" appendTo="body" [searchable]="false"
+                            [clearable]="false" (change)="OnChangecmbtipoAsignacion($event)">
+                            <ng-option *ngFor="let data of DataTipoAsig" [value]="data.CODIGO">
+                                <div title="{{data.DESCRIPCION}}" style="font-size: 12px;"> 
+                                    {{data.DESCRIPCION}}
+                                </div>
+                            </ng-option>
+                        </ng-select>
+                    </div>
+
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-group row">
+                            <label class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1 text-left control-label">Observación</label>
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                                <textarea class="form-control" [(ngModel)]="txtObserv" rows="4"
+                                    style="resize: none; font-size: 12px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="" role="document" class="modal-dialog" style="position: relative;" [hidden]="ModalDivDetalleItem">
+    <div id="ModalDivDetalleItem" class="modal-content ui-draggable" style="top: 0; left: 0;">
+        <div class="modal-header">
+            <h4 class="modal-title" 
+                id="modal-basic-title">
+                Detalle Item. {{txtInfoCodActivo}}
+            </h4>
+            <button type="button" class="close"
+                    aria-label="Close" (click)="closeModal()">
+                <span aria-hidden="true">
+                    ×
+                </span>
+            </button>
+        </div>
+        <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh;overflow: auto;">
+            <div class="col-lg-12">
+                <div class="row" style="padding: 5px;">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-group row">
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Activo Asignado:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoNomAsig}}
+                            </div>
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Código Activo:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoCodActivo}}
+                            </div>
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Descripción:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoDescri}}
+                            </div>
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Marca:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoMarca}}
+                            </div>
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Modelo:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoModelo}}
+                            </div>
+            
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Serie:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoSerie}}
+                            </div>
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Grupo:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoGrupo}}
+                            </div>
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">SubGrupo:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoSubGrupo}}
+                            </div>
+                            <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Area Equipo:</label>
+                            <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                                {{txtInfoAreaEquipo}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            
+            <div class="col-lg-4 pb-1">
+                <dx-button
+                    type="normal"
+                    (onClick)="closeModal()"
+                    text="Cancelar" style="width: 100%;">
+                </dx-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dx-popover
+    target="#link3"
+    position="top"
+    [width]="450"
+    [(visible)]="withInformacionVisible"
+    >
+    <dxo-animation>
+        <dxo-show
+        type="pop"
+        [from]="{ scale: 0 }"
+        [to]="{ scale: 1 }"
+        ></dxo-show>
+        <dxo-hide type="fade" [from]="1" [to]="0"></dxo-hide>
+    </dxo-animation>
+    
+    <div class="row" style="padding: 0px;">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="form-group row">
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Activo Asignado:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoNomAsig}}
+                </div>
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Código Activo:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoCodActivo}}
+                </div>
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Descripción:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoDescri}}
+                </div>
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Marca:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoMarca}}
+                </div>
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Modelo:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoModelo}}
+                </div>
+
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Serie:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoSerie}}
+                </div>
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Grupo:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoGrupo}}
+                </div>
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">SubGrupo:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoSubGrupo}}
+                </div>
+                <label for="inputEmail3" class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1 text-left control-label">Area Equipo:</label>
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 pb-1">
+                    {{txtInfoAreaEquipo}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</dx-popover>
+
+<ng-template #contentCamara let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" 
+            id="modal-basic-title">
+            Cámara.
+        </h4>
+        <button type="button" class="close"
+                aria-label="Close" (click)=
+                "modal.dismiss('Cross click')">
+            <span aria-hidden="true">
+                ×
+            </span>
+        </button>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh;overflow: auto;">
+        <div class="col-lg-12">
+            <div class="scanner-shell" [hidden]="!hasDevices">
+                <zxing-scanner [torch]="torchEnabled" [(device)]="currentDevice" (scanSuccess)="onCodeResult($event,contentCamara)"
+                [formats]="formatsEnabled" [tryHarder]="tryHarder" (permissionResponse)="onHasPermission($event)"
+                (camerasFound)="onCamerasFound($event)" (torchCompatible)="onTorchCompatible($event)"></zxing-scanner>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" 
+            class="btn btn-outline-dark" 
+            (click)="modal.close()">
+            Salir
+        </button>
+    </div>
+</ng-template>
+
+
+

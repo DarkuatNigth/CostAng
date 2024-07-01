@@ -1,0 +1,67 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<form (keyup.enter)="check(u1.value, p2.value)">
+<div align="center" style="position: absolute; height: auto;width: 100%;z-index:1">
+    <div style="background-color: #0078ae!important; height: 55%; 
+            width: 100%;position: absolute">
+    </div>
+    <img [src]="urlLogo1" style="height: auto;width: 100px; z-index:1;position: relative"
+        alt="" />
+</div>
+
+<div class="auth-wrapper d-flex no-block justify-content-center align-items-center"
+    style="background: linear-gradient(to top, #0087B9,white,white) fixed;">
+
+    <div class="auth-box m-3 m-md-0">
+        <div style="font-size: 1.2em;font-family: 'Nyala';FONT-WEIGHT: bold;color: #6d8087;
+            padding-left: 2px;border-left: thick double #0087B9;padding: 10px;background-color: #337ab730;
+            margin-left: -10px;margin-right: -10px;">
+            Módulo - Producción
+        </div>
+        <div id="loginform">
+            <div class="logo">
+                <span class="db"><img [src]="urlLogo2" style="height: auto;width: 40%;"
+                        alt="logo" /></span>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <form class="form-horizontal m-t-20" id="loginform">
+
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
+                            </div>
+                            <input type="text" (input)="u1.value = u1.value.toUpperCase()" class="form-control" 
+                                placeholder="Usuario" aria-label="Username"
+                                aria-describedby="basic-addon1" #u1>
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon2"><i class="ti-pencil"></i></span>
+                            </div>
+                            <input type="password" class="form-control" placeholder="Contraseña" aria-label="Password"
+                                aria-describedby="basic-addon1" #p2>
+                        </div>
+                        <div class="row">
+                            <button type="button" style="width: 100%;" class="btn btn-primary"
+                                (click)="check(u1.value, p2.value)"><i class="fa fa-key" style="padding-right: 15px;"></i>Ingresar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</form>

@@ -1,0 +1,141 @@
+//@import './../../../assets/fonts/FontAwesome/css/font-awesome.css';
+@import './../../../assets/fonts/font-awesome-4.7.0/css/font-awesome.css';
+
+@media (max-width: 1023px) {
+    .page-wrapper {
+        margin-left: 0px;
+    }
+  }
+
+#Cabe {
+    background: linear-gradient(to left, #0087B9,white);
+}
+
+@media (max-width: 767px){
+    #Cabe {
+        background: linear-gradient(to left, #0087B9,white,white);
+    }
+}
+
+@font-face {
+    font-family: "Nyala";
+    /*src: url(~/Fonts/fonts/nyala.ttf);*/
+    src: url(../../../assets/fonts/nyala.ttf) format("truetype"); /* resto de navegadores */
+}
+
+
+::ng-deep #main-wrapper[data-layout=vertical][data-sidebartype=full] .page-wrapper{
+    margin-left:55px;
+}
+
+.main-menu:hover {
+    width:auto;
+    min-width: 220px;
+    overflow:hidden;
+    opacity:1;
+}
+
+
+.main-menu {
+    width:55px;
+    overflow:hidden;
+    display: block;
+}
+
+.ShowMenuMovil{
+    width:auto;
+    min-width: 220px;
+    overflow:hidden;
+    opacity:1;
+}
+
+.MenuMovil{
+    display: none;
+}
+
+@media (max-width: 500px) {
+    .main-menu {
+        /* width:0px; */
+        display: none;
+    }
+
+    ::ng-deep #main-wrapper[data-layout=vertical][data-sidebartype=full] .page-wrapper{
+        margin-left:0px;
+    }
+
+    .left-sidebar{
+        padding-top: 120px;
+    }
+
+    ::ng-deep #main-wrapper[data-layout=vertical][data-header-position=fixed] .page-wrapper {
+        padding-top: 120px;
+    }
+
+    .MenuMovil{
+        display: block;
+    }
+
+    .cssFavorite{
+        margin-top: -20px;
+        margin-bottom: 25px;
+    }
+
+    .ShowStaticMenu{
+        width: auto!important;
+    }
+    
+    .containerStaticMenu{
+        margin-left: auto!important;
+    }
+    ::ng-deep .cssShowPin{
+        display: none!important;
+    }
+}
+
+@media (min-width: 500px) {
+    .main-menu {
+        /* width:0px; */
+        display: block;
+    }
+}
+
+::ng-deep .sidebar-nav .has-arrow::after{
+    display: none;
+}
+
+
+/*Style favorite*/
+label input[type="checkbox"] {
+    display: none;
+}
+  
+.custom-checkboxFavorite {
+    margin-left: 2em;
+    position: relative;
+    cursor: pointer;
+}
+
+.custom-checkboxFavorite .fa {
+    color: #f5c50d;
+    position: absolute;
+    font-size: 19px;
+  }
+  .custom-checkboxFavorite .cssFavoriteEmpty {
+    color: gray;
+  }
+  .custom-checkboxFavorite .cssFavoriteNormal {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  .custom-checkboxFavorite:hover .cssFavoriteNormal{
+    opacity: 0.5;
+  }
+  .custom-checkboxFavorite input[type="checkbox"]:checked ~ .cssFavoriteNormal {
+    opacity: 1;
+  }
+  .cssLabelFavorite{
+    padding-left: 20px; 
+    padding-top: 0px;
+    color: #626365;
+  }
+  /*fin style favorite*/

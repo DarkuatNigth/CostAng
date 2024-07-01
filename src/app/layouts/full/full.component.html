@@ -1,0 +1,158 @@
+<!-- ============================================================== -->
+<!-- Main wrapper - style you can find in pages.scss -->
+<!-- ============================================================== -->
+<div id="main-wrapper" [ngClass]="{'show-sidebar': showMobileMenu}" [dir]="options.dir"
+    [attr.data-theme]="options.theme" [attr.data-layout]="options.layout" [attr.data-sidebartype]="options.sidebartype"
+    [attr.data-sidebar-position]="options.sidebarpos" [attr.data-header-position]="options.headerpos"
+    [attr.data-boxed-layout]="options.boxed">
+    <!-- ============================================================== -->
+    <!-- Topbar header - style you can find in topbar.scss -->
+    <!-- ============================================================== -->
+    <header id="Cabe" class="topbar" [attr.data-navbarbg]="options.navbarbg">
+        <nav class="d-flex top-navbar navbar-expand-lg"
+            [ngClass]="(options.navbarbg=='skin6')?'navbar-light':'navbar-dark'">
+            <div class="navbar-header" [ngClass]="(expandLogo)?'expand-logo':''" [attr.data-logobg]="options.logobg">
+                <!-- ============================================================== -->
+                <!-- Logo -->
+                <!-- ============================================================== -->
+                <a class="navbar-brand" href="/">
+                    <!-- Logo icon -->
+                    <div style="padding-right: 0px;padding-left: 0px;">
+                    <b class="logo-icon">
+                        <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
+                        <!-- Dark Logo icon -->
+                        <!-- <img src="assets/images/logo-icon.png" alt="homepage" class="dark-logo" /> -->
+                        <!-- Light Logo icon -->
+                        <img [src]="logoMenu" alt="homepage"
+                            style="width: 70px; height: 50px;" class="light-logo" />
+                    </b>
+                    </div>
+                    <div style="padding-left: 5px;display: grid;line-height: 20px;padding-top: 8px;">
+                        <span id="SpanTit1" style="font-size:1.8em;font-family:'Nyala';FONT-WEIGHT: bold; color:#0087B9; padding-left: 2px;">Producción</span>
+                        <span id="SpanTit2" style="font-size:0.8em;font-family:'Nyala';FONT-WEIGHT: bold; color:#0087B9; padding-left: 2px;"></span>
+                    </div>
+                        
+                    
+                </a>
+                <!-- ============================================================== -->
+                <!-- End Logo -->
+                <!-- ============================================================== -->
+                
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Logo -->
+            <!-- ============================================================== -->
+            
+            <div class="navbar-collapse">
+                <!-- Horizontal Header -->
+                <div *ngIf="options.layout==='horizontal' else vheader">
+                    <app-horizontal-navigation class="w-100 d-flex align-items-center justify-content-between">
+                    </app-horizontal-navigation>
+                </div>
+
+                <!-- Vertical Header -->
+                <ng-template #vheader>
+                    <div class="w-100">
+                        <app-vertical-navigation (toggleSidebar)="toggleSidebarType()">
+                        </app-vertical-navigation>
+                    </div>
+                </ng-template>
+                
+            </div>
+        </nav>
+
+        <div style="font-size: 0.8em;width: 100%;text-align: right;padding-right: 7px;position: absolute;top: 0px;color: #e7e7e3;">
+            <span style="font-weight: bold;">Publicación: {{LabelPublicacion}}</span>
+        </div>
+
+        <div style="width: 100%; background-color: #dee2e5; display: flex; padding-left: 10px; font-size: 14px; color: #6E6E6E; padding-top: 1px; padding-bottom: 1px;">
+            <div style="width: 100%;">
+                <span style="font-weight: bold;">Ud. se encuentra en:</span> {{LabelOpcion}}
+            </div>
+            
+        </div>
+        <!-- <div style="width: 100%; background-color: #ededed; padding-left: 10px; font-size: 14px; color: #6E6E6E; padding-top: 1px; padding-bottom: 1px;">
+            <span style="font-weight: bold;">Ud. se encuentra en:</span> {{LabelOpcion}}
+        </div> -->
+
+        <div id="MenuMovil" class="row MenuMovil" (click)="MenuShow()" style="background-color: white;">
+            <i class="fa fa-bars fa-2x toggle-btn" style="cursor: pointer;
+            position: unset;
+            margin-top: 11px;
+            margin-left: 25px;
+            width: 100%;
+            text-align: start;
+            margin-bottom: 11px;
+            font-size: 20px;"></i>
+        </div>
+    </header>
+
+    
+
+    <!-- ============================================================== -->
+    <!-- Left Sidebar - style you can find in sidebar.scss  -->
+    <!-- ============================================================== -->
+    <aside id="CtrMenu" class="left-sidebar main-menu" (mouseleave)="MenuOver()" [attr.data-sidebarbg]="options.sidebarbg" >
+        
+        
+        <!-- Sidebar scroll-->
+        <div *ngIf="options.layout==='horizontal'; else vlayout">
+            <app-horizontal-sidebar></app-horizontal-sidebar>
+        </div>
+
+        <!-- Horizontal Header -->
+        <ng-template #vlayout>
+            <div class="scroll-sidebar mostly-customized-scrollbar" style="overflow-y:auto;" [perfectScrollbar]="config">
+                <app-vertical-sidebar  ></app-vertical-sidebar>
+            </div>
+        </ng-template>
+        <!-- End Sidebar scroll-->
+    </aside>
+    <!-- ============================================================== -->
+    <!-- End Left Sidebar - style you can find in sidebar.scss  -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Page wrapper  -->
+    <!-- ============================================================== -->
+    <div id="pageWrapper" class="page-wrapper">
+        <app-breadcrumb style="display: none;"></app-breadcrumb>
+        <!-- ============================================================== -->
+        <!-- Container fluid  -->
+        <!-- ============================================================== -->
+        <div class="container-fluid">
+            <div class="row" style="justify-content: flex-end;" [hidden]="showFavorite">
+                <div class="cssFavorite" style="padding-right: 2%;height: 10px; padding-top: 5px; padding-bottom: 11px;">
+                    <label for="id-of-input" class="custom-checkboxFavorite" style="display: flex;">
+                        <input type="checkbox" id="id-of-input" [(ngModel)]="chkFavorite" (change)="OnChangeFavorite($event)"/>
+                        <i class="fa fa-star-o cssFavoriteEmpty"></i>
+                        <i class="fa fa-star cssFavoriteNormal"></i>
+                        <span class="cssLabelFavorite">{{lblFavorite}}</span>
+                    </label>
+                </div>
+            </div>
+            <!-- ============================================================== -->
+            <!-- Start Page Content -->
+            <!-- ============================================================== -->
+            <router-outlet></router-outlet>
+            <!-- ============================================================== -->
+            <!-- End Start Page Content -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Container fluid  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- footer -->
+        <!-- ============================================================== -->
+        <!-- <footer class="footer">
+            © 2020 SONGA
+        </footer> -->
+        <!-- ============================================================== -->
+        <!-- End footer -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Page wrapper  -->
+    <!-- ============================================================== -->
+
+</div>
