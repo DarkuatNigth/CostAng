@@ -2,7 +2,7 @@ import { Title } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, tap, filter } from 'rxjs/operators';
-import { URL_CONSULT, CONNECTION_PROD } from './../config/url.servicios';
+import { URL_CONSULT, CONNECTION_PROD,codModule,varUser } from './../config/url.servicios';
 import { ResultWS } from './../Interfaces/interfaces'
 
 @Injectable({
@@ -13,7 +13,7 @@ export class LoginService {
   constructor(private http: HttpClient) { }
 
   validarToken() {
-    const Token = localStorage.getItem('UserExpo') || '';
+    const Token = localStorage.getItem(varUser) || '';
     if (Token != '') {
       return true;
 
@@ -41,7 +41,7 @@ export class LoginService {
 
   cargaMenu(Usuario: string) {
     const ListParam = [{ "Name": "user", "Type": "VarChar", "Value": Usuario },
-    { "Name": "tipo", "Type": "VarChar", "Value": "ANGEXP" }];
+    { "Name": "tipo", "Type": "VarChar", "Value": codModule }];
 
     const base = {
       sp: 'sp_menuAngular',
@@ -124,5 +124,19 @@ export class LoginService {
     };
 
     return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  getValidaToken(Usuario, token) {
+    const ListParam = [{ "Name": "user", "Type": "VarChar", "Value": Usuario },
+    { "Name": "token", "Type": "VarChar", "Value": token }];
+
+    const base = {
+      sp: 'seguridad.sp_validaTokenUser',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+
   }
 }

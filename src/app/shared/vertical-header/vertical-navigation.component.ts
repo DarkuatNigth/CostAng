@@ -1,14 +1,11 @@
 import { LoginService } from './../../login/login.service';
 import { Component, AfterViewInit, EventEmitter, Output } from '@angular/core';
-import {
-  NgbModal,
-  ModalDismissReasons,
-  NgbPanelChangeEvent,
-  NgbCarouselConfig
-} from '@ng-bootstrap/ng-bootstrap';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 import { TranslateService } from '@ngx-translate/core';
 import { Route, Router } from '@angular/router';
+import { varUser, varUser2, varExpire, varMenu, varMenuDT } from './../../config/url.servicios';
+
 declare var $: any;
 
 @Component({
@@ -124,14 +121,14 @@ export class VerticalNavigationComponent implements AfterViewInit {
     private _router: Router) {
       
     translate.setDefaultLang('en');
-    this.nombre = localStorage.getItem('UserProd');
+    this.nombre = localStorage.getItem(varUser);
   }
 
   logout() {
-    localStorage.removeItem('UserProd');
-    localStorage.removeItem('menuProd');
-    localStorage.removeItem('ExpireProd');
-    localStorage.removeItem('MenuProdDT');
+    localStorage.removeItem(varUser);
+    localStorage.removeItem(varMenu);
+    localStorage.removeItem(varExpire);
+    localStorage.removeItem(varMenuDT);
     this._router.navigateByUrl('/login');
   }
 

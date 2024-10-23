@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FrmcoordenadasService } from './frmcoordenadas.service';
 import Swal from 'sweetalert2/src/sweetalert2.js';
+import { varUser, varUser2 } from '../config/url.servicios';
 
 @Component({
   selector: 'app-frmcoordenadas',
@@ -24,11 +25,11 @@ export class FrmcoordenadasComponent implements OnInit {
   constructor(public router: Router,
     public _service: FrmcoordenadasService) { 
         
-      if(this.router.getCurrentNavigation().extras.state != undefined){
+      /* if(this.router.getCurrentNavigation().extras.state != undefined){
         if(this.router.getCurrentNavigation().extras.state.user !== undefined){
           this.user = this.router.getCurrentNavigation().extras.state.user;
         }
-      };
+      }; */
   }
 
   async showAlert(title, mensaje, tipo) {
@@ -74,10 +75,10 @@ export class FrmcoordenadasComponent implements OnInit {
   }
   
   async ngOnInit() {
-    /* if(this.user === ""){
+    if(await localStorage.getItem(varUser2) === ""){
       
       this.router.navigateByUrl('/login');
-    } */
+    }
 
     this.loadingVisible = true;
 
@@ -139,7 +140,7 @@ export class FrmcoordenadasComponent implements OnInit {
 
   async SendCoodernadas(){
     const valorMenu = await new Promise(async (resolve) => {
-      await this._service.setCoord(this.user).subscribe(async (resp) => {
+      await this._service.setCoord(await localStorage.getItem(varUser2)).subscribe(async (resp) => {
         if (resp.Codigo) {
           if (Object.keys(resp.Dt).length > 0) {
             let dt: [][] = resp.Dt.Table;
@@ -172,7 +173,7 @@ export class FrmcoordenadasComponent implements OnInit {
     }
     
     const valorMenu = await new Promise(async (resolve) => {
-      await this._service.setVerifCoord(this.user, this.lbl1,this.txt_lbl1,this.lbl2,this.txt_lbl2,this.lbl3,this.txt_lbl3).subscribe(async (resp) => {
+      await this._service.setVerifCoord(await localStorage.getItem(varUser2), this.lbl1,this.txt_lbl1,this.lbl2,this.txt_lbl2,this.lbl3,this.txt_lbl3).subscribe(async (resp) => {
         if (resp.Codigo) {
        
           if (Object.keys(resp.Dt).length > 0) {
@@ -205,7 +206,7 @@ export class FrmcoordenadasComponent implements OnInit {
     });
 
     if(valorMenu){
-      localStorage.setItem("UserProd", await localStorage.getItem("UserProd2"));
+      localStorage.setItem(varUser, await localStorage.getItem(varUser2));
       this.router.navigateByUrl('/');
     }else{
       this.txt_lbl1 = "";

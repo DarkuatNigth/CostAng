@@ -7,6 +7,7 @@ import {  BehaviorSubject, timer } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { FrmasignacionactivosService } from './frmasignacionactivos.service';
 import { BarcodeFormat } from '@zxing/library';
+import { varUser } from 'src/app/config/url.servicios';
 
 declare var window;
 declare var $: any;
@@ -175,7 +176,7 @@ export class FrmasignacionactivosComponent implements OnInit {
 
     const valor = await new Promise(async (resolve) => {
       await this._service.setGrabar(this.txtCodActivo, this.txtCodEmpleado,this.cmbtipoAsignacion,
-                        this.txtObserv,"",await localStorage.getItem('UserExpo')).subscribe(async (resp) => {
+                        this.txtObserv,"",await localStorage.getItem(varUser)).subscribe(async (resp) => {
         if (resp.Codigo) {
           this.onClickNuevo();
           await this.showAlert('', 'Registro actualizado con éxito', 'success');

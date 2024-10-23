@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener,ElementRef  } from '@angular/core';
 import { Router } from '@angular/router';
 declare var $: any;
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
-import { BaseConexion  } from './../../config/url.servicios';
+import { BaseConexion, codModule,varUser, varMenuDT, varNombreEmpresa  } from './../../config/url.servicios';
 import { LoginService } from './../../login/login.service';
 import { SidebarService } from './../../shared/vertical-sidebar/vertical-sidebar.service';
 
@@ -38,7 +38,7 @@ export class FullComponent implements OnInit {
   public expandLogo = false;
 
   LabelOpcion:string = "Inicio";
-  LabelPublicacion:string = "2023-12-27";
+  LabelPublicacion:string = "2024-10-23";
   
   options = {
     theme: 'light', // two possible values: light, dark
@@ -168,7 +168,7 @@ export class FullComponent implements OnInit {
   async GuardarFavorite(opcion,accion){
     
     const valorMenu = await new Promise(async (resolve) => {
-      await this._serviceloginService.saveMenuFavorite(await localStorage.getItem('UserProd'),"ANGPROD",
+      await this._serviceloginService.saveMenuFavorite(await localStorage.getItem(varUser),codModule,
         opcion,accion).subscribe(async (resp) => {
         if (resp.Codigo) {
           return resolve(true);
@@ -185,13 +185,13 @@ export class FullComponent implements OnInit {
 
   async CargarMenu(){
     const valorMenu = await new Promise(async (resolve) => {
-      await this._serviceloginService.cargaMenu(await localStorage.getItem('UserProd')).subscribe(async (resp) => {
+      await this._serviceloginService.cargaMenu(await localStorage.getItem(varUser)).subscribe(async (resp) => {
         if (resp.Codigo) {
           
           if (Object.keys(resp.Dt).length > 0) {
             let dt: [][] = resp.Dt.Table;
             
-            localStorage.setItem("MenuProdDT", JSON.stringify(dt));
+            localStorage.setItem(varMenuDT, JSON.stringify(dt));
             await this.menuServise.armarmenu(dt);
 
             window.Menu.RefreshMenu();

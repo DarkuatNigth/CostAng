@@ -4,6 +4,8 @@ import { RouteInfo } from './vertical-sidebar.metadata';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FullComponent } from './../../layouts/full/full.component';
 import Swal from 'sweetalert2/src/sweetalert2.js';
+import { varUser, varUser2, varExpire, varMenu, varMenuDT } from './../../config/url.servicios';
+
 declare var $: any;
 declare var window;
 
@@ -41,7 +43,7 @@ export class VerticalSidebarComponent  implements OnInit {
   }
 
   async ngOnInit() {
-    this.nombre = await localStorage.getItem('UserProd');
+    this.nombre = await localStorage.getItem(varUser);
     
     this.menuServise.loadmenu();
     this.menuServise.items.subscribe(menuItems => {
@@ -112,11 +114,11 @@ export class VerticalSidebarComponent  implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('UserProd');
-    localStorage.removeItem('UserProd2');
-    localStorage.removeItem('menuProd');
-    localStorage.removeItem('ExpireProd');
-    localStorage.removeItem('MenuProdDT');
+    localStorage.removeItem(varUser);
+    localStorage.removeItem(varUser2);
+    localStorage.removeItem(varMenu);
+    localStorage.removeItem(varExpire);
+    localStorage.removeItem(varMenuDT);
     this._router.navigateByUrl('/login');
   }
 

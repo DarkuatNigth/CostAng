@@ -1,15 +1,59 @@
 import { Injectable } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, ActivatedRoute,NavigationEnd } from '@angular/router';
-
+import { varExpire, varMenu, varMenuDT, varUser, varUser2 } from '../config/url.servicios';
+import {LoginService} from './../login/login.service'; 
 
 @Injectable()
 export class AuthGuard {
 
-    constructor(private router: Router, private activeRouter: ActivatedRoute) { }
+    constructor(private router: Router, private activeRouter: ActivatedRoute,private _login: LoginService) { }
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
 
-        const Token = localStorage.getItem('UserProd') || '';
+        let params = (state.url.split('?').length > 1 ? state.url.split('?')[1] : "");
+
+        if(params !== ""){
+            let contra = this._login.Decrypt(decodeURIComponent(params.toString()), 2);
+            let Listparams = contra.split(';');
+            let usr = "";
+            let tokenuSr = "";
+            if(Listparams.length > 0){
+                let params = Listparams[0].split('&');
+                for (let index = 0; index < params.length; index++) {
+                    let colParam = params[index].toString().split("=");
+                    if(colParam.length>0){
+
+                        if(colParam[0].toString() == "user"){
+                            usr = colParam[1].toString();
+                        }
+                    }
+                }
+                if(state['root'].queryParams || state['root'].queryParams !== undefined){
+                    tokenuSr =state['root'].queryParams.tk;
+                }
+            }
+
+            if(tokenuSr === "") {
+                usr = "";
+            }else{
+                if (!await this.validatorToken(usr,tokenuSr)){
+                    usr = "";
+                    localStorage.removeItem(varUser);
+                    localStorage.removeItem(varUser2);
+                    localStorage.removeItem(varExpire);
+                }
+            }
+
+            if(usr !== ""){
+                localStorage.setItem(varUser, usr);
+                var timeout = 120;
+                var now = Date.now();
+                var schedule = now + 60*1000*timeout; //60 seg por 1000 mileseg por 120 minutos = 2 horas 
+                localStorage.setItem(varExpire, schedule.toString());
+            }
+        }
+
+        const Token = localStorage.getItem(varUser) || '';
         
         if (Token != '') {
 
@@ -19,17 +63,17 @@ export class AuthGuard {
             }
 
             var now = Date.now(); 
-            var expiresIn = Number(localStorage.getItem('ExpireProd'));
+            var expiresIn = Number(localStorage.getItem(varExpire));
             if (expiresIn===undefined || expiresIn===null) 
             { 
                 expiresIn = 0; 
             }
 
             if (expiresIn < now) {// Expired
-                localStorage.removeItem('ExpireProd');
-                localStorage.removeItem('UserProd');
-                localStorage.removeItem('menuProd');
-                localStorage.removeItem('MenuProdDT');
+                localStorage.removeItem(varExpire);
+                localStorage.removeItem(varUser);
+                localStorage.removeItem(varMenu);
+                localStorage.removeItem(varMenuDT);
 
                 //this.router.navigateByUrl('/login');
                 
@@ -48,6 +92,31 @@ export class AuthGuard {
         //this.router.navigateByUrl('/login');
         return true;
     }
+
+    async validatorToken(usr, tokenUsr) {
+
+        const valorToken = await new Promise(async (resolve) => {
+          await this._login.getValidaToken(usr, tokenUsr).subscribe(async (resp) => {
+            if (resp.Codigo) {
+
+              if (Object.keys(resp.Dt).length > 0) {
+
+                let dt:[][] = resp.Dt.Table;
+                if(dt.length > 0){
+                  if(dt[0]["Estado"] === 1){
+                    return resolve(true);
+                  }
+                }
+              }
+              return resolve(false);
+            } else {
+
+              return resolve(false);
+            }
+          });
+        });
+        return valorToken;
+      }
 
     
 }

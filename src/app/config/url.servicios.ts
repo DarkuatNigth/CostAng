@@ -1,9 +1,17 @@
 
+export const codModule = 'ANGPROD';
+export const varUser = 'UserPROD';
+export const varUser2 = 'UserPROD2';
+export const varExpire = 'ExpirePROD';
+export const varMenuDT = 'MenuPRODDT';
+export const varMenu = 'MenuPROD';
+export const varEmpresa = 'EmpresaPROD';
+export const varNombreEmpresa = 'nombreEmpresaPROD';
 
 /*CONEXION SONGA*/
 export const BaseConexion = "SONGA";//"SEAFOOD";//"SONGA";
-let DomainSite = "https://172.17.22.82";//PREPRODUCCION
-//let DomainSite = "https://web.songa.com";
+//let DomainSite = "https://172.17.22.82";//PREPRODUCCION
+let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";

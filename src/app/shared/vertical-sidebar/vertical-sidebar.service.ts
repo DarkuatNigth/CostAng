@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { RouteInfo } from './vertical-sidebar.metadata';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-
+import { varMenu } from './../../config/url.servicios';
 
 @Injectable({
     providedIn: 'root'
@@ -17,7 +17,7 @@ export class SidebarService {
 
     loadmenu() {
       
-        this.menu = JSON.parse(localStorage.getItem('menuProd'));
+        this.menu = JSON.parse(localStorage.getItem(varMenu));
         this.items = new BehaviorSubject<RouteInfo[]>(this.menu);
     }
 
@@ -103,7 +103,7 @@ export class SidebarService {
         });
       });
       //debugger;
-      localStorage.setItem('menuProd', JSON.stringify(supermenu));
+      localStorage.setItem(varMenu, JSON.stringify(supermenu));
       return supermenu;
     }
 

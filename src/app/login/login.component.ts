@@ -4,9 +4,16 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { LoginService } from './../login/login.service';
 import { RouteInfo } from '../shared/vertical-sidebar/vertical-sidebar.metadata';
 import Swal from 'sweetalert2/src/sweetalert2.js';
-import { BaseConexion  } from './../config/url.servicios';
+import { BaseConexion, codModule  } from './../config/url.servicios';
 import { SidebarService } from './../shared/vertical-sidebar/vertical-sidebar.service';
 import { MatDialog } from '@angular/material/dialog';
+import {
+  varUser,
+  varUser2,
+  varExpire,
+  varMenu,
+  varMenuDT,
+} from './../config/url.servicios';
 
 declare var window;
 
@@ -31,11 +38,11 @@ export class LoginComponent implements OnInit {
 
     window.home = this;
 
-    localStorage.removeItem('UserProd');
-    localStorage.removeItem('UserProd2');
-    localStorage.removeItem('menuProd');
-    localStorage.removeItem('ExpireProd');
-    localStorage.removeItem('MenuProdDT');
+    localStorage.removeItem(varUser);
+    localStorage.removeItem(varUser2);
+    localStorage.removeItem(varMenu);
+    localStorage.removeItem(varExpire);
+    localStorage.removeItem(varMenuDT);
     
     this.urlLogo1 = "assets/images/logo-header.png";
     this.urlLogo2 = "assets/images/logo-icon.png";
@@ -126,7 +133,7 @@ export class LoginComponent implements OnInit {
     this.loadingVisible = true;
     let valOpt: string = "";
     const valor = await new Promise(async (resolve) => {
-      await this._login.getIngreso(usuario.toString().toUpperCase(), pass, "ANGPROD").subscribe(async (resp) => {
+      await this._login.getIngreso(usuario.toString().toUpperCase(), pass, codModule).subscribe(async (resp) => {
         if (resp.Codigo) {
           if (Object.keys(resp.Dt).length > 0) {
             let dt: [][] = resp.Dt.Table;
@@ -141,26 +148,26 @@ export class LoginComponent implements OnInit {
               } else {
 
                 if (valOpt === '3') {
-                  await localStorage.setItem("UserProd2", dt[0]["usuario"].toString().toUpperCase());
+                  await localStorage.setItem(varUser2, dt[0]["usuario"].toString().toUpperCase());
                   await this.showAlert('', dt[0]["mensaje"].toString(), 'warning');
                   
                 }else{
                 
-                  localStorage.setItem("UserProd", dt[0]["usuario"].toString().toUpperCase());
+                  localStorage.setItem(varUser, dt[0]["usuario"].toString().toUpperCase());
                 }
 
                 var timeout = Number(dt[0]["timeout"]=== undefined || dt[0]["timeout"]=== null ? 0 :dt[0]["timeout"]);
                 var now = Date.now();
                 var schedule = now + 60*1000*timeout; //60 seg por 1000 mileseg por 120 minutos = 2 horas 
                 
-                localStorage.setItem('ExpireProd', schedule.toString());
+                localStorage.setItem(varExpire, schedule.toString());
 
                 const valorMenu = await new Promise(async (resolve) => {
                   await this._login.cargaMenu(usuario).subscribe(async (resp) => {
                     if (resp.Codigo) {
                       if (Object.keys(resp.Dt).length > 0) {
                         let dt: [][] = resp.Dt.Table;
-                        localStorage.setItem("MenuProdDT", JSON.stringify(dt));
+                        localStorage.setItem(varMenuDT, JSON.stringify(dt));
                         this.menuR = await this.menuServise.armarmenu(dt);
                       }
                       return resolve(true);

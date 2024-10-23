@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { interval } from 'rxjs';
 import { Router } from '@angular/router';
+import { varUser } from './config/url.servicios';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,7 @@ export class AppComponent {
     var source = interval(2000);
     var subscribe = source.subscribe(async val => {
       
-      if (await localStorage.getItem('UserProd') === null && 
+      if (await localStorage.getItem(varUser) === null && 
         !window.location.href.includes("/login") &&
         !window.location.href.includes("/CoordenadasLogin")
       ){

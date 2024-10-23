@@ -4,6 +4,7 @@ import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 import { TranslateService } from '@ngx-translate/core';
 import { LoginService } from './../../login/login.service';
 import { Router } from '@angular/router';
+import { varUser, varUser2, varExpire, varMenu, varMenuDT } from './../../config/url.servicios';
 
 declare var $: any;
 
@@ -122,15 +123,15 @@ export class HorizontalNavigationComponent implements AfterViewInit {
     private _router: Router
   ) {
     translate.setDefaultLang('en');
-    this.nombre = localStorage.getItem('UserProd');
+    this.nombre = localStorage.getItem(varUser);
   }
 
   logout() {
-    localStorage.removeItem('UserProd');
-    localStorage.removeItem('UserProd2');
-    localStorage.removeItem('menuProd');
-    localStorage.removeItem('ExpireProd');
-    localStorage.removeItem('MenuProdDT');
+    localStorage.removeItem(varUser);
+    localStorage.removeItem(varUser2);
+    localStorage.removeItem(varMenu);
+    localStorage.removeItem(varExpire);
+    localStorage.removeItem(varMenuDT);
     this._router.navigateByUrl('/login');
   }
 
