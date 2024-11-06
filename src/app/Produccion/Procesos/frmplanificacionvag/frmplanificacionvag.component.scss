@@ -1,0 +1,71 @@
+table {
+    width: 100%;
+  }
+  
+  .example-drag-cursor {
+    margin-right: 16px;
+    cursor: move;
+  }
+  
+  .cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+      0 8px 10px 1px rgba(0, 0, 0, 0.14),
+      0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    background-color: white;
+  }
+  
+  .cdk-drag-placeholder {
+    opacity: 0;
+  }
+  
+  .cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  
+  .cdk-drop-list-dragging .mat-row:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  
+
+
+  .mat-mdc-header-row .mat-mdc-header-cell, .mat-mdc-row {
+    font-size: 12px !important;
+  }
+  
+  mat-header-row, mat-row, mat-footer-row {
+    min-height: auto !important;
+  }
+
+  mat-header-row {
+    background-color: #fff;
+    color: #959595;
+  }
+
+  mat-table {
+    border: 1px solid #ddd;
+  }
+
+  .mat-mdc-header-cell, .mat-mdc-cell {
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .mdc-data-table__cell {
+    padding: 2px 16px 2px 16px !important;
+  }
+
+  .mdc-data-table__header-cell {
+    padding: 4px 16px 4px 16px !important;
+  }
+
+  .mat-column-position {
+      flex: none;
+      width: 80px;
+  }
+
+  .mat-column-cliente {
+    flex: none;
+    width: 250px;
+  }
