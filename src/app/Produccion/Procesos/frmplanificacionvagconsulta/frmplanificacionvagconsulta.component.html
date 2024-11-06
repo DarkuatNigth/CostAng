@@ -1,0 +1,102 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 5px">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nueva Planificación" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Generar Requerimiento" icon="save" type="success" (onClick)="onClickGuardar()"
+                [disabled]="disabledBtnGuardar">
+            </dx-button>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group mt-1">
+                    <div class="row margin-container">
+                        <label class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1 control-label fb">N° Planificación: {{idPlanificacion}}</label>
+                        <label class="col-12 col-sm-4 col-md-3 col-lg-3 pb-1 control-label fb">Desde: {{fechaDesdeFormat}}</label>
+                        <label class="col-12 col-sm-4 col-md-3 col-lg-3 pb-1 control-label fb">Hasta: {{fechaHastaFormat}}</label>
+                    </div>
+                </div>
+                <div class="form-group mt-1">
+                    <div class="row margin-container">
+                        <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                            <!-- <p class="sng-grid-title">Planificacion</p> -->
+                            <dx-data-grid #GridPlanificacion 
+                                id="GridPlanificacion" 
+                                style="width: 100%; max-height: 60vh;"
+                                [dataSource]="listaPlanificacion" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="false" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedPlanificacion(GridPlanificacion)"
+                                (onRowPrepared)="onRowPrepared($event)"
+                            >
+
+                                <dxi-column cellTemplate="cellCheckReqMp" dataField="checkReqMp" [caption]="'Req Mp'" [dataType]="'boolean'"> </dxi-column>
+                                <div *dxTemplate="let cell of 'cellCheckReqMp'">
+                                    <div>
+                                        <input type="checkbox" class="cssCheckBox" (change)="onChangeGridCheckReqMp(cell.value, cell)"
+                                            [(ngModel)]="cell.value" style="width: 100%; border: 0px; background-color: transparent; text-align: right; " />
+                                    </div>
+                                </div>
+                                <dxi-column cellTemplate="cellCheckReqDes" dataField="checkReqDes" [caption]="'Req Des'" [dataType]="'boolean'"> </dxi-column>
+                                <div *dxTemplate="let cell of 'cellCheckReqDes'">
+                                    <div>
+                                        <input type="checkbox" class="cssCheckBox" (change)="onChangeGridCheckReqDes(cell.value, cell)"
+                                            [(ngModel)]="cell.value" style="width: 100%; border: 0px; background-color: transparent; text-align: right; " />
+                                    </div>
+                                </div>
+                                <dxi-column dataField="cliente" caption="cliente"></dxi-column>
+                                <dxi-column dataField="numFactura" caption="Factura"></dxi-column>
+                                <dxi-column dataField="codProducto" caption="Codigo"></dxi-column>
+                                <dxi-column dataField="TallaProducto" caption="Talla"></dxi-column>
+                                <dxi-column dataField="claseProducto" caption="Clase"></dxi-column>
+                                <dxi-column dataField="Producto" caption="Producto"></dxi-column>
+                                <dxi-column dataField="Congelamiento" caption="Congelamiento"></dxi-column>
+                                <dxi-column dataField="Libras" caption="Libras"></dxi-column>
+                                <dxi-column dataField="Fecha" caption="Fecha" visible="false"></dxi-column>
+                                <dxi-column dataField="Dia" caption="Día"></dxi-column>
+                                <dxi-column dataField="Turno" caption="Turno"></dxi-column>
+                                <dxi-column dataField="TiempoCorte" caption="TiempoCorte"></dxi-column>
+                                <!-- Opciones de paginación -->
+                                <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
