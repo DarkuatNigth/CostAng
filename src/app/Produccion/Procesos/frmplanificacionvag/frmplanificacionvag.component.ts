@@ -132,7 +132,7 @@ export class FrmplanificacionvagComponent implements OnInit {
     private _parametrizacionService: FrmplanificacionparametrizacionService,
     public _utilService: UtilService,
   ) {
-    this._notificationService.info( `Ingresa un rango de fecha, y # de personas. Presiona el botón 'Generar Planificación'. El sistema te generará una preplanificación.` );
+    //this._notificationService.info( `Ingresa un rango de fecha, y # de personas. Presiona el botón 'Generar Planificación'. El sistema te generará una preplanificación.` );
 
     this._service.getPedidosParaPlanificacion().subscribe((data) => {
       this.facturas = data.Dt.Table.map((item: any) => {
