@@ -1,0 +1,161 @@
+table {
+    width: 100%;
+  }
+  
+  .example-drag-cursor {
+    margin-right: 16px;
+    cursor: move;
+  }
+  
+  .cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+      0 8px 10px 1px rgba(0, 0, 0, 0.14),
+      0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    background-color: white;
+  }
+  
+  .cdk-drag-placeholder {
+    opacity: 0;
+  }
+  
+  .cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  
+  .cdk-drop-list-dragging .mat-row:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  
+
+
+  .mat-mdc-header-row .mat-mdc-header-cell, .mat-mdc-row {
+    font-size: 12px !important;
+  }
+  
+  mat-header-row, mat-row, mat-footer-row {
+    min-height: auto !important;
+  }
+
+  mat-header-row {
+    background-color: #fff;
+    color: #959595;
+  }
+
+  mat-table {
+    border: 1px solid #ddd;
+  }
+
+  .mat-mdc-header-cell, .mat-mdc-cell {
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .mdc-data-table__cell {
+    padding: 2px 16px 2px 16px !important;
+  }
+
+  .mdc-data-table__header-cell {
+    padding: 4px 16px 4px 16px !important;
+  }
+
+  .mat-column-position {
+      flex: none;
+      width: 80px;
+  }
+
+  .mat-column-cliente {
+    flex: none;
+    width: 250px;
+  }
+
+
+  .tables {
+    display: flex;
+  }
+  
+  .column:first-child {
+    // width: 50%;
+    padding-right: 15px;
+  }
+  
+  .column:last-child {
+    // width: 50%;
+    padding-left: 15px;
+  }
+
+  .column {
+    width: 50%; /* Tamaño por defecto */
+    transition: width 0.3s;
+  }
+
+  .first-focused {
+      width: 60%;
+  }
+
+  .second-focused {
+      width: 40%;
+  }
+
+  input[type=radio] {
+    appearance: none;
+    background-color: #fff;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #ccc;
+    border-radius: 2px;
+    display: inline-grid;
+    place-content: center; 
+  }
+
+input[type=radio]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    transform-origin: bottom left;
+    background-color: #fff;
+    clip-path: polygon(13% 50%, 34% 66%, 81% 2%, 100% 18%, 39% 100%, 0 71%);
+}
+
+input[type=radio]:checked::before {
+    transform: scale(1);
+}
+input[type=radio]:checked{
+    background-color:   #0075FF;
+    border: 2px solid #0075FF;
+}
+
+
+.small-button {
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  color: #d43f3a;
+}
+.small-button:hover {
+  background-color: rgba(212,63,58,.1);
+  border-color: transparent;
+}
+
+
+::ng-deep #GridFacturas {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+}
+
+::ng-deep #GridFacturasSelected {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+}
+
+.form-control.sng-template {
+  height: auto;
+  padding: 5px;
+  border: 0px;
+}

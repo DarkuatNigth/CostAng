@@ -15,10 +15,18 @@ export class AppComponent {
   ngOnInit(){
     var source = interval(2000);
     var subscribe = source.subscribe(async val => {
+
+      if (await localStorage.getItem(varUser) === null &&
+      !window.location.href.includes("/tokenExpired") &&
+       window.location.href.includes("/ext-")){ 
+        this.router.navigateByUrl('/tokenExpired');
+        return;
+      }
       
       if (await localStorage.getItem(varUser) === null && 
         !window.location.href.includes("/login") &&
-        !window.location.href.includes("/CoordenadasLogin")
+        !window.location.href.includes("/CoordenadasLogin") &&
+        !window.location.href.includes("/tokenExpired")
       ){
         this.router.navigateByUrl('/login');
       }

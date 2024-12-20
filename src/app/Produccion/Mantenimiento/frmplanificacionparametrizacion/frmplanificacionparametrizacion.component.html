@@ -1,0 +1,70 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                            <!-- <p class="sng-grid-title">Parametros</p> -->
+                            <dx-data-grid #GridParametros 
+                                id="GridParametros" 
+                                style="width: 100%; max-height: 35vh"
+                                [dataSource]="listaParametros" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="true" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedParametros(GridParametros)"
+                            >
+                            <!-- pgv_id,pgv_codigo,pgv_descri,pgv_valor,pgv_estado -->
+                                <dxi-column dataField="pgv_codigo" caption="Cod"></dxi-column>
+                                <dxi-column dataField="pgv_descri" caption="Parámetro"></dxi-column>
+                                <dxi-column dataField="pgv_valor" caption="Valor" 
+                                    [customizeText]="customizeText"
+                                    cellTemplate="cellTempValor"
+                                    >
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'cellTempValor'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorParametros($event.target.value, cell) " 
+                                            [ngModel]="cell.value | number:'1.0-2'"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; "  
+                                        />
+                                    </div>
+                                </div>
+                        
+                                <!-- Opciones de paginación -->
+                                <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

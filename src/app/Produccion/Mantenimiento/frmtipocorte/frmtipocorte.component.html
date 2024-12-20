@@ -1,0 +1,93 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()"
+                [disabled]="disabledBtnGuardar">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <label class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Tipo Corte:</label>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-2 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbTipoCorte" appendTo="body" [searchable]="true" [clearable]="false"
+                                (change)="onTipoCorteChange($event)">
+                                <ng-option *ngFor="let data of TiposCortes" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 pb-1">
+                            <!-- <p class="sng-grid-title">TipoFacturas</p> -->
+                            <dx-data-grid #GridTallas_TiemposCortes 
+                                id="GridTallas_TiemposCortes" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="Tallas_TiemposCortes" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="true" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedTipoFacturas(GridTallas_TiemposCortes)"
+                            >
+                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row>
+                                <dxi-column dataField="codigo" caption="Talla" [visible]="false"></dxi-column>
+                                <dxi-column dataField="descripcion" caption="Talla"></dxi-column>
+                                <dxi-column dataField="valor" caption="Tiempo Corte Manual" cellTemplate="cellTempValor"> </dxi-column>
+                                <dxi-column dataField="valorAutomatico" caption="Tiempo Corte Automático" cellTemplate="cellTempValorAut"> </dxi-column>
+                                <div *dxTemplate="let cell of 'cellTempValor'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorCorte($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div>
+                                <div *dxTemplate="let cell of 'cellTempValorAut'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorAutCorte($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div>
+                        
+                                <!-- Opciones de paginación -->
+                                <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -10,7 +10,7 @@ export const varNombreEmpresa = 'nombreEmpresaPROD';
 
 /*CONEXION SONGA*/
 export const BaseConexion = "SONGA";//"SEAFOOD";//"SONGA";
-//let DomainSite = "https://172.17.22.82";//PREPRODUCCION
+// let DomainSite = "http://localhost";//PREPRODUCCION
 let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
 
@@ -23,6 +23,7 @@ export const URL_REPORTES = DomainSite + "/SiteReports/Api/Reportes";
 //export const URL_REPORTES = "https://web.songa.com/SiteReports/Api/Reportes";
 
 export const URL_APICALLEXEC = DomainSite + "/SiteReports/Api/CallAPIExe";
+export const URL_APIREPORTPLANIFICACION = DomainSite + "/SiteReports/Api/PlanificacionVA";
 export const URL_BARCODE = DomainSite + "/SiteReports/Api/Barcode";
 //export const URL_OTHERAPI = "http://localhost:1814/Signature";
 export const URL_OTHERAPI = DomainSite + "/ApiBackend/Signature";

@@ -51,7 +51,7 @@ export class VerticalSidebarComponent  implements OnInit {
       this.sidebarnavItems = menuItems;
       if(menuItems === null){
         this.showAlert('', 'Usuario no posee opciones. Por favor vuelva a ingresar su usuario o pida a sistemas las opciones', 'error');
-        return;
+        // return;
       }
       // Active menu 
       this.sidebarnavItems.filter(m => m.submenu.filter(
@@ -106,7 +106,7 @@ export class VerticalSidebarComponent  implements OnInit {
       this.sidebarnavItems = menuItems;
       if(menuItems === null){
         this.showAlert('', 'Usuario no posee opciones. Por favor vuelva a ingresar su usuario o pida a sistemas las opciones', 'error');
-        return;
+        // return;
       }
 
       this.addExpandClass(this.path);

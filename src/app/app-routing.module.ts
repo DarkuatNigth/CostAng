@@ -4,6 +4,9 @@ import { AuthGuard } from './_guards';
 import { FullComponent } from './layouts/full/full.component';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { LoginComponent } from './login/login.component';
+import { FrmplanificacionvagconsultaModuleFactory } from './Produccion/Procesos/frmplanificacionvagconsulta/frmplanificacionvagconsulta.module';
+import { FrmplanificacionvagModuleFactory } from './Produccion/Procesos/frmplanificacionvag/frmplanificacionvag.module';
+import { TokenexpiredModuleFactory } from './tokenexpired/tokenexpired.module';
 
 const routes: Routes = [
   {
@@ -13,7 +16,7 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
-        path: 'CargaFilePedido',
+        path: 'AsignacionActivos',
         loadChildren: () => import('./Activofijo/Procesos/frmasignacionactivos/frmasignacionactivos.module').then(m => m.FrmasignacionactivosModule)
       }
     ]
@@ -29,11 +32,38 @@ const routes: Routes = [
       {
         path: 'CoordenadasLogin',
         loadChildren: () => import('./frmcoordenadas/frmcoordenadas.module').then(m => m.FrmcoordenadasModule)
-      }
+      },
+      { 
+        path: '', 
+        loadChildren: () => import('./Produccion/Mantenimiento/frmplanificacionparametrizacion/frmplanificacionparametrizacion.module').then(m => m.FrmplanificacionparametrizacionModule) 
+      },
+      { 
+        path: '', 
+        loadChildren: () => import('./Produccion/Mantenimiento/frmtipocorte/frmtipocorte.module').then(m => m.FrmtipocorteModule) 
+      },
+      { 
+        path: '', 
+        loadChildren: () => import('./Produccion/Procesos/frmasignacionlotes/frmasignacionlotes.module').then(m => m.FrmasignacionlotesModule) 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmplanificacionvagconsultaModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmplanificacionvagModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: TokenexpiredModuleFactory 
+      },
+      
 		]
 	},
+  
   // otherwise redirect to home
-  { path: '**', redirectTo: '' }];
+  { path: '**', redirectTo: '' },
+];
 
 
 @NgModule({
