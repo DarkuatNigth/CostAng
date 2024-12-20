@@ -34,7 +34,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     DxFileUploaderModule,
 
     RouterModule.forChild([
-      { path: 'tipocorteVag', canActivate: [AuthGuard], component: FrmtipocorteComponent },
+      { path: 'ext-tiempoCorteVA', canActivate: [AuthGuard], component: FrmtipocorteComponent },
     ]) 
   ],
   exports: [

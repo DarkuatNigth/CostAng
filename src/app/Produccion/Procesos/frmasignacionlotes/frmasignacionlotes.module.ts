@@ -34,7 +34,7 @@ import { FrmasignacionlotesComponent } from './frmasignacionlotes.component';
     DxFileUploaderModule,
 
     RouterModule.forChild([
-      { path: 'asignacionLotes', canActivate: [AuthGuard], component: FrmasignacionlotesComponent },
+      { path: 'ext-asignacionLotesVA', canActivate: [AuthGuard], component: FrmasignacionlotesComponent },
     ]) 
   ],
   exports: [

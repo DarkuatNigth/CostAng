@@ -34,7 +34,7 @@ import { FrmplanificacionvagconsultaComponent } from './frmplanificacionvagconsu
     DxFileUploaderModule,
 
     RouterModule.forChild([
-      { path: 'planificacionConsulta', canActivate: [AuthGuard], component: FrmplanificacionvagconsultaComponent },
+      { path: 'ext-consultaPlanificacionVA', canActivate: [AuthGuard], component: FrmplanificacionvagconsultaComponent },
     ]) 
   ],
   exports: [

@@ -10,15 +10,10 @@
 </dx-load-panel>
 
 
-<div style="padding: 10px 5px">
+<div style="padding: 10px 2%">
     <div class="row">
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
             <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
-            </dx-button>
-        </div>
-
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
-            <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
             </dx-button>
         </div>
 
@@ -31,7 +26,7 @@
 
     <div class="row">
         <div class="card sng-card">
-            <div class="card-header"> Parametrización Corte </div>
+            <div class="card-header"> {{title}} </div>
             <div class="card-body">
                 <div class="form-group">
                     <div class="row margin-container">
@@ -39,9 +34,9 @@
                         <div class="col-12 col-sm-12 col-md-4 col-lg-2 pb-1">
                             <ng-select style="width: 100%" [(ngModel)]="cmbTipoCorte" appendTo="body" [searchable]="true" [clearable]="false"
                                 (change)="onTipoCorteChange($event)">
-                                <ng-option *ngFor="let data of listaTipoCorte" [value]="data.tcorte_codigo">
-                                    <div title="{{ data.tcorte_descri }}" style="font-size: 12px">
-                                        {{ data.tcorte_descri }}
+                                <ng-option *ngFor="let data of TiposCortes" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
                                     </div>
                                 </ng-option>
                             </ng-select>
@@ -51,27 +46,36 @@
                 </div>
                 <div class="form-group">
                     <div class="row margin-container">
-                        <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 pb-1">
                             <!-- <p class="sng-grid-title">TipoFacturas</p> -->
-                            <dx-data-grid #GridTipoFacturas 
-                                id="GridTipoFacturas" 
-                                style="width: 100%; max-height: 35vh"
-                                [dataSource]="listaTipoFacturas" 
+                            <dx-data-grid #GridTallas_TiemposCortes 
+                                id="GridTallas_TiemposCortes" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="Tallas_TiemposCortes" 
                                 [showColumnLines]="true" 
                                 [showRowLines]="true" 
                                 [showBorders]="true"
                                 [rowAlternationEnabled]="true" 
                                 [columnHidingEnabled]="false" 
                                 [columnAutoWidth]="true"
-                                (onInitialized)="onInitializedTipoFacturas(GridTipoFacturas)"
+                                (onInitialized)="onInitializedTipoFacturas(GridTallas_TiemposCortes)"
                             >
-                                <!-- Columna para mostrar el texto del combo "tmp_tipo" -->
-                                <dxi-column dataField="tc_descripcion" caption="Factura"></dxi-column>
-                                <dxi-column dataField="co_valorTipoFacturas" caption="T. Corte" cellTemplate="cellTempValor"> </dxi-column>
+                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row>
+                                <dxi-column dataField="codigo" caption="Talla" [visible]="false"></dxi-column>
+                                <dxi-column dataField="descripcion" caption="Talla"></dxi-column>
+                                <dxi-column dataField="valor" caption="Tiempo Corte Manual" cellTemplate="cellTempValor"> </dxi-column>
+                                <dxi-column dataField="valorAutomatico" caption="Tiempo Corte Automático" cellTemplate="cellTempValorAut"> </dxi-column>
                                 <div *dxTemplate="let cell of 'cellTempValor'">
                                     <div>
                                         <input type="text" class="form-control"
-                                            (change)=" onChangeValorTipoFacturas($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            (change)=" onChangeValorCorte($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div>
+                                <div *dxTemplate="let cell of 'cellTempValorAut'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorAutCorte($event.target.value, cell) " [(ngModel)]="cell.value"
                                             style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
                                     </div>
                                 </div>
@@ -79,14 +83,6 @@
                                 <!-- Opciones de paginación -->
                                 <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
                             </dx-data-grid>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group mt-4">
-                    <div class="row margin-container">
-                        <label class="col-12 col-sm-12 col-md-2 col-lg-2 pb-1 control-label">Observación:</label>
-                        <div class="col-12 col-sm-12 col-md-10 col-lg-10 pb-1" style="display: flex">
-                            <textarea type="text" class="form-control" style="height: 100px" [(ngModel)]="txtObservacion"></textarea>
                         </div>
                     </div>
                 </div>

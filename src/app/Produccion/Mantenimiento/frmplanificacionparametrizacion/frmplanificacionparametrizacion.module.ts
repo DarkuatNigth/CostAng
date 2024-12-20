@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthGuard } from 'src/app/_guards';
 import { DxButtonGroupModule, DxButtonModule, DxCheckBoxModule, DxDataGridModule, DxDateBoxModule, DxDropDownButtonModule, DxFileUploaderModule, DxFormModule, DxLoadPanelModule, DxNumberBoxModule, DxPopupModule, DxRadioGroupModule, DxSelectBoxModule, DxTabPanelModule, DxTextBoxModule } from 'devextreme-angular';
@@ -34,8 +34,11 @@ import { FrmplanificacionparametrizacionComponent } from './frmplanificacionpara
     DxFileUploaderModule,
 
     RouterModule.forChild([
-      { path: 'parametrizacionPlanificacionVag', canActivate: [AuthGuard], component: FrmplanificacionparametrizacionComponent },
+      { path: 'ext-parametrosPlanificacionVA', canActivate: [AuthGuard], component: FrmplanificacionparametrizacionComponent },
     ]) 
+  ],
+  providers: [
+    DecimalPipe
   ],
   exports: [
     RouterModule

@@ -10,12 +10,12 @@
 </dx-load-panel>
 
 
-<div style="padding: 10px 5px">
+<div style="padding: 10px 2%">
     <div class="row">
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+        <!-- <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
             <dx-button text="Nueva Planificación" icon="file" type="outlined" (onClick)="onClickNuevo()">
             </dx-button>
-        </div>
+        </div> -->
 
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
             <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
@@ -23,13 +23,13 @@
         </div>
 
         <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
-            <dx-button text="Generar Requerimiento" icon="save" type="success" (onClick)="onClickGuardar()"
-                [disabled]="disabledBtnGuardar">
+            <dx-button text="Generar Requerimiento" icon="save" type="success" (onClick)="onClickGenerarRequerimiento()"
+                [disabled]="disabledBtnGenerarRequerimiento">
             </dx-button>
         </div>
         
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
-            <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickNuevo()">
+            <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickRptExcel()">
             </dx-button>
         </div>
     </div>
@@ -48,11 +48,11 @@
                 <div class="form-group mt-1">
                     <div class="row margin-container">
                         <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
-                            <!-- <p class="sng-grid-title">Planificacion</p> -->
+                            
                             <dx-data-grid #GridPlanificacion 
                                 id="GridPlanificacion" 
-                                style="width: 100%; max-height: 60vh;"
-                                [dataSource]="listaPlanificacion" 
+                                style="width: 100%;"
+                                [dataSource]="Planificacion" 
                                 [showColumnLines]="true" 
                                 [showRowLines]="true" 
                                 [showBorders]="true"
@@ -62,35 +62,44 @@
                                 (onInitialized)="onInitializedPlanificacion(GridPlanificacion)"
                                 (onRowPrepared)="onRowPrepared($event)"
                             >
-
-                                <dxi-column cellTemplate="cellCheckReqMp" dataField="checkReqMp" [caption]="'Req Mp'" [dataType]="'boolean'"> </dxi-column>
+                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row>
+                                <dxi-column cellTemplate="cellCheckReqMp" dataField="checkReqMp" [caption]="'Fresco'" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
                                 <div *dxTemplate="let cell of 'cellCheckReqMp'">
                                     <div>
                                         <input type="checkbox" class="cssCheckBox" (change)="onChangeGridCheckReqMp(cell.value, cell)"
-                                            [(ngModel)]="cell.value" style="width: 100%; border: 0px; background-color: transparent; text-align: right; " />
+                                            [(ngModel)]="cell.value" style="text-align: right; " />
                                     </div>
                                 </div>
-                                <dxi-column cellTemplate="cellCheckReqDes" dataField="checkReqDes" [caption]="'Req Des'" [dataType]="'boolean'"> </dxi-column>
+                                <dxi-column cellTemplate="cellCheckReqDes" dataField="checkReqDes" [caption]="'Terminado'" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
                                 <div *dxTemplate="let cell of 'cellCheckReqDes'">
                                     <div>
                                         <input type="checkbox" class="cssCheckBox" (change)="onChangeGridCheckReqDes(cell.value, cell)"
-                                            [(ngModel)]="cell.value" style="width: 100%; border: 0px; background-color: transparent; text-align: right; " />
+                                            [(ngModel)]="cell.value" style="text-align: right; " />
                                     </div>
                                 </div>
-                                <dxi-column dataField="cliente" caption="cliente"></dxi-column>
-                                <dxi-column dataField="numFactura" caption="Factura"></dxi-column>
-                                <dxi-column dataField="codProducto" caption="Codigo"></dxi-column>
-                                <dxi-column dataField="TallaProducto" caption="Talla"></dxi-column>
-                                <dxi-column dataField="claseProducto" caption="Clase"></dxi-column>
-                                <dxi-column dataField="Producto" caption="Producto"></dxi-column>
+                                <dxi-column dataField="plaDetId" caption="" [width]="25" [visible]="false"></dxi-column>
+                                <dxi-column dataField="descriCliente" caption="Cliente" [width]="150"></dxi-column>
+                                <dxi-column dataField="pedNumero" caption="Factura"></dxi-column>
+                                <dxi-column dataField="prodCodcor" caption="Codigo"></dxi-column>
+                                <dxi-column dataField="descriTalla" caption="Talla"></dxi-column>
+                                <dxi-column dataField="proClase" caption="Clase"></dxi-column>
+                                <dxi-column dataField="descriProducto" caption="Producto"></dxi-column>
                                 <dxi-column dataField="Congelamiento" caption="Congelamiento"></dxi-column>
-                                <dxi-column dataField="Libras" caption="Libras"></dxi-column>
-                                <dxi-column dataField="Fecha" caption="Fecha" visible="false"></dxi-column>
+                                <dxi-column dataField="librasPlanificadas" caption="Libras" format="#,###.##"></dxi-column>
+                                <dxi-column dataField="librasDespFresco" caption="Desp Fre" ></dxi-column>
+                                <dxi-column dataField="librasDespTerminado" caption="Desp Ter" ></dxi-column>
+                                <dxi-column dataField="fechaPlanificado" caption="fechaPlanificado" [visible]="false" dataType="date">
+                                    <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                </dxi-column>
                                 <dxi-column dataField="Dia" caption="Día"></dxi-column>
-                                <dxi-column dataField="Turno" caption="Turno"></dxi-column>
-                                <dxi-column dataField="TiempoCorte" caption="TiempoCorte"></dxi-column>
+                                <dxi-column dataField="turno" caption="turno" [visible]="false"></dxi-column>
+                                <dxi-column dataField="descriTurno" caption="Turno"></dxi-column>
+                                <dxi-column dataField="manualAutomatico" caption="Man/Aut"></dxi-column>
+                                <dxi-column dataField="tiempoCorte" caption="Tiempo Corte" format="#.###"></dxi-column>
                                 <!-- Opciones de paginación -->
-                                <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
+                                <dxo-paging [pageSize]="50" [pageIndex]="0"></dxo-paging>
+                                <dxo-pager [showInfo]="true" infoText="Page {0} of {1} ({2} items)"></dxo-pager>
+                                <!-- <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging> -->
                             </dx-data-grid>
                         </div>
                     </div>
@@ -100,3 +109,320 @@
     </div>
 
 </div>
+
+
+
+
+<ng-template #modalRequerimientoProducto let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Requerimiento de Producto</h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+                <div class="form-group row">
+                    <label class="pb-1 control-label fb mr-4">Factura: <strong>{{cabeceraReq?.factura}}</strong> </label>
+                    <label class="pb-1 control-label fb mr-4">Cod Producto: <strong>{{cabeceraReq.codprod}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">Modalidad: <strong>{{cabeceraReq.descriProducto}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">Clase: <strong>{{cabeceraReq.proClase}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">Talla: <strong>{{cabeceraReq.descriTalla}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">Masters: <strong>{{cabeceraReq.MastPed | number:'1.0-2'}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">Libras: <strong>{{cabeceraReq.LibPed | number:'1.0-2'}}</strong></label>
+                    <label class="pb-1 control-label fb mr-4">ASC: <strong>{{cabeceraReq.certificadoASC}}</strong></label>
+
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+
+                    <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 pl-0 control-label">Lote Asig</label>
+                    <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
+                        <input type="text" class="form-control" [(ngModel)]="cabeceraReq.numLote" name="numLote" [disabled]="true"/>
+                    </div>
+
+                    <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">Bod Destino</label>
+                    <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
+                        <ng-select style="width: 100%" [(ngModel)]="cmbBodegaDestino" name="cmbBodegaDestino" appendTo="body" [searchable]="true" [clearable]="false">
+                            <ng-option *ngFor="let data of listaBodegaDestino" [value]="data.bod_codigo">
+                                <div title="{{ data.bod_descri }}" style="font-size: 12px">
+                                    {{ data.bod_descri }}
+                                </div>
+                            </ng-option>
+                        </ng-select>
+                    </div>
+        
+                </div>
+                
+                <div class="form-group mt-1">
+                    <div class="row">
+                        <dx-tab-panel #tabPanel style="width: 100%; height: auto; overflow-x: auto; white-space: nowrap"
+                            [selectedIndex]="0" [loop]="false" [animationEnabled]="true" [swipeEnabled]="true" [width]="'100%'"
+                            [scrollingEnabled]="true"
+                        >
+                            <dxi-item title="Producto Fresco" icon="description" [disabled]="disabledTabRequerimientoProFresco">
+                                <div class="row p-1">
+                                    <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1">
+                                        <dx-button
+                                            icon="plus"
+                                            class="btnAccion2"
+                                            (onClick)="onClickAgregarProFresco()"
+                                            text="Agregar" style="width: 100%;">
+                                        </dx-button>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                                        <dx-data-grid #GridRequerimientoProFresco 
+                                            id="GridRequerimientoProFresco" 
+                                            style="width: 100%;"
+                                            [dataSource]="RequerimientoProFresco" 
+                                            keyExpr="numdet" 
+                                            [showColumnLines]="true" 
+                                            [showRowLines]="true" 
+                                            [showBorders]="true"
+                                            [rowAlternationEnabled]="false" 
+                                            [columnHidingEnabled]="false" 
+                                            [columnAutoWidth]="true"
+                                            (onInitialized)="onInitializedRequerimientoProFresco(GridRequerimientoProFresco)"
+                                        >
+                                            <dxi-column caption="" cellTemplate="deleteTemplate" [width]="30" cssClass="cell-temp-valor"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'deleteTemplate'">
+                                                <div>
+                                                    <button class="btn small-button" (click)="onClickDeleteProFresco(cell.data)">
+                                                        <span class="dx-button-content">
+                                                            <i class="dx-icon dx-icon-remove"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numdet" caption="" [width]="30"></dxi-column>
+                                            <dxi-column dataField="codpro" caption="Cod. Producto" [width]="150" cellTemplate="cellTempValorFre" cssClass="cell-temp-valor"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempValorFre'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template" 
+                                                        (change)=" onChangeValorProductoFre($event.target.value, cell) "
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)" 
+                                                        (paste)="_utilService.onPasteValidateNumber($event)" 
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: left; " />
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="despro" caption="Producto" ></dxi-column>
+                                            <dxi-column dataField="codtal" caption="Talla" [width]="150" cellTemplate="cellTempTallaFre" cssClass="cell-temp-valor-cmb"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempTallaFre'" >
+                                                <div>
+                                                    <ng-select style="width: 100%;" 
+                                                        [(ngModel)]="cell.value"  
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        (change)="OnChangeCmbTallaFre($event, cell)"
+                                                        [searchable]="false" 
+                                                        class=""
+                                                        [clearable]="false" 
+                                                        appendTo="body"
+                                                    >
+                                                        <ng-option *ngFor="let data of filter(dataCmbTalla, cell.data.codpro)" [value]="data.codigo">
+                                                            <div title="{{data.descripcion}}" style="font-size: 12px;"> 
+                                                                {{data.descripcion}}
+                                                            </div>
+                                                        </ng-option>
+                                                    </ng-select>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numcaj" caption="Cajas" [width]="150" cellTemplate="cellTempCajasFre" cssClass="cell-temp-valor"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempCajasFre'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template" 
+                                                        (change)=" onChangeValorCajasFre($event.target.value, cell) "
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)" 
+                                                        (paste)="_utilService.onPasteValidateNumber($event)" 
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: right; " />
+                                                </div>
+                                            </div>
+                                        </dx-data-grid>
+            
+                                    </div>
+                                </div>
+                            </dxi-item>
+
+                            <dxi-item title="Producto Terminado" icon="description" [disabled]="disabledTabRequerimientoProTerminado">
+                                <div class="row p-1">
+                                    <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1">
+                                        <dx-button
+                                            icon="plus"
+                                            class="btnAccion2"
+                                            (onClick)="onClickAgregarProTerminado()"
+                                            text="Agregar" style="width: 100%;">
+                                        </dx-button>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                                        <dx-data-grid #GridRequerimientoProTerminado 
+                                            id="GridRequerimientoProTerminado" 
+                                            style="width: 100%;"
+                                            [dataSource]="RequerimientoProTerminado"
+                                            keyExpr="numdet"  
+                                            [showColumnLines]="true" 
+                                            [showRowLines]="true" 
+                                            [showBorders]="true"
+                                            [rowAlternationEnabled]="false" 
+                                            [columnHidingEnabled]="false" 
+                                            [columnAutoWidth]="true"
+                                            (onInitialized)="onInitializedRequerimientoProTerminado(GridRequerimientoProTerminado)"
+                                        >
+                                            <dxi-column caption="" cellTemplate="deleteTemplateTer" [width]="30" cssClass="cell-temp-valor"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'deleteTemplateTer'">
+                                                <div>
+                                                    <button class="btn small-button" (click)="onClickDeleteProTerminado(cell.data)">
+                                                        <span class="dx-button-content">
+                                                            <i class="dx-icon dx-icon-remove"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numdet" caption="" [width]="30"></dxi-column>
+                                            <dxi-column dataField="codpro" caption="Cod. Producto" [width]="150" cellTemplate="cellTempValorTer" cssClass="cell-temp-valor"></dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempValorTer'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template"
+                                                        (change)=" onChangeValorProductoTer($event.target.value, cell) " 
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                        (paste)="_utilService.onPasteValidateNumber($event)"
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: left; " />
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="despro" caption="Producto" ></dxi-column>
+                                            <dxi-column dataField="codtal" caption="Talla" [width]="150" cellTemplate="cellTempTallaTer" cssClass="cell-temp-valor-cmb"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempTallaTer'" >
+                                                <div>
+                                                    <ng-select style="width: 100%;" 
+                                                        [(ngModel)]="cell.value"  
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        (change)="OnChangeCmbTallaTer($event, cell)"
+                                                        [searchable]="false" 
+                                                        class=""
+                                                        [clearable]="false" 
+                                                        appendTo="body"
+                                                    >
+                                                        <ng-option *ngFor="let data of filter(dataCmbTalla, cell.data.codpro)" [value]="data.codigo">
+                                                            <div title="{{data.descripcion}}" style="font-size: 12px;"> 
+                                                                {{data.descripcion}}
+                                                            </div>
+                                                        </ng-option>
+                                                    </ng-select>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numcaj" caption="Cajas" [width]="150" cellTemplate="cellTempCajasTer" cssClass="cell-temp-valor"></dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempCajasTer'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template"
+                                                        (change)=" onChangeValorCajasTer($event.target.value, cell) " 
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                        (paste)="_utilService.onPasteValidateNumber($event)"
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: right; " />
+                                                </div>
+                                            </div>
+                                        </dx-data-grid>
+                                    </div>
+                                </div>
+
+                            </dxi-item>
+                        </dx-tab-panel>
+                    </div>
+
+                    <div class="row mt-4">
+                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">Observación</label>
+                        <div class="col-12 col-sm-10 col-md-10 col-lg-11 pb-1" style="display: flex">
+                            <textarea type="text" class="form-control" rows="1" [(ngModel)]="observacion" name="observacion"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardarRequerimientoProducto()">
+        </dx-button>
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>
+
+
+<ng-template #modalConsulta let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Consulta de Planificaciones</h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+                <div class="form-group row">
+                    <label class="col-3 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">F. Crea Desde:</label>
+                    <div class="col-9 col-sm-4 col-md-2 col-lg-2 pb-1">
+                        <dx-date-box [(ngModel)]="fechaConsultaDesde" type="date" displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaConsultaDesde">
+                        </dx-date-box>
+                    </div>
+                    <label class="col-3 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">F. Crea Hasta:</label>
+                    <div class="col-9 col-sm-4 col-md-2 col-lg-2 pb-1">
+                        <dx-date-box [(ngModel)]="fechaConsultaHasta" type="date" displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaConsultaHasta">
+                        </dx-date-box>
+                    </div>
+                    <div class="col-12 col-sm-2 col-md-2 col-lg-2 pt-1 sng-dbtn" style="float: right;">
+                        <dx-button text="Consultar" icon="find" type="outlined" (onClick)="onClickSearchPlanificacion()">
+                        </dx-button>
+                    </div>
+        
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+        
+                </div>
+
+                
+                <div class="form-group mt-1">
+                    <div class="row">
+                        <dx-data-grid #GridPlanificacionSearch 
+                            id="GridPlanificacionSearch" 
+                            style="width: 100%;"
+                            [dataSource]="PlanificacionSearch" 
+                            [showColumnLines]="true" 
+                            [showRowLines]="true" 
+                            [showBorders]="true"
+                            [rowAlternationEnabled]="false" 
+                            [columnHidingEnabled]="false" 
+                            [columnAutoWidth]="true"
+                            (onInitialized)="onInitializedPlanificacionSearch(GridPlanificacionSearch)"
+                            (onRowDblClick)="onRowProgDoubleClick($event, modal)"
+                        >
+                            <dxi-column dataField="id" caption="N° Planificación" [width]="100"></dxi-column>
+                            <dxi-column dataField="fechaDesde" caption="Fecha Desde" dataType="date" [width]="100">
+                                <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                            </dxi-column>
+                            <dxi-column dataField="fechaHasta" caption="Fecha Hasta" dataType="date" [width]="100">
+                                <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                            </dxi-column>
+                            <dxi-column dataField="paCodigo" caption="Planta"></dxi-column>
+                            <dxi-column dataField="nroPersonasDia" caption="Personas Día" [width]="80"></dxi-column>
+                            <dxi-column dataField="nroPersonasNoche" caption="Personas Noche" [width]="80"></dxi-column>
+                            <dxi-column dataField="nroModulos" caption="Modulos" [width]="80"></dxi-column>
+                            <dxi-column dataField="observacion" caption="Observación"></dxi-column>
+                            <dxi-column dataField="estado" caption="Estado" [width]="100"></dxi-column>
+                        </dx-data-grid>
+
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>
+  

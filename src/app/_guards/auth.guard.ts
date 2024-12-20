@@ -6,12 +6,16 @@ import {LoginService} from './../login/login.service';
 @Injectable()
 export class AuthGuard {
 
-    constructor(private router: Router, private activeRouter: ActivatedRoute,private _login: LoginService) { }
+    constructor(
+        private router: Router, 
+        private activeRouter: ActivatedRoute,
+        private _login: LoginService
+    ) { }
 
     async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-
         let params = (state.url.split('?').length > 1 ? state.url.split('?')[1] : "");
 
+           
         if(params !== ""){
             let contra = this._login.Decrypt(decodeURIComponent(params.toString()), 2);
             let Listparams = contra.split(';');
@@ -32,7 +36,6 @@ export class AuthGuard {
                     tokenuSr =state['root'].queryParams.tk;
                 }
             }
-
             if(tokenuSr === "") {
                 usr = "";
             }else{
@@ -41,6 +44,8 @@ export class AuthGuard {
                     localStorage.removeItem(varUser);
                     localStorage.removeItem(varUser2);
                     localStorage.removeItem(varExpire);
+                    this.router.navigateByUrl('/tokenExpired');
+                    return true;
                 }
             }
 
@@ -51,14 +56,29 @@ export class AuthGuard {
                 var schedule = now + 60*1000*timeout; //60 seg por 1000 mileseg por 120 minutos = 2 horas 
                 localStorage.setItem(varExpire, schedule.toString());
             }
+
+        }
+        
+             
+        if(params === "" && state.url.includes("/ext-") ){
+            localStorage.removeItem(varUser);
+            localStorage.removeItem(varUser2);
+            localStorage.removeItem(varExpire);
+            this.router.navigateByUrl('/tokenExpired');
+            return true;
+        }
+
+        if(state.url.includes("/tokenExpired")){
+            return true;
         }
 
         const Token = localStorage.getItem(varUser) || '';
         
         if (Token != '') {
-
-            if (state.url.includes("/login")||
-                state.url.includes("/CoordenadasLogin")) {
+            if (state.url.includes("/login") ||
+                state.url.includes("/CoordenadasLogin") ||
+                state.url.includes("/tokenExpired")
+            ) {
                 return true;
             }
 
@@ -74,7 +94,6 @@ export class AuthGuard {
                 localStorage.removeItem(varUser);
                 localStorage.removeItem(varMenu);
                 localStorage.removeItem(varMenuDT);
-
                 //this.router.navigateByUrl('/login');
                 
                 return false;
@@ -83,13 +102,16 @@ export class AuthGuard {
         }else
         {
             if (state.url.includes("/login") ||
-                state.url.includes("/CoordenadasLogin")) {
+                state.url.includes("/CoordenadasLogin") ||
+                state.url.includes("/tokenExpired")
+            ) {
                 return true;
             }
+
+
         }
 
-        
-        //this.router.navigateByUrl('/login');
+        this.router.navigateByUrl('/login');
         return true;
     }
 
