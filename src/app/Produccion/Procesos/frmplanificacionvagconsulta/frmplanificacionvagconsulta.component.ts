@@ -186,6 +186,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           fechaDesde: item.pla_fechaDesde,
           fechaHasta: item.pla_fechaHasta,
           paCodigo: item.pla_paCodigo,
+          descriPlanta: item.descriPlanta,
           nroPersonasDia: item.pla_nroPersonasDia,
           nroPersonasNoche: item.pla_nroPersonasNoche,
           nroModulos: item.pla_nroModulos,
@@ -277,7 +278,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   limpiarRequerimientoProducto() {
-    this.cmbBodegaDestino = "00";
+    this.cmbBodegaDestino = "00"; 
     this.observacion = '';
     this.RequerimientoProFresco = [];
     this.RequerimientoProTerminado = [];
@@ -297,6 +298,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       windowClass: 'cssModalGenerarRequerimiento',
     });
 
+    
     setTimeout(() => {
       this.disabledTabRequerimientoProFresco = !this.itemSelectedForReq.checkReqMp;
       this.disabledTabRequerimientoProTerminado = !this.itemSelectedForReq.checkReqDes;
@@ -304,7 +306,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         this.tabPanel.instance.option('selectedIndex', (this.itemSelectedForReq.checkReqMp ? 0 : 1));
       }
     }, 500);
-
+    
+    this.cmbBodegaDestino = "VQ"; // 'TR VAG S2'
     this.cabeceraReq = {
       observ: '',
       tiplot: '21',
@@ -316,9 +319,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       talPed: this.itemSelectedForReq.talCodigo,
       descriTalla: this.itemSelectedForReq.descriTalla,
       MastPed: this.itemSelectedForReq.mastersPedido,
-      LibPed: this.itemSelectedForReq.librasPedido,
+      LibPed: this.itemSelectedForReq.librasPlanificadas,
       MaxLibPed: 0,
-      boddes: '00',
+      boddes: this.cmbBodegaDestino,
       certificadoASC: this.itemSelectedForReq.certificadoASC,
       numLote: this.itemSelectedForReq.numLote,
     }
@@ -336,6 +339,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   async onClickAgregarProFresco () {
     let codprod = '';
     let desProd = '';
+    let codtal = null;
     if (this.RequerimientoProFresco.length > 0) {
       if (this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].codpro === '' ||
           this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].numcaj === 0 ||
@@ -347,14 +351,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     } else {
       codprod = this.itemSelectedForReq.proClase === 'A' ? '320' : '321';
       desProd = this.itemSelectedForReq.proClase === 'A' ? 'SHELLON FRESCO' : 'SHELLON FRESCO B';
-      this.SSLlenaTallas(codprod.toString());
+      codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
     }
     let reqFr = {
       numdet: this.RequerimientoProFresco.length + 1,
       codpro: codprod,
       despro: desProd,
-      codtal: null,
-      codtalvta: null,
+      codtal: codtal || null,
+      codtalvta: codtal || null,
       numcaj: 0,
       lote: 0,
     };
@@ -376,9 +380,10 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
   }
 
-  onClickAgregarProTerminado () {
+  async onClickAgregarProTerminado () {
     let codprod = '';
     let desProd = '';
+    let codtal = null;
     if (this.RequerimientoProTerminado.length > 0) {
       if (this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].codpro === '' ||
           this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].numcaj === 0 ||
@@ -389,14 +394,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     } else {
       codprod = this.itemSelectedForReq.proClase === 'A' ? '5010' : '5011';
       desProd = this.itemSelectedForReq.proClase === 'A' ? 'CHAMPMAR 6x1800g' : 'MARCOL 6x1800g B';
-      this.SSLlenaTallas(codprod.toString());
+      codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
     }
     let reqTe = {
       numdet: this.RequerimientoProTerminado.length + 1,
       codpro: codprod,
       despro: desProd,
-      codtal: null,
-      codtalvta: null,
+      codtal: codtal || null,
+      codtalvta: codtal || null,
       numcaj: 0,
       lote: 0,
     };
@@ -569,16 +574,20 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   
-  onChangeValorProductoFre(value: any, cell: any) {
+  async onChangeValorProductoFre(value: any, cell: any) {
     const { numdet } = cell.data;
     value = this._utilService.validateNumberInt(value);
-    this._service.getProductoRequerimientoSearch({ codpro: value, tipo: 'PP'}).subscribe((data) => {
+    await this._service.getProductoRequerimientoSearch({ codpro: value, tipo: 'PP'}).subscribe(async (data) => {
       var dat: any = data.Dt.Table;
       const index = this.RequerimientoProFresco.findIndex(x => x.numdet === numdet);
       if (dat.length > 0) {
         this.RequerimientoProFresco[index].codpro = value.toString();
         this.RequerimientoProFresco[index].despro = dat[0].pro_desesp;
-        this.SSLlenaTallas(value.toString());
+        let codtal = await this.SSLlenaTallas(value.toString(), this.cabeceraReq.descriTalla);
+        if (codtal !== null) {
+          this.RequerimientoProFresco[index].codtal = codtal;
+          this.RequerimientoProFresco[index].codtalvta = codtal;
+        }
       } else {
         this.RequerimientoProFresco[index].codpro = '';
         this.RequerimientoProFresco[index].despro = '';
@@ -611,16 +620,20 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
   }
 
-  onChangeValorProductoTer(value: any, cell: any) {
+  async onChangeValorProductoTer(value: any, cell: any) {
     const { numdet } = cell.data;
     value = this._utilService.validateNumberInt(value);
-    this._service.getProductoRequerimientoSearch({ codpro: value, tipo: 'PT'}).subscribe((data) => {
+    await this._service.getProductoRequerimientoSearch({ codpro: value, tipo: 'PT'}).subscribe(async (data) => {
       var dat: any = data.Dt.Table;
       const index = this.RequerimientoProTerminado.findIndex(x => x.numdet === numdet);
       if (dat.length > 0) {
         this.RequerimientoProTerminado[index].codpro = value.toString();
         this.RequerimientoProTerminado[index].despro = dat[0].pro_desesp;
-        this.SSLlenaTallas(value.toString());
+        let codtal = await this.SSLlenaTallas(value.toString(), this.cabeceraReq.descriTalla);
+        if (codtal !== null) {
+          this.RequerimientoProTerminado[index].codtal = codtal;
+          this.RequerimientoProTerminado[index].codtalvta = codtal;
+        }
       } else {
         this.RequerimientoProTerminado[index].codpro = '';
         this.RequerimientoProTerminado[index].despro = '';
@@ -652,32 +665,43 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
   }
 
-  async SSLlenaTallas(codigo){
-    if (this.dataCmbTalla.filter(d=> d["codpro"] === codigo).length > 0){
-      return;
-    }
+  SSLlenaTallas(codigoProd, descriTalla): Promise<any>{
+    // if (this.dataCmbTalla.filter(d=> d["codpro"] === codigoProd).length > 0){
+    //   return;
+    // }
+    return new Promise(async (resolve) => {
+      await this._service.getTallasVtaProd(codigoProd).subscribe(async (resp) => {
+        if (resp.Codigo) {
+          if (Object.keys(resp.Dt).length > 0 && resp.Dt.Table.length > 0) {
+            let dt: any = resp.Dt.Table;
 
-    await this._service.getTallasVtaProd(codigo).subscribe(async (resp) => {
-      if (resp.Codigo) {
-        if (Object.keys(resp.Dt).length > 0 && resp.Dt.Table.length > 0) {
-          let dt: any = resp.Dt.Table;
-
-          if(this.dataCmbTalla !== undefined && this.dataCmbTalla.length > 0){
-            let dtTallas = this.dataCmbTalla;
-            for (let index = 0; index < dt.length; index++) {
-              dtTallas.push(dt[index]);
+            if(this.dataCmbTalla !== undefined && this.dataCmbTalla.length > 0){
+              let dtTallas = this.dataCmbTalla;
+              for (let index = 0; index < dt.length; index++) {
+                dtTallas.push(dt[index]);
+              }
+  
+              this.dataCmbTalla = JSON.parse(JSON.stringify(dtTallas));
+            }
+            else
+            {
+              this.dataCmbTalla = JSON.parse(JSON.stringify(resp.Dt.Table));
             }
 
-            this.dataCmbTalla = JSON.parse(JSON.stringify(dtTallas));
+
+            let codtal: number | null = null;
+            let talla = dt.find(x => x.descripcion === descriTalla);
+            if (talla !== undefined) {
+              codtal = talla.codigo
+            }
+
+            return resolve(codtal);
           }
-          else
-          {
-            this.dataCmbTalla = JSON.parse(JSON.stringify(resp.Dt.Table));
-          }
+        } else {
+          await this.showAlert('', resp.Description, 'error');
+          return resolve(null);
         }
-      } else {
-        await this.showAlert('', resp.Description, 'error');
-      }
+      });
     });
     
   }
