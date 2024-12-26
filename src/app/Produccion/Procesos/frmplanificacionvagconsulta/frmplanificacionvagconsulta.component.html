@@ -127,7 +127,7 @@
                     <label class="pb-1 control-label fb mr-4">Modalidad: <strong>{{cabeceraReq.descriProducto}}</strong></label>
                     <label class="pb-1 control-label fb mr-4">Clase: <strong>{{cabeceraReq.proClase}}</strong></label>
                     <label class="pb-1 control-label fb mr-4">Talla: <strong>{{cabeceraReq.descriTalla}}</strong></label>
-                    <label class="pb-1 control-label fb mr-4">Masters: <strong>{{cabeceraReq.MastPed | number:'1.0-2'}}</strong></label>
+                    <!-- <label class="pb-1 control-label fb mr-4">Masters: <strong>{{cabeceraReq.MastPed | number:'1.0-2'}}</strong></label> -->
                     <label class="pb-1 control-label fb mr-4">Libras: <strong>{{cabeceraReq.LibPed | number:'1.0-2'}}</strong></label>
                     <label class="pb-1 control-label fb mr-4">ASC: <strong>{{cabeceraReq.certificadoASC}}</strong></label>
 
@@ -406,7 +406,8 @@
                             <dxi-column dataField="fechaHasta" caption="Fecha Hasta" dataType="date" [width]="100">
                                 <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                             </dxi-column>
-                            <dxi-column dataField="paCodigo" caption="Planta"></dxi-column>
+                            <dxi-column dataField="paCodigo" caption="Planta" [visible]="false"></dxi-column>
+                            <dxi-column dataField="descriPlanta" caption="Planta" ></dxi-column>
                             <dxi-column dataField="nroPersonasDia" caption="Personas Día" [width]="80"></dxi-column>
                             <dxi-column dataField="nroPersonasNoche" caption="Personas Noche" [width]="80"></dxi-column>
                             <dxi-column dataField="nroModulos" caption="Modulos" [width]="80"></dxi-column>
