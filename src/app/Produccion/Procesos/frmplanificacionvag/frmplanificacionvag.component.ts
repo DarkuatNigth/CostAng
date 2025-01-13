@@ -427,7 +427,7 @@ export class FrmplanificacionvagComponent implements OnInit {
       if (data.Codigo) {
         this.showAlert('','Registro guardado correctamente.','success');
       } else {
-        this.showAlert('','Error al guardar el registro','error');
+        this.showAlert('','Error al guardar el registro:' + data.Description ,'error');
       }
     });
   }
