@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, ActivatedRoute,NavigationEnd } from '@angular/router';
-import { varExpire, varMenu, varMenuDT, varUser, varUser2 } from '../config/url.servicios';
+import { varExpire, varMenu, varMenuDT, varToken, varUser, varUser2 } from '../config/url.servicios';
 import {LoginService} from './../login/login.service'; 
 
 @Injectable()
@@ -36,6 +36,11 @@ export class AuthGuard {
                     tokenuSr =state['root'].queryParams.tk;
                 }
             }
+            if (tokenuSr === ''){
+                if(localStorage.getItem(varToken) !== null){
+                    tokenuSr = localStorage.getItem(varToken);
+                }
+            }
             if(tokenuSr === "") {
                 usr = "";
             }else{
@@ -43,9 +48,12 @@ export class AuthGuard {
                     usr = "";
                     localStorage.removeItem(varUser);
                     localStorage.removeItem(varUser2);
-                    localStorage.removeItem(varExpire);
+                    localStorage.removeItem(varExpire);                    
+                    localStorage.removeItem(varToken);
                     this.router.navigateByUrl('/tokenExpired');
                     return true;
+                } else {
+                    localStorage.setItem(varToken, tokenuSr);
                 }
             }
 
@@ -64,9 +72,10 @@ export class AuthGuard {
             localStorage.removeItem(varUser);
             localStorage.removeItem(varUser2);
             localStorage.removeItem(varExpire);
+            localStorage.removeItem(varToken);
             this.router.navigateByUrl('/tokenExpired');
             return true;
-        }
+        } 
 
         if(state.url.includes("/tokenExpired")){
             return true;
