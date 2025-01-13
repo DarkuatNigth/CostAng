@@ -59,6 +59,11 @@ export class MyErrorHandler implements ErrorHandler {
       return;
     }
 
+    if(error.message.includes("Loading chunk")){
+      window.location.reload();
+      return;
+    }
+
     await this.showAlert('',error.message,'error');
   }
 }
