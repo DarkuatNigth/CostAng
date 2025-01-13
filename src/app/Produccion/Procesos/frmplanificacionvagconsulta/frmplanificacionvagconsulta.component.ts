@@ -9,6 +9,7 @@ import { UtilService } from 'src/app/shared/util.service';
 import { saveAs } from 'file-saver';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { varUser } from 'src/app/config/url.servicios';
+import { Router } from '@angular/router';
 
 
 declare var $: any;
@@ -28,6 +29,7 @@ export interface CabeceraRequerimiento {
   LibPed: number;
   MaxLibPed: number;
   boddes: string;
+  // detPlanifica_id: number;
   certificadoASC: string;
   numLote: number;
 }
@@ -39,6 +41,7 @@ export interface DetalleRequerimiento {
   codtal?: number;
   codtalvta?: number;
   numcaj: number;
+  libras: number;
   lote: number;
 }
 
@@ -48,11 +51,12 @@ export interface DetalleRequerimiento {
   styleUrl: './frmplanificacionvagconsulta.component.scss'
 })
 export class FrmplanificacionvagconsultaComponent implements OnInit {
-  title = 'Consulta de Planificación';
+  title = 'Seguimiento y Control - Planificacion VA';
   loadingVisible: boolean = false;
   disabledBtnGenerarRequerimiento: boolean = false;
   disabledTabRequerimientoProFresco: boolean = false;
   disabledTabRequerimientoProTerminado: boolean = false;
+  librasPlanificadasTotal: number = 0;
   idPlanificacion: number = 0;
   estado: string = '';
   fechaDesdeFormat: string = '';
@@ -73,6 +77,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   RequerimientoProFresco: DetalleRequerimiento[] = [];
   RequerimientoProTerminado: DetalleRequerimiento[] = [];
   modalReferenceItem: any;
+  totalLibrasRequerimientos: number = 0;
   
   colores = ['lightblue', 'lightgreen', 'aquamarine', 'lightpink', 'lightyellow', 'lightsteelblue', 'lightcyan', 'LightSalmon', 'lavender', 'Thistle', 'antiquewhite', 'PowderBlue', 'lightskyblue', 'lightcoral'];
   dia: string = '';
@@ -104,13 +109,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     private _notificationService: NotificationService,
     private _utilService: UtilService,
     private modalService: NgbModal,
+    private router: Router
   ) {
     this.fechaConsultaDesde.setDate(this.fechaConsultaDesde.getDate() - 7);
     this._service.getLastPlanificacion().subscribe((data) => {
       this.loadDataPlanificacion(data);
     });
 
-    this.onClickNuevo();
+    this.limpiarNuevo();
 
   }
 
@@ -120,9 +126,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   
-  onClickNuevo() {
-    // this.limpiarNuevo();
-    
+  onClickReplanificar() {
+    // encriptar en base64 idPlanificacion
+    let idPlanificacion = btoa(this.idPlanificacion.toString());
+    this.router.navigate(['/ext-planificacionVA'], { queryParams: { replanifica: idPlanificacion } });
+  }
+
+  limpiarNuevo() {
     if (this.tabPanel) {
       this.tabPanel.instance.option('selectedIndex', 0);
     }
@@ -130,7 +140,6 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this._service.getBodegaDestino(user).subscribe((data) => {
       this.listaBodegaDestino = data.Dt.Table;
     });
-
   }
 
 
@@ -199,6 +208,25 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     });
   }
   
+  async onClickCargarPlanificacionHistorica(modal: any) {
+    // si la tabla de consulta no tiene registros, mostrar mensaje de error indicando que no existen planificaciones para mostrar
+    if (this.PlanificacionSearch.length === 0) {
+      this._notificationService.warning('No existen planificaciones para cargar');
+      return;
+    }
+    this.loadingVisible = true;
+    let filter = {
+      fechaDesde: formatDate(this.fechaConsultaDesde, 'yyyy-MM-dd', 'en-US'),
+      fechaHasta: formatDate(this.fechaConsultaHasta, 'yyyy-MM-dd', 'en-US'),
+    };
+    if (modal !== undefined) {
+      modal.close();
+    }
+    this._service.getPlanificacionHistoricaSearch(filter).subscribe((data) => {
+      this.loadDataPlanificacion(data);
+    });
+    this.loadingVisible = false;
+  }
 
   onInitializedPlanificacion(grid: any) {
     this.GridPlanificacion = grid;
@@ -231,10 +259,15 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.Planificacion.find((x) => x.plaDetId == data.data.plaDetId).checkReqMp = value;
     if (value) {
       this.Planificacion.forEach(async (item) => {
-        if (item.plaDetId !== data.data.plaDetId) {
+        // se debe permitir chequear mas de un registro solo si coincide (pedido, producto, clase, talla, dia)
+        if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia)
+          && (item.numeroReqTerminado === null && item.numeroReqFresco === null)) {
           item.checkReqMp = false;
           item.checkReqDes = false;
         }
+        // if (item.plaDetId !== data.data.plaDetId && item.numeroReqTerminado === null) {
+        //   item.checkReqDes = false;
+        // }
       });
     }
     this.GridPlanificacion.instance.refresh();
@@ -245,10 +278,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.Planificacion.find((x) => x.plaDetId == data.data.plaDetId).checkReqDes = value;
     if (value) {
       this.Planificacion.forEach(async (item) => {
-        if (item.plaDetId !== data.data.plaDetId) {
+        if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia) 
+          && (item.numeroReqTerminado === null && item.numeroReqFresco === null)){
           item.checkReqMp = false;
           item.checkReqDes = false;
         }
+        // if (item.plaDetId !== data.data.plaDetId  && item.numeroReqTerminado === null) {
+        //   item.checkReqDes = false;
+        // }
       });
     }
     this.GridPlanificacion.instance.refresh();
@@ -282,55 +319,70 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.observacion = '';
     this.RequerimientoProFresco = [];
     this.RequerimientoProTerminado = [];
+    this.totalLibrasRequerimientos = 0;
   }
 
   async onClickGenerarRequerimiento() {
     this.limpiarRequerimientoProducto();
-
-    this.itemSelectedForReq = this.Planificacion.find((x) => x.checkReqMp || x.checkReqDes);
-    if (!this.itemSelectedForReq) {
-      this._notificationService.warning('Debe seleccionar un registro para generar el requerimiento de producto');
+    this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqMp && x.numeroReqFresco === null) || (x.checkReqDes && x.numeroReqTerminado === null));
+    if (this.itemSelectedForReq.length === 0) {
+      this._notificationService.warning('Debe seleccionar al menos un registro para generar el requerimiento de producto');
       return;
     }
-
+    
     this.modalReferenceItem = await this.modalService.open(this.modalRequerimientoProducto, {
       ariaLabelledBy: 'modal-basic-title',
       windowClass: 'cssModalGenerarRequerimiento',
     });
 
-    
+    this.disabledTabRequerimientoProFresco = true;
+    this.disabledTabRequerimientoProTerminado = true;
+    // totalizar libras de requerimientos
+    this.librasPlanificadasTotal = 0;
+    for (let i = 0; i < this.itemSelectedForReq.length; i++) {
+      if (this.itemSelectedForReq[i].checkReqMp) {
+        this.disabledTabRequerimientoProFresco = false;
+      }
+      if (this.itemSelectedForReq[i].checkReqDes) {
+        this.disabledTabRequerimientoProTerminado = false;
+      }
+      this.librasPlanificadasTotal += this.itemSelectedForReq[i].librasPlanificadas;
+    }
+
     setTimeout(() => {
-      this.disabledTabRequerimientoProFresco = !this.itemSelectedForReq.checkReqMp;
-      this.disabledTabRequerimientoProTerminado = !this.itemSelectedForReq.checkReqDes;
       if (this.tabPanel) {
-        this.tabPanel.instance.option('selectedIndex', (this.itemSelectedForReq.checkReqMp ? 0 : 1));
+        this.tabPanel.instance.option('selectedIndex', (!this.disabledTabRequerimientoProFresco ? 0 : 1));
       }
     }, 500);
+
+    let MastPed = 0;
+    MastPed = await this.calcularCajasProdByLibras(this.librasPlanificadasTotal, this.itemSelectedForReq[0].prodCodcor, 'M');
     
     this.cmbBodegaDestino = "VQ"; // 'TR VAG S2'
     this.cabeceraReq = {
       observ: '',
       tiplot: '21',
-      codprod: this.itemSelectedForReq.prodCodcor,
-      proClase: this.itemSelectedForReq.proClase,
-      descriProducto: this.itemSelectedForReq.descriProducto,
-      ConLote: this.itemSelectedForReq.numLote > 0 ? 'S' : 'N',
-      factura: this.itemSelectedForReq.pedNumero,
-      talPed: this.itemSelectedForReq.talCodigo,
-      descriTalla: this.itemSelectedForReq.descriTalla,
-      MastPed: this.itemSelectedForReq.mastersPedido,
-      LibPed: this.itemSelectedForReq.librasPlanificadas,
+      codprod: this.itemSelectedForReq[0].prodCodcor,
+      proClase: this.itemSelectedForReq[0].proClase,
+      descriProducto: this.itemSelectedForReq[0].descriProducto,
+      ConLote: this.itemSelectedForReq[0].numLote > 0 ? 'S' : 'N',
+      factura: this.itemSelectedForReq[0].pedNumero,
+      talPed: this.itemSelectedForReq[0].talCodigo,
+      descriTalla: this.itemSelectedForReq[0].descriTalla,
+      MastPed: MastPed,
+      LibPed: this.librasPlanificadasTotal,
       MaxLibPed: 0,
       boddes: this.cmbBodegaDestino,
-      certificadoASC: this.itemSelectedForReq.certificadoASC,
-      numLote: this.itemSelectedForReq.numLote,
+      // detPlanifica_id: this.itemSelectedForReq.plaDetId,
+      certificadoASC: this.itemSelectedForReq[0].certificadoASC,
+      numLote: this.itemSelectedForReq[0].numLote,
     }
 
-    if (this.itemSelectedForReq.checkReqMp){
+    if (!this.disabledTabRequerimientoProFresco){
       this.onClickAgregarProFresco();
     }
 
-    if (this.itemSelectedForReq.checkReqDes){
+    if (!this.disabledTabRequerimientoProTerminado){
       this.onClickAgregarProTerminado();
     }
   }
@@ -343,14 +395,15 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     if (this.RequerimientoProFresco.length > 0) {
       if (this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].codpro === '' ||
           this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].numcaj === 0 ||
+          this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].libras === 0 ||
           this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].codtal === null
         ) {
         this._notificationService.warning('Complete los datos del último registro');
         return;
       }
     } else {
-      codprod = this.itemSelectedForReq.proClase === 'A' ? '320' : '321';
-      desProd = this.itemSelectedForReq.proClase === 'A' ? 'SHELLON FRESCO' : 'SHELLON FRESCO B';
+      codprod = this.itemSelectedForReq[0].proClase === 'A' ? '320' : '321';
+      desProd = this.itemSelectedForReq[0].proClase === 'A' ? 'SHELLON FRESCO' : 'SHELLON FRESCO B';
       codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
     }
     let reqFr = {
@@ -360,6 +413,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       codtal: codtal || null,
       codtalvta: codtal || null,
       numcaj: 0,
+      libras: 0,
       lote: 0,
     };
     this.RequerimientoProFresco = [...this.RequerimientoProFresco, reqFr];
@@ -387,13 +441,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     if (this.RequerimientoProTerminado.length > 0) {
       if (this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].codpro === '' ||
           this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].numcaj === 0 ||
+          this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].libras === 0 ||
           this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].codtal === null) {
         this._notificationService.warning('Complete los datos del último registro');
         return;
       }
     } else {
-      codprod = this.itemSelectedForReq.proClase === 'A' ? '5010' : '5011';
-      desProd = this.itemSelectedForReq.proClase === 'A' ? 'CHAMPMAR 6x1800g' : 'MARCOL 6x1800g B';
+      codprod = this.itemSelectedForReq[0].proClase === 'A' ? '5010' : '5011';
+      desProd = this.itemSelectedForReq[0].proClase === 'A' ? 'CHAMPMAR 6x1800g' : 'MARCOL 6x1800g B';
       codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
     }
     let reqTe = {
@@ -403,6 +458,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       codtal: codtal || null,
       codtalvta: codtal || null,
       numcaj: 0,
+      libras: 0,
       lote: 0,
     };
     this.RequerimientoProTerminado = [...this.RequerimientoProTerminado, reqTe];
@@ -427,7 +483,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       this._notificationService.warning('Debe seleccionar la bodega destino');
       return false;
     }
-    if (this.itemSelectedForReq.checkReqMp) {
+    if (!this.disabledTabRequerimientoProFresco) {
       if (this.RequerimientoProFresco.length === 0) {
         this._notificationService.warning('Debe ingresar al menos un producto fresco');
         return false;
@@ -441,13 +497,18 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           this._notificationService.warning('Debe seleccionar la talla de producto fresco');
           return false;
         }
+        if (this.RequerimientoProFresco[i].libras === 0) {
+          this._notificationService.warning('Debe ingresar la cantidad de libras de producto fresco');
+          return false;
+        }
         if (this.RequerimientoProFresco[i].numcaj === 0) {
           this._notificationService.warning('Debe ingresar la cantidad de cajas de producto fresco');
           return false;
         }
+
       }
     }
-    if (this.itemSelectedForReq.checkReqDes) {
+    if (!this.disabledTabRequerimientoProTerminado) {
       if (this.RequerimientoProTerminado.length === 0) {
         this._notificationService.warning('Debe ingresar al menos un producto terminado');
         return false;
@@ -461,11 +522,18 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           this._notificationService.warning('Debe seleccionar la talla de producto terminado');
           return false;
         }
+        if (this.RequerimientoProTerminado[i].libras === 0) {
+          this._notificationService.warning('Debe ingresar la cantidad de libras de producto terminado');
+          return false;
+        }
         if (this.RequerimientoProTerminado[i].numcaj === 0) {
           this._notificationService.warning('Debe ingresar la cantidad de cajas de producto terminado');
           return false;
         }
       }
+    }
+    if (this.calcularTotalLibrasRequerimientos() > this.librasPlanificadasTotal) {
+      return false;
     }
     return true;
   }
@@ -480,8 +548,19 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.cabeceraReq.observ = this.observacion;
     this.cabeceraReq.boddes = this.cmbBodegaDestino;
 
+    let detPlanifica = [];
+    for (let i = 0; i < this.itemSelectedForReq.length; i++) {
+      let objDet = {
+        detPlanifica_id : this.itemSelectedForReq[i].plaDetId,
+        reqFresco: this.itemSelectedForReq[i].checkReqMp ? 1 : 0,
+        reqTerminado: this.itemSelectedForReq[i].checkReqDes ? 1 : 0,
+      };
+      detPlanifica.push(objDet);
+    }
+
     let dataReq = {
       cab: this.cabeceraReq,
+      detPlanifica: detPlanifica,
       detFr: this.RequerimientoProFresco,
       detTe: this.RequerimientoProTerminado,
       userAud: localStorage.getItem(varUser)
@@ -492,6 +571,10 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       if (data.Codigo) {
         this.showAlert('', 'Registro guardado correctamente', 'success'); // , 'this.modalReferenceItem.close();'
         this.modalReferenceItem.close();
+        this._service.getLastPlanificacion().subscribe((data) => {
+          this.loadDataPlanificacion(data);
+        });    
+        this.limpiarNuevo();
       } else {
         this.showAlert('', `Error al guardar el registro` + data.Description, 'error');
       }
@@ -539,8 +622,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       return {
         plaDetId: item.plaDetId,
         prioridad: item.prioridad,
-        checkReqMp: false, 
-        checkReqDes: false,
+        checkReqMp: (item.numeroReqFresco !== null && item.numeroReqFresco !== 0) , 
+        checkReqDes: (item.numeroReqTerminado !== null && item.numeroReqTerminado !== 0),
         // index: item.index,
         // orderAux: item.index,
         pedNumero: item.pedNumero,
@@ -559,6 +642,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         librasPedido: item.librasPedido,
         librasPlanificadas: item.librasPlanificadas,
         librasDespFresco: item.librasDespFresco,
+        librasLiquidadas: item.librasLiquidadas,
         librasDespTerminado: item.librasDespTerminado,
         fechaPlanificado: formatDate(new Date(item.fechaPlanificado), 'yyyy-MM-dd', 'en-US'),
         Dia: this.getDateCustomFormat(new Date(item.fechaPlanificado), 1),
@@ -568,6 +652,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         colorBackground: this.colores[indiceColor],
         certificadoASC: item.certificadoASC,
         numLote: item.numLote,
+        numeroReqFresco: item.numeroReqFresco,
+        numeroReqTerminado: item.numeroReqTerminado,
       };
     });
     // this.GridFacturas.instance.refresh();
@@ -600,10 +686,22 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
 
-  onChangeValorCajasFre(value: any, cell: any) {
-    const { numdet } = cell.data;
+  async onChangeValorLibrasFre(value: any, cell: any) {
+    const { numdet, codpro } = cell.data;
     value = this._utilService.validateNumberInt(value);
-    this.RequerimientoProFresco.find(x => x.numdet === numdet).numcaj = value;
+    this.RequerimientoProFresco.find(x => x.numdet === numdet).libras = value;
+    let cajas = await this.calcularCajasProdByLibras(value, codpro);
+    this.RequerimientoProFresco.find(x => x.numdet === numdet).numcaj = cajas;    
+    this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+    // autocompletar la cantidad de libras si el total es 27000 y de fresco pongo 20000, en descongelado debe de poner 7000
+    if (this.totalLibrasRequerimientos < this.cabeceraReq.LibPed && this.RequerimientoProTerminado.length == 1 && this.RequerimientoProTerminado[0].libras == 0){
+      this.RequerimientoProTerminado[0].libras = this.cabeceraReq.LibPed - value;
+      this.RequerimientoProTerminado[0].numcaj = await this.calcularCajasProdByLibras(this.RequerimientoProTerminado[0].libras, this.RequerimientoProTerminado[0].codpro);
+      this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+      if (this.GridRequerimientoProTerminado){
+        this.GridRequerimientoProTerminado.instance.refresh();
+      }
+    }
     if (this.GridRequerimientoProFresco){
       this.GridRequerimientoProFresco.instance.refresh();
     }
@@ -611,7 +709,6 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   
   
   async OnChangeCmbTallaFre(value,cell){
-    debugger;
     const { numdet } = cell.data;
     this.RequerimientoProFresco.find(x => x.numdet === numdet).codtal = value;
     this.RequerimientoProFresco.find(x => x.numdet === numdet).codtalvta = value;
@@ -646,17 +743,19 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
 
-  onChangeValorCajasTer(value: any, cell: any) {
-    const { numdet } = cell.data;
+  async onChangeValorLibrasTer(value: any, cell: any) {
+    const { numdet, codpro } = cell.data;
     value = this._utilService.validateNumberInt(value);
-    this.RequerimientoProTerminado.find(x => x.numdet === numdet).numcaj = value;
+    this.RequerimientoProTerminado.find(x => x.numdet === numdet).libras = value;
+    let cajas = await this.calcularCajasProdByLibras(value, codpro);
+    this.RequerimientoProTerminado.find(x => x.numdet === numdet).numcaj = cajas;    
+    this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
     if (this.GridRequerimientoProTerminado){
       this.GridRequerimientoProTerminado.instance.refresh();
     }
   }
 
   async OnChangeCmbTallaTer(value,cell){
-    debugger;
     const { numdet } = cell.data;
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).codtal = value;
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).codtalvta = value;
@@ -666,9 +765,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   SSLlenaTallas(codigoProd, descriTalla): Promise<any>{
-    // if (this.dataCmbTalla.filter(d=> d["codpro"] === codigoProd).length > 0){
-    //   return;
-    // }
+    if (this.dataCmbTalla.filter(d=> d["codpro"] == codigoProd).length > 0){
+      let talla = this.dataCmbTalla.find(x => x.codpro === codigoProd && x.descripcion === descriTalla);
+      if (talla !== undefined) {
+        return talla.codigo;
+      } else {
+        return null;
+      }
+    }
     return new Promise(async (resolve) => {
       await this._service.getTallasVtaProd(codigoProd).subscribe(async (resp) => {
         if (resp.Codigo) {
@@ -704,6 +808,41 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       });
     });
     
+  }
+
+  
+  calcularTotalLibrasRequerimientos(){
+    let librasProTerminado = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
+    let librasProFresco = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
+    let librasTotal = librasProTerminado + librasProFresco;
+    if (librasTotal > this.cabeceraReq.LibPed) {
+      //this.showAlert('Advertencia', 'La cantidad total de libras no puede ser mayor a la cantidad planificada', 'warning');
+      this._notificationService.warning('La cantidad total de libras no puede ser mayor a la cantidad planificada');
+    }
+    return librasTotal;
+  }
+
+
+  async calcularCajasProdByLibras(libras, codpro, tipo = 'C'): Promise<number>{
+    return new Promise(async (resolve) => {
+      await this._service.getCajasProdByLibras(codpro, libras).subscribe(async (data) => {
+        var cajas = 0;
+        var masters = 0;
+        if (data.Codigo) {
+          var dat: any = data.Dt.Table;
+          if (dat.length > 0) {
+            cajas = dat[0].cajas;
+            masters = dat[0].masters;
+          }
+        }
+        if (tipo === 'C'){
+          return resolve(cajas);
+        }
+        else if (tipo === 'M'){
+          return resolve(masters);
+        }
+      });
+    });
   }
 
 

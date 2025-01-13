@@ -10,7 +10,8 @@ import { UtilService } from 'src/app/shared/util.service';
 import * as moment from 'moment';
 import { varUser } from 'src/app/config/url.servicios';
 import Swal from 'sweetalert2/src/sweetalert2.js';
-
+import { ActivatedRoute } from '@angular/router';
+import { FrmplanificacionvagconsultaService } from '../frmplanificacionvagconsulta/frmplanificacionvagconsulta.service';
 
 declare var $: any;
 declare var window;
@@ -65,7 +66,9 @@ export class FrmplanificacionvagComponent implements OnInit {
   disabledBtnGuardar: boolean = false;
   disabledBtnGenerarPlanificacion: boolean = true;
   disabledTabPlanificacion: boolean = true;
-
+  
+  idPlanificacion: number = 0;
+  isReplanificacion: boolean = false;
   txtObservacion: string = '';
   fechaDesde: Date = new Date();
   fechaHasta: Date = new Date();
@@ -128,73 +131,86 @@ export class FrmplanificacionvagComponent implements OnInit {
   
   constructor(
     private _service: FrmplanificacionvagService,
+    private _serviceConsulta: FrmplanificacionvagconsultaService,
     private _notificationService: NotificationService,
     private _parametrizacionService: FrmplanificacionparametrizacionService,
     public _utilService: UtilService,
+    private route: ActivatedRoute,
   ) {
-    //this._notificationService.info( `Ingresa un rango de fecha, y # de personas. Presiona el botón 'Generar Planificación'. El sistema te generará una preplanificación.` );
-
-    this._service.getPedidosParaPlanificacion().subscribe((data) => {
-      this.facturas = data.Dt.Table.map((item: any) => {
-        return {
-          id: `${item.pedNumero}_${item.prodCodcor}_${item.talCodigo}`, 
-          codigoTipo: item.codigoTipo,
-          descriTipo: item.descriTipo,
-          cliCodigo: item.cliCodigo,
-          descriCliente: item.descriCliente,
-          pedNumero: item.pedNumero,
-          prodCodcor: item.prodCodcor,
-          descriProducto: item.descriProducto,
-          talCodigo: item.talCodigo,
-          descriTalla: item.descriTalla,
-          proClase: item.proClase,
-          proModali: item.proModali,
-          proCongela: item.proCongela,
-          descriCongela: item.descriCongela,
-          mastersPedido: item.mastersPedido,
-          saldoPedido: item.saldoPedido,
-          saldoPedidoMed: item.saldoPedidoMed,
-          fechaEstimadaEmbarque: item.fechaEstimadaEmbarque,
-          factor: item.factor,
-          factorAut: item.factorAut,
-          Selected: false,
-          manualAutomatico: 'M',
-        };
-      });
-
-      
-    this.DTListaFacturas = {  
-      paginate: true,  
-      pageSize: 8,  
-      loadMode: 'raw',
-      load: ()=>{  
-      return this.facturas;  
-      }  
-    };
-    });
-
-    this._parametrizacionService.getParametrizacionGeneral().subscribe((data) => {
-      var result: any[] = data.Dt.Table;
-      this.parametrosGenerales = {
-        IQF_S1: result.find(x => x.pgv_codigo === 'IQF_S1')?.pgv_valor || 0,
-        IQF_S2: result.find(x => x.pgv_codigo === 'IQF_S2')?.pgv_valor || 0,
-        MX_DIA: result.find(x => x.pgv_codigo === 'MX_DIA')?.pgv_valor || 0,
-        MX_NOC: result.find(x => x.pgv_codigo === 'MX_NOC')?.pgv_valor || 0,
-      }
-      this.turnoObj.find(x => x.turno === 'D').factorMaximo = this.parametrosGenerales.MX_DIA;
-      this.turnoObj.find(x => x.turno === 'N').factorMaximo = this.parametrosGenerales.MX_NOC;
-    });
-
-    this._service.getCatalogos().subscribe((data) => {
-      this.listaPlanta = data.Dt.Table;
-    });
-
 
     this.onClickNuevo();
 
   }
 
+
   async ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      let replanifica = params['replanifica'] ? atob(params['replanifica']) : null;
+      if (replanifica) {
+        this.isReplanificacion = true;
+        this.idPlanificacion = parseInt(replanifica, 10); 
+      }
+
+      this._parametrizacionService.getParametrizacionGeneral().subscribe((data) => {
+        var result: any[] = data.Dt.Table;
+        this.parametrosGenerales = {
+          IQF_S1: result.find(x => x.pgv_codigo === 'IQF_S1')?.pgv_valor || 0,
+          IQF_S2: result.find(x => x.pgv_codigo === 'IQF_S2')?.pgv_valor || 0,
+          MX_DIA: result.find(x => x.pgv_codigo === 'MX_DIA')?.pgv_valor || 0,
+          MX_NOC: result.find(x => x.pgv_codigo === 'MX_NOC')?.pgv_valor || 0,
+        }
+        this.turnoObj.find(x => x.turno === 'D').factorMaximo = this.parametrosGenerales.MX_DIA;
+        this.turnoObj.find(x => x.turno === 'N').factorMaximo = this.parametrosGenerales.MX_NOC;
+      });
+
+      this._service.getCatalogos().subscribe((data) => {
+        this.listaPlanta = data.Dt.Table;
+      });
+      
+      this._service.getPedidosParaPlanificacion().subscribe((data) => {
+        this.facturas = data.Dt.Table.map((item: any) => {
+          return {
+            id: `${item.pedNumero}_${item.prodCodcor}_${item.talCodigo}`, 
+            codigoTipo: item.codigoTipo,
+            descriTipo: item.descriTipo,
+            cliCodigo: item.cliCodigo,
+            descriCliente: item.descriCliente,
+            pedNumero: item.pedNumero,
+            prodCodcor: item.prodCodcor,
+            descriProducto: item.descriProducto,
+            talCodigo: item.talCodigo,
+            descriTalla: item.descriTalla,
+            proClase: item.proClase,
+            proModali: item.proModali,
+            proCongela: item.proCongela,
+            descriCongela: item.descriCongela,
+            mastersPedido: item.mastersPedido,
+            saldoPedido: item.saldoPedido,
+            saldoPedidoMed: item.saldoPedidoMed,
+            fechaEstimadaEmbarque: item.fechaEstimadaEmbarque,
+            factor: item.factor,
+            factorAut: item.factorAut,
+            Selected: false,
+            manualAutomatico: 'M',
+          };
+        });
+        
+        this.DTListaFacturas = {  
+          paginate: true,  
+          pageSize: 8,  
+          loadMode: 'raw',
+          load: ()=>{  
+          return this.facturas;  
+          }  
+        };
+
+        if (this.isReplanificacion) {
+          this.generarReplanificacion(this.idPlanificacion);
+        }
+      });
+
+
+    });
   }
   
   cleanPlanificacion() {
@@ -325,6 +341,8 @@ export class FrmplanificacionvagComponent implements OnInit {
   }
   
   onClickNuevo() {
+    this.idPlanificacion = 0;
+    this.isReplanificacion = false;
     this.fechaDesde = new Date();
     this.fechaHasta = new Date();
     this.fechaHasta.setDate(this.fechaHasta.getDate() + 15)
@@ -570,6 +588,44 @@ export class FrmplanificacionvagComponent implements OnInit {
 
   }
 
+  generarReplanificacion(idPlanificacion: number){
+    this.Planificacion = [];
+    this.facturasSelected = [];
+    this._serviceConsulta.getPlanificacionById(idPlanificacion).subscribe((data) => {
+      if (data.Codigo) {
+        let plaCab: any = data.Dt.Table;
+        let plaDet: any = data.Dt.Table1;
+        this.fechaDesde = new Date(plaCab[0].pla_fechaDesde);
+        this.fechaHasta = new Date(plaCab[0].pla_fechaHasta);
+        this.cmbPlanta = plaCab[0].pla_paCodigo;
+        this.numPersonasDia = plaCab[0].pla_nroPersonasDia;
+        this.numPersonasNoche = plaCab[0].pla_nroPersonasNoche;
+        this.numModulos = plaCab[0].pla_nroModulos;
+        this.txtObservacion = 'Replanificación de la planificación: ' + idPlanificacion;
+        //
+
+        plaDet.forEach((item: any) => {
+          debugger;
+          let itemFactura = this.facturas.find((x) => x.pedNumero == item.pedNumero && x.prodCodcor == item.prodCodcor && x.talCodigo == item.talCodigo && x.Selected == false);
+          if (itemFactura) {
+            itemFactura.Selected = true;
+            itemFactura.index = this.facturasSelected.length + 1;
+            itemFactura.orderAux = this.facturasSelected.length + 1;
+            itemFactura.prioridad = item.prioridad;
+            this.facturasSelected.push(itemFactura);
+            // actualizar facturas
+            this.facturas = this.facturas.map((x) => {
+              return x.pedNumero == item.pedNumero && x.prodCodcor == item.prodCodcor && x.talCodigo == item.talCodigo ? { ...x, Selected: true } : x;
+            });
+          }
+        });
+
+        // this.disabledTabPlanificacion = false;
+        // this.tabPanel.instance.option('selectedIndex', 1);
+      }
+    });
+  }
+
   addItemsToPlanificacion(item: Pedidos, fecha: Date, turno: Turno, factor: number, saldoPedido: number, origen: string ) {
     if (origen === 'facturas') {
       // la agrego a la lista de facturas seleccionadas si no existe
@@ -678,7 +734,6 @@ export class FrmplanificacionvagComponent implements OnInit {
   }
 
   onRowClick(e: any) {
-    console.log('row click', e);
     // this.onFocus('first'); // o 'second' dependiendo de cuál columna debe tener el foco
   }
 
