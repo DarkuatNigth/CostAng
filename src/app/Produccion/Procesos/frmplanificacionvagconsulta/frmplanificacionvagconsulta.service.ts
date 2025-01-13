@@ -52,6 +52,20 @@ export class FrmplanificacionvagconsultaService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
+  getPlanificacionHistoricaSearch(data: any) {
+    const ListParam = [
+      { "Name": "i_tipoB", "Type": "varchar", "Value": "byPlanificacionHistorica" },
+      { "Name": "i_fechaDesde", "Type": "varchar", "Value": data.fechaDesde },
+      { "Name": "i_fechaHasta", "Type": "varchar", "Value": data.fechaHasta },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_PlanificacionVAConsultar',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
   postRequerimientoProductoVA(data: any) {
     const listParam = [
       { "Name": "i_accion", "Type": "char", "Value": "I" },
@@ -60,11 +74,13 @@ export class FrmplanificacionvagconsultaService {
       { "Name": "rpc_codprod", "Type": "varchar", "Value": data.cab.codprod },
       { "Name": "rpc_ConLote", "Type": "varchar", "Value": data.cab.ConLote },
       { "Name": "rpc_factura", "Type": "varchar", "Value": data.cab.factura },
-      { "Name": "rpc_talPed", "Type": "decimal", "Value": data.cab.talPed.toString() },
-      { "Name": "rpc_MastPed", "Type": "decimal", "Value": data.cab.MastPed.toString() },
-      { "Name": "rpc_LibPed", "Type": "decimal", "Value": data.cab.LibPed.toString() },
-      { "Name": "rpc_MaxLibPed", "Type": "decimal", "Value": data.cab.MaxLibPed.toString() },
+      { "Name": "rpc_talPed", "Type": "nvarchar", "Value": data.cab.talPed.toString() },
+      { "Name": "rpc_MastPed", "Type": "nvarchar", "Value": data.cab.MastPed.toString() },
+      { "Name": "rpc_LibPed", "Type": "nvarchar", "Value": data.cab.LibPed.toString() },
+      { "Name": "rpc_MaxLibPed", "Type": "nvarchar", "Value": data.cab.MaxLibPed.toString() },
       { "Name": "rpc_boddes", "Type": "varchar", "Value": data.cab.boddes },
+      // { "Name": "detPlanifica_id", "Type": "int", "Value": data.cab.detPlanifica_id.toString() },
+      { "Name": "i_detPlanifica", "Type": "varchar", "Value": JSON.stringify(data.detPlanifica) },
       { "Name": "i_detalleFr", "Type": "varchar", "Value": JSON.stringify(data.detFr) },
       { "Name": "i_detalleTe", "Type": "varchar", "Value": JSON.stringify(data.detTe) },
       { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud }
@@ -141,6 +157,21 @@ export class FrmplanificacionvagconsultaService {
     const ListParam = [
       { "Name": "i_tipoB", "Type": "varchar", "Value": "bySearchTallasVtaProduct" },
       { "Name": "pro_codcor", "Type": "varchar", "Value": codProd },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_RequerimientoProductoVAConsultar',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  
+  getCajasProdByLibras(codProd: string, libras: number) {
+    const ListParam = [
+      { "Name": "i_tipoB", "Type": "varchar", "Value": "byCalculaMastersCajas" },
+      { "Name": "pro_codcor", "Type": "varchar", "Value": codProd },
+      { "Name": "libras_cajas", "Type": "nvarchar", "Value": libras.toString() },
     ];
     const base = {
       sp: 'valoragregado.spr_RequerimientoProductoVAConsultar',

@@ -276,6 +276,7 @@
                                             (onInitialized)="onInitializedPlanificacion(GridPlanificacion)"
                                             (onRowPrepared)="onRowPrepared($event)"
                                         >
+                                            <dxo-sorting mode="none"></dxo-sorting>
                                             <dxo-filter-row [visible]="true" [applyFilter]="currentFilter2" ></dxo-filter-row>
                                             <dxi-column dataField="index" caption="" [width]="25"></dxi-column>
                                             <dxi-column dataField="descriCliente" caption="Cliente" [width]="150"></dxi-column>
