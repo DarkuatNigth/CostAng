@@ -146,13 +146,42 @@ input[type=radio]:checked{
   td.cell-temp-valor[role="gridcell"] {
       padding: 2px;
   }
+  .dx-datagrid-checkbox-size .dx-checkbox-icon {
+    height: 20px;
+    width: 20px;
+  }
 }
 
 ::ng-deep #GridFacturasSelected {
   td.cell-temp-valor[role="gridcell"] {
       padding: 2px;
   }
+  .ng-select .ng-select-container .ng-value-container {
+    align-items: center;
+    padding-left: 5px;
+  }
+  .ng-select .ng-arrow-wrapper {
+    width: 20px;
+    padding-right: 0px;
+  }
 }
+
+::ng-deep #GridPlanificacion {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+      // background-color: #f4f4f4; #777777
+      background-color: #fff;
+      border: 0.5px solid #b9b9b9;
+  }
+}
+
+
+::ng-deep #GridDisponibilidadPersonal {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+}
+
 
 .form-control.sng-template {
   height: auto;

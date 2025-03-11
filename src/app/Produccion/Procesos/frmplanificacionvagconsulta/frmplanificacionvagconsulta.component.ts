@@ -63,6 +63,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   fechaHastaFormat: string = ''; 
   fechaConsultaDesde: Date = new Date();
   fechaConsultaHasta: Date = new Date();
+  esPlanificacionHistorica: boolean = false;
 
   cabeceraReq: CabeceraRequerimiento = {} as CabeceraRequerimiento;
   observacion: string = '';
@@ -78,6 +79,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   RequerimientoProTerminado: DetalleRequerimiento[] = [];
   modalReferenceItem: any;
   totalLibrasRequerimientos: number = 0;
+
   
   colores = ['lightblue', 'lightgreen', 'aquamarine', 'lightpink', 'lightyellow', 'lightsteelblue', 'lightcyan', 'LightSalmon', 'lavender', 'Thistle', 'antiquewhite', 'PowderBlue', 'lightskyblue', 'lightcoral'];
   dia: string = '';
@@ -133,6 +135,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   limpiarNuevo() {
+    this.esPlanificacionHistorica = false;
     if (this.tabPanel) {
       this.tabPanel.instance.option('selectedIndex', 0);
     }
@@ -156,6 +159,37 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
     const valorExport = await new Promise(async (resolve) => {
       await this._service.callApiReportePlanificacion(this.idPlanificacion).subscribe(async (rr) => {
+        let resp = JSON.parse(JSON.parse(JSON.stringify(rr)));
+        if (resp.Codigo) {
+            var byteCharacters = atob(resp.doc);
+            var byteNumbers = new Array(byteCharacters.length);
+            for (var i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            var byteArray = new Uint8Array(byteNumbers);
+            saveAs(new Blob([byteArray], { type: 'application/octet-stream' }), 'PlanificacionVA.xlsx');
+            this.loadingVisible = false;
+            return resolve(true);
+        } else {
+          await this.showAlert('', resp.Description, 'error');
+          return resolve(false);
+        }
+      });
+    });
+
+    if(valorExport){
+      await this.showAlert('','Excel generado exitosamente.','success');
+    }
+
+    this.loadingVisible = false;
+  }
+
+
+  async onClickRptVentasExcel() {
+    this.loadingVisible = true;
+
+    const valorExport = await new Promise(async (resolve) => {
+      await this._service.callApiReportePlanificacionVentas(this.idPlanificacion).subscribe(async (rr) => {
         let resp = JSON.parse(JSON.parse(JSON.stringify(rr)));
         if (resp.Codigo) {
             var byteCharacters = atob(resp.doc);
@@ -209,7 +243,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
   
   async onClickCargarPlanificacionHistorica(modal: any) {
-    // si la tabla de consulta no tiene registros, mostrar mensaje de error indicando que no existen planificaciones para mostrar
+
     if (this.PlanificacionSearch.length === 0) {
       this._notificationService.warning('No existen planificaciones para cargar');
       return;
@@ -225,6 +259,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this._service.getPlanificacionHistoricaSearch(filter).subscribe((data) => {
       this.loadDataPlanificacion(data);
     });
+    this.esPlanificacionHistorica = true;
     this.loadingVisible = false;
   }
 
@@ -265,8 +300,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           item.checkReqMp = false;
           item.checkReqDes = false;
         }
-        // if (item.plaDetId !== data.data.plaDetId && item.numeroReqTerminado === null) {
-        //   item.checkReqDes = false;
+        // if (item.plaDetId !== data.data.plaDetId && item.numeroReqFresco === null) {
+        //   item.checkReqMp = false;
         // }
       });
     }
@@ -278,14 +313,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.Planificacion.find((x) => x.plaDetId == data.data.plaDetId).checkReqDes = value;
     if (value) {
       this.Planificacion.forEach(async (item) => {
-        if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia) 
-          && (item.numeroReqTerminado === null && item.numeroReqFresco === null)){
-          item.checkReqMp = false;
-          item.checkReqDes = false;
-        }
-        // if (item.plaDetId !== data.data.plaDetId  && item.numeroReqTerminado === null) {
+        // if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia) 
+        //   && (item.numeroReqTerminado === null && item.numeroReqFresco === null)){
+        //   item.checkReqMp = false;
         //   item.checkReqDes = false;
         // }
+        if (item.plaDetId !== data.data.plaDetId  && item.numeroReqTerminado === null) {
+          item.checkReqDes = false;
+        }
       });
     }
     this.GridPlanificacion.instance.refresh();
@@ -324,7 +359,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
   async onClickGenerarRequerimiento() {
     this.limpiarRequerimientoProducto();
-    this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqMp && x.numeroReqFresco === null) || (x.checkReqDes && x.numeroReqTerminado === null));
+    this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqDes && x.numeroReqTerminado === null));
     if (this.itemSelectedForReq.length === 0) {
       this._notificationService.warning('Debe seleccionar al menos un registro para generar el requerimiento de producto');
       return;
@@ -340,20 +375,20 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     // totalizar libras de requerimientos
     this.librasPlanificadasTotal = 0;
     for (let i = 0; i < this.itemSelectedForReq.length; i++) {
-      if (this.itemSelectedForReq[i].checkReqMp) {
-        this.disabledTabRequerimientoProFresco = false;
-      }
-      if (this.itemSelectedForReq[i].checkReqDes) {
-        this.disabledTabRequerimientoProTerminado = false;
-      }
+      // if (this.itemSelectedForReq[i].checkReqMp) {
+      //   this.disabledTabRequerimientoProFresco = false;
+      // }
+      // if (this.itemSelectedForReq[i].checkReqDes) {
+      //   this.disabledTabRequerimientoProTerminado = false;
+      // }
       this.librasPlanificadasTotal += this.itemSelectedForReq[i].librasPlanificadas;
     }
 
-    setTimeout(() => {
-      if (this.tabPanel) {
-        this.tabPanel.instance.option('selectedIndex', (!this.disabledTabRequerimientoProFresco ? 0 : 1));
-      }
-    }, 500);
+    // setTimeout(() => {
+    //   if (this.tabPanel) {
+    //     this.tabPanel.instance.option('selectedIndex', (!this.disabledTabRequerimientoProFresco ? 0 : 1));
+    //   }
+    // }, 500);
 
     let MastPed = 0;
     MastPed = await this.calcularCajasProdByLibras(this.librasPlanificadasTotal, this.itemSelectedForReq[0].prodCodcor, 'M');
@@ -379,12 +414,11 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
 
     if (!this.disabledTabRequerimientoProFresco){
-      this.onClickAgregarProFresco();
+      // this.onClickAgregarProFresco();
     }
 
-    if (!this.disabledTabRequerimientoProTerminado){
-      this.onClickAgregarProTerminado();
-    }
+    this.onClickAgregarProTerminado();
+    
   }
 
 
@@ -593,7 +627,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this._service.getPlanificacionById(id).subscribe((data) => {
       this.loadDataPlanificacion(data);
     });
-
+    this.esPlanificacionHistorica = false;
     this.loadingVisible = false;
   }
 
@@ -642,7 +676,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         librasPedido: item.librasPedido,
         librasPlanificadas: item.librasPlanificadas,
         librasDespFresco: item.librasDespFresco,
-        librasLiquidadas: item.librasLiquidadas,
+        totalLibrasPeladas: item.totalLibrasPeladas,
         librasDespTerminado: item.librasDespTerminado,
         fechaPlanificado: formatDate(new Date(item.fechaPlanificado), 'yyyy-MM-dd', 'en-US'),
         Dia: this.getDateCustomFormat(new Date(item.fechaPlanificado), 1),
@@ -654,6 +688,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         numLote: item.numLote,
         numeroReqFresco: item.numeroReqFresco,
         numeroReqTerminado: item.numeroReqTerminado,
+        reqFrescolibrasDesp: item.reqFrescolibrasDesp,
+        reqTerminadolibrasDesp: item.reqTerminadolibrasDesp,
       };
     });
     // this.GridFacturas.instance.refresh();
@@ -815,9 +851,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     let librasProTerminado = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
     let librasProFresco = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
     let librasTotal = librasProTerminado + librasProFresco;
-    if (librasTotal > this.cabeceraReq.LibPed) {
-      //this.showAlert('Advertencia', 'La cantidad total de libras no puede ser mayor a la cantidad planificada', 'warning');
-      this._notificationService.warning('La cantidad total de libras no puede ser mayor a la cantidad planificada');
+    // La cantidad total de libras no puede ser mayor al 2% más de la cantidad planificada    
+    if (librasTotal > (this.cabeceraReq.LibPed * 1.02)) {
+      this._notificationService.warning('La cantidad total de libras no puede ser mayor al 2% más de la cantidad planificada');
     }
     return librasTotal;
   }

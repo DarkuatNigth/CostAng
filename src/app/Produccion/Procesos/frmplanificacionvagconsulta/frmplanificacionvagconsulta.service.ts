@@ -98,10 +98,41 @@ export class FrmplanificacionvagconsultaService {
     let data = {
       "sp": "valoragregado.spr_PlanificacionVAConsultar",
       "param": [
+        {
+            "Name": "i_tipoB",
+            "Type": "VarChar",
+            "Value": "byReportExcel"
+        },
+        {
+            "Name": "i_plaId",
+            "Type": "Int",
+            "Value": idPlanificacion.toString()
+        }
+      ],
+      "conexion": "ConexionProdSNG"
+    }
+    const httpOptions = {
+      headers: new HttpHeaders(
+        {
+          'Content-Type':'application/json'
+        }
+      )
+    }
+
+    var param = JSON.stringify(data);
+      
+    return this.http.post<ResultReportes>(URL_APIREPORTPLANIFICACION, param, httpOptions);
+  }
+
+
+  callApiReportePlanificacionVentas(idPlanificacion: number) {
+    let data = {
+      "sp": "valoragregado.spr_PlanificacionVAConsultar",
+      "param": [
           {
               "Name": "i_tipoB",
               "Type": "VarChar",
-              "Value": "byReportExcel"
+              "Value": "byReportVentasExcel"
           },
           {
               "Name": "i_plaId",

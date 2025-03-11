@@ -39,14 +39,16 @@
                         <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Fec. Desde:</label>
                         <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
                             <dx-date-box [(ngModel)]="fechaDesde" type="date" displayFormat="yyyy/MM/dd"
-                                adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaDesde">
+                                adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaDesde"
+                                (onValueChanged)="onChangeFechaDesde($event)">
                             </dx-date-box>
                         </div>
 
                         <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Fec. Hasta:</label>
                         <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
                             <dx-date-box [(ngModel)]="fechaHasta" type="date" displayFormat="yyyy/MM/dd"
-                                adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaHasta">
+                                adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaHasta"
+                                (onValueChanged)="onChangeFechaHasta($event)">
                             </dx-date-box>
                         </div>
 
@@ -62,10 +64,15 @@
                             </ng-select>
                         </div>
 
+                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Módulos (Aut):</label>
+                        <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
+                            <input type="number" min="0" class="form-control" [(ngModel)]="numModulos" name="numModulos" (keypress)="_utilService.onKeypressValidateNumber($event)"/>
+                        </div>
+
                         <div class="w-100 d-lg-none d-md-block"></div>
                         <div class="w-100 d-lg-block"></div>
 
-                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Personas Día:</label>
+                        <!-- <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Personas Día:</label>
                         <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
                             <input type="number" min="0" class="form-control" [(ngModel)]="numPersonasDia" name="numPersonasDia" (keypress)="_utilService.onKeypressValidateNumber($event)"/>
                         </div>
@@ -73,11 +80,11 @@
                         <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Personas Noche:</label>
                         <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
                             <input type="number" min="0" class="form-control" [(ngModel)]="numPersonasNoche" name="numPersonasNoche" (keypress)="_utilService.onKeypressValidateNumber($event)"/>
-                        </div>
+                        </div> -->
 
-                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Módulos (Aut):</label>
-                        <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
-                            <input type="number" min="0" class="form-control" [(ngModel)]="numModulos" name="numModulos" (keypress)="_utilService.onKeypressValidateNumber($event)"/>
+                        <div class="col-12 col-sm-2 col-md-2 col-lg-2 pt-1 sng-dbtn" style="float: right;">
+                            <dx-button text="Personal Disponible" icon="group" type="outlined" (onClick)="onClickModal(modal)">
+                            </dx-button>
                         </div>
                         <div class="col-12 col-sm-2 col-md-2 col-lg-2 pt-1 sng-dbtn" style="float: right;">
                             <dx-button text="Generar Planificación" icon="tableproperties" type="outlined" (onClick)="onClickGenerarPlanificacion()">
@@ -124,44 +131,9 @@
                                                     <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
                                                     <dxo-row-dragging [showDragIcons]="true" [data]="false" group="facturasGroup" [onAdd]="onAdd">
                                                     </dxo-row-dragging>
+                                                    <!-- <dxo-selection mode="multiple" showCheckBoxesMode='always' [className]="'template'" cssClass="template"></dxo-selection> -->
                                                     <dxi-column caption="Man" cellTemplate="manualTemplate" headerCellTemplate="headerTemplate" [width]="30"></dxi-column>
                                                     <dxi-column caption="Aut" cellTemplate="automaticoTemplate" headerCellTemplate="headerTemplate" [width]="30"></dxi-column>
-                                                    <dxi-column caption="Ord" dataField="index" cellTemplate="orderTemplate" [width]="35" [visible]="false"
-                                                        cssClass="cell-temp-valor">
-                                                    </dxi-column>
-                                                    <dxi-column caption="Pri" dataField="prioridad" cellTemplate="prioridadTemplate" [width]="35"
-                                                        cssClass="cell-temp-valor">
-                                                    </dxi-column>
-                                                    <dxi-column dataField="pedNumero" caption="Factura" [width]="85"></dxi-column>
-                                                    <dxi-column dataField="descriCliente" caption="Cliente" [width]="100" ></dxi-column>
-                                                    <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
-                                                    <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
-                                                    <dxi-column dataField="descriTalla" caption="Talla" [width]="50"></dxi-column>
-                                                    <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="65"></dxi-column>
-                                                    <dxi-column dataField="Selected" [visible]="false"></dxi-column>
-                                                    <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date">
-                                                        <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
-                                                    </dxi-column>
-                                                    <div *dxTemplate="let cell of 'orderTemplate'">
-                                                        <div>
-                                                            <input type="text" class="form-control sng-template" 
-                                                                (change)="onChangeOrder($event.target.value, cell.data)"
-                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
-                                                                (paste)="_utilService.onPasteValidateNumber($event)"
-                                                                [(ngModel)]="cell.value" 
-                                                                style="text-align: right;" />
-                                                        </div>
-                                                    </div>
-                                                    <div *dxTemplate="let cell of 'prioridadTemplate'">
-                                                        <div>
-                                                            <input type="text" class="form-control sng-template" 
-                                                                (change)="onChangePrioridad($event.target.value, cell.data)"
-                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
-                                                                (paste)="_utilService.onPasteValidateNumber($event)"
-                                                                [(ngModel)]="cell.value" 
-                                                                style="text-align: right;" />
-                                                        </div>
-                                                    </div>
                                                     <div *dxTemplate="let data of 'headerTemplate'">
                                                         <span>{{data.column.caption}}<br>
                                                             <!-- <input type="checkbox" (change)="toggleSelectAll($event, data)" /> -->
@@ -184,6 +156,58 @@
                                                                 (change)="onChangeProceso(cell.data, 'A')">
                                                         </div>
                                                     </div>
+                                                    <dxi-column caption="Ord" dataField="index" cellTemplate="orderTemplate" [width]="35" [visible]="false"
+                                                        cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'orderTemplate'">
+                                                        <div>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangeOrder($event.target.value, cell.data)"
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                style="text-align: right;" />
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="pedNumero" caption="Factura" [width]="85"></dxi-column>
+                                                    <dxi-column dataField="descriCliente" caption="Cliente" [width]="100" ></dxi-column>
+                                                    <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
+                                                    <dxi-column dataField="descriTalla" caption="Talla" [width]="50"></dxi-column>
+                                                    <dxi-column dataField="numModulos" caption="Mod" [width]="35" [visible]="false"> </dxi-column>
+                                                    <dxi-column dataField="saldoPedido" caption="Libras" format="#,###.##" [width]="65" [allowFiltering]="false"
+                                                        cellTemplate="saldoPedidoTemplate" cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'saldoPedidoTemplate'">
+                                                        <div>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangeSaldoPedido($event.target.value, cell.data)"
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                (focus)="onFocusFormat($event)"
+                                                                style="text-align: right;" />
+                                                            <!-- <span>{{ cell.value | number:'1.2-2' }}</span> -->
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column caption="Pri" dataField="prioridad" [width]="35" [allowFiltering]="false"
+                                                        cellTemplate="prioridadTemplate" cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'prioridadTemplate'">
+                                                        <div>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangePrioridad($event.target.value, cell.data)"
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                style="text-align: right;" />
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="65" [visible]="false"></dxi-column>
+                                                    <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
+                                                    <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date" [allowFiltering]="false">
+                                                        <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                    </dxi-column>
+                                                    <dxi-column dataField="Selected" [visible]="false"></dxi-column>
                                                 </dx-data-grid>
                                             </div>
                                             
@@ -194,37 +218,48 @@
                                                     id="GridFacturasSelected" 
                                                     style="width: 100%; max-height: 75vh;"
                                                     [dataSource]="facturasSelected" 
-                                                    keyExpr="id" 
+                                                    keyExpr="index" 
                                                     [showColumnLines]="true" 
                                                     [showRowLines]="true" 
                                                     [showBorders]="true"
                                                     (onInitialized)="onInitializedFacturasSelected(GridFacturasSelected)" 
                                                     (onRowClick)="onFocus('second')"
                                                     (blur)="onBlur()"
-                                                >
+                                                    (onRowPrepared)="onRowPreparedFacturasSelected($event)"
+                                                    >
                                                     <dxo-scrolling mode="virtual"></dxo-scrolling>
                                                     <dxo-sorting mode="none"></dxo-sorting>
+                                                    <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
                                                     <dxo-row-dragging [allowReordering]="true" [onReorder]="onReorder" [showDragIcons]="true" [data]="true"
                                                         group="facturasGroup" [onAdd]="onAdd">
                                                     </dxo-row-dragging>
                                                     <dxi-column caption="" cellTemplate="deleteTemplate" [width]="30"
                                                         cssClass="cell-temp-valor">
                                                     </dxi-column>
-                                                    <dxi-column dataField="manualAutomatico" caption="M/A" [width]="35"></dxi-column>
-                                                    <dxi-column dataField="index" caption="Ord" cellTemplate="reorderTemplate" [width]="35" [visible]="false"
-                                                        cssClass="cell-temp-valor">
+                                                    <div *dxTemplate="let cell of 'deleteTemplate'">
+                                                        <div>
+                                                            <button class="btn small-button" (click)="deleteRecord(cell.data)">
+                                                                <span class="dx-button-content">
+                                                                    <i class="dx-icon dx-icon-remove"></i>
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="manualAutomatico" caption="M/A" [width]="40" [allowFiltering]="false"
+                                                        cellTemplate="manualAutomaticoSelectTemplate" cssClass="cell-temp-valor">
                                                     </dxi-column>
-                                                    <dxi-column dataField="prioridad" caption="Pri" [width]="35"></dxi-column>
-                                                    <dxi-column dataField="pedNumero" caption="Factura" [width]="90"></dxi-column>
-                                                    <dxi-column dataField="descriCliente" caption="Cliente" [width]="100"></dxi-column>
-                                                    <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
-                                                    <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
-                                                    <dxi-column dataField="descriTalla" caption="Talla" [width]="60"></dxi-column>
-                                                    <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="70"></dxi-column>
-                                                    <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date">
-                                                        <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                    <div *dxTemplate="let cell of 'manualAutomaticoSelectTemplate'">
+                                                        <div>
+                                                            <ng-select style="width: 100%" [(ngModel)]="cell.data.manualAutomatico" appendTo="body" [searchable]="false" [clearable]="false"
+                                                                (change)="onChangeProceso2(cell.data, cell.data.manualAutomatico)">
+                                                                <ng-option value="M">M</ng-option>
+                                                                <ng-option value="A">A</ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="index" caption="Ord" [width]="35" [visible]="false" [allowFiltering]="false"
+                                                        cellTemplate="reorderTemplate" cssClass="cell-temp-valor">
                                                     </dxi-column>
-                                                    <dxi-column dataField="Selected" [visible]="false"></dxi-column>
                                                     <div *dxTemplate="let cell of 'reorderTemplate'">
                                                         <div>
                                                             <input type="text" class="form-control sng-template" 
@@ -235,15 +270,47 @@
                                                                 style="text-align: right;" />
                                                         </div>
                                                     </div>
-                                                    <div *dxTemplate="let cell of 'deleteTemplate'">
+                                                    <dxi-column dataField="prioridad" caption="Pri" [width]="35" [allowFiltering]="false"></dxi-column>
+                                                    <dxi-column dataField="pedNumero" caption="Factura" [width]="90"></dxi-column>
+                                                    <dxi-column dataField="descriCliente" caption="Cliente" [width]="100"></dxi-column>
+                                                    <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
+                                                    <dxi-column dataField="descriTalla" caption="Talla" [width]="60"></dxi-column>
+                                                    <dxi-column dataField="numModulos" caption="Mod" [width]="35" [allowFiltering]="false"
+                                                        cellTemplate="modulosTemplate" cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'modulosTemplate'">
                                                         <div>
-                                                            <button class="btn small-button" (click)="deleteRecord(cell.data)">
-                                                                <span class="dx-button-content">
-                                                                    <i class="dx-icon dx-icon-remove"></i>
-                                                                </span>
-                                                            </button>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangeModulos($event.target.value, cell.data)" 
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                [disabled]="cell.data.manualAutomatico !== 'A'"
+                                                                style="text-align: right;" />
                                                         </div>
                                                     </div>
+                                                    <dxi-column dataField="saldoPedido" caption="Libras" format="#,###.##" [width]="65" [allowFiltering]="false"
+                                                        cellTemplate="saldoPedidoTemplate2" cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'saldoPedidoTemplate2'">
+                                                        <div>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangeSaldoPedido2($event.target.value, cell.data)"                                                                
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                (focus)="onFocusFormat($event)"
+                                                                style="text-align: right;" />
+                                                            <!--  
+                                                                <span>{{ cell.value | number:'1.2-2' }}</span> -->
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="70" [visible]="false"></dxi-column>
+                                                    <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
+                                                    <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date" [allowFiltering]="false">
+                                                        <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                    </dxi-column>
+                                                    <dxi-column dataField="Selected" [visible]="false"></dxi-column>
                                                 </dx-data-grid>
                                                 <!-- <div class="col-12 col-sm-6 col-md-6 col-lg-6 pt-1 sng-dbtn" style="float: right;">
                                                     <dx-button text="Generar Planificación" icon="tableproperties" type="outlined" (onClick)="onClickGenerarPlanificacion()"
@@ -278,23 +345,36 @@
                                         >
                                             <dxo-sorting mode="none"></dxo-sorting>
                                             <dxo-filter-row [visible]="true" [applyFilter]="currentFilter2" ></dxo-filter-row>
-                                            <dxi-column dataField="index" caption="" [width]="25"></dxi-column>
+                                            <dxi-column dataField="index" caption="" [width]="30" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="prioridad" caption="" [visible]="false"></dxi-column>
                                             <dxi-column dataField="descriCliente" caption="Cliente" [width]="150"></dxi-column>
                                             <dxi-column dataField="pedNumero" caption="Factura"></dxi-column>
+                                            <dxi-column dataField="numLote" caption="Lote" cellTemplate="cellLoteValor" [width]="75" [allowFiltering]="false"
+                                                cssClass="cell-temp-valor"> 
+                                            </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellLoteValor'">
+                                                <div>
+                                                    <input type="text" class="form-control"
+                                                        (change)=" onChangeValorLote($event.target.value, cell) " [(ngModel)]="cell.value"
+                                                        style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                                </div>
+                                            </div>
                                             <dxi-column dataField="prodCodcor" caption="Codigo"></dxi-column>
                                             <dxi-column dataField="descriTalla" caption="Talla"></dxi-column>
                                             <dxi-column dataField="proClase" caption="Clase"></dxi-column>
                                             <dxi-column dataField="descriProducto" caption="Producto"></dxi-column>
                                             <dxi-column dataField="Congelamiento" caption="Congelamiento"></dxi-column>
-                                            <dxi-column dataField="librasPlanificadas" caption="librasPlanificadas" caption="Libras" format="#,###.##"></dxi-column>
+                                            <dxi-column dataField="librasPlanificadas" caption="librasPlanificadas" caption="Libras" format="#,###.##" [allowFiltering]="false"></dxi-column>
                                             <dxi-column dataField="fechaPlanificado" caption="fechaPlanificado" [visible]="false" dataType="date">
                                                 <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                                             </dxi-column>
                                             <dxi-column dataField="Dia" caption="Día"></dxi-column>
                                             <dxi-column dataField="turno" caption="turno" [visible]="false"></dxi-column>
-                                            <dxi-column dataField="descriTurno" caption="Turno"></dxi-column>
-                                            <dxi-column dataField="manualAutomatico" caption="Man/Aut"></dxi-column>
-                                            <dxi-column dataField="tiempoCorte" caption="Tiempo Corte" format="#.###"></dxi-column>
+                                            <dxi-column dataField="descriTurno" caption="Turno" [width]="50" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="manualAutomatico" caption="Ma/Au" [width]="50" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="factor" caption="TC/H" [width]="50" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="numPersonas" caption="# Per" [width]="50" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="tiempoCorte" caption="T Corte" format="#.###" [width]="60" [allowFiltering]="false"></dxi-column>
                                             <!-- Opciones de paginación -->
                                             <dxo-paging [pageSize]="50" [pageIndex]="0"></dxo-paging>
                                             <dxo-pager [showInfo]="true" infoText="Page {0} of {1} ({2} items)"></dxo-pager>
@@ -323,3 +403,67 @@
     </div>
 
 </div>
+
+
+
+
+<ng-template #modal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Disponibilidad de Personal</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true"> × </span>
+      </button>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto">
+      <div class="col-lg-12">
+        <div class="row" style="padding-left: 2%; padding-right: 2%">
+          <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            
+            <dx-data-grid #GridDisponibilidadPersonal 
+                id="GridDisponibilidadPersonal" 
+                style="width: 100%;"
+                [dataSource]="DisponibilidadPersonal" 
+                [showColumnLines]="true" 
+                [showRowLines]="true" 
+                [showBorders]="true"
+                [rowAlternationEnabled]="false" 
+                [columnHidingEnabled]="false" 
+                [columnAutoWidth]="true"
+            >
+                <dxi-column dataField="id" caption="Id" [width]="100" [visible]="false"></dxi-column>
+                <dxi-column dataField="dia" caption="Dia" [width]="120"></dxi-column>
+                <dxi-column dataField="fecha" caption="Fecha" [width]="120" [visible]="false">
+                    <!-- <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format> -->
+                </dxi-column>
+                <dxi-column dataField="nroPersonasDia" caption="Personas Día" [width]="120" cellTemplate="cellTempPerDia"
+                    cssClass="cell-temp-valor">
+                </dxi-column>
+                <div *dxTemplate="let cell of 'cellTempPerDia'">
+                    <div>
+                        <input type="text" class="form-control"
+                            (change)=" onChangePerDia($event.target.value, cell) " [(ngModel)]="cell.value"
+                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                    </div>
+                </div>
+                <dxi-column dataField="nroPersonasNoche" caption="Personas Noche" [width]="120" cellTemplate="cellTempPerNoche"
+                    cssClass="cell-temp-valor">
+                </dxi-column>
+                <div *dxTemplate="let cell of 'cellTempPerNoche'">
+                    <div>
+                        <input type="text" class="form-control"
+                            (change)=" onChangePerNoche($event.target.value, cell) " [(ngModel)]="cell.value"
+                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                    </div>
+                </div>
+            </dx-data-grid>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark" (click)="modal.close()">
+        Cancelar
+      </button>
+    </div>
+  </ng-template>

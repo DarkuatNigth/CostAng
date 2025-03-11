@@ -33,6 +33,11 @@
             <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickRptExcel()">
             </dx-button>
         </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Reporte para ventas" icon="print" type="outlined" (onClick)="onClickRptVentasExcel()">
+            </dx-button>
+        </div>
     </div>
 
     <div class="row">
@@ -60,12 +65,13 @@
                                 [rowAlternationEnabled]="false" 
                                 [columnHidingEnabled]="false" 
                                 [columnAutoWidth]="true"
+                                [wordWrapEnabled]="true"
                                 (onInitialized)="onInitializedPlanificacion(GridPlanificacion)"
                                 (onRowPrepared)="onRowPrepared($event)"
                             >
                                 <dxo-sorting mode="none"></dxo-sorting>
                                 <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row>
-                                <dxi-column cellTemplate="cellCheckReqMp" dataField="checkReqMp" [caption]="'Fresco'" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
+                                <!-- <dxi-column cellTemplate="cellCheckReqMp" dataField="checkReqMp" [caption]="'Fresco'" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
                                 <div *dxTemplate="let cell of 'cellCheckReqMp'">
                                     <div>
                                         <input type="checkbox" class="cssCheckBox" 
@@ -74,8 +80,8 @@
                                             [disabled]="cell.data.numeroReqFresco !== null || cell.data.numeroReqTerminado !== null || disabledBtnGenerarRequerimiento"
                                             style="text-align: right; " />
                                     </div>
-                                </div>
-                                <dxi-column cellTemplate="cellCheckReqDes" dataField="checkReqDes" [caption]="'Terminado'" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
+                                </div> -->
+                                <dxi-column cellTemplate="cellCheckReqDes" dataField="checkReqDes" [caption]="'R.Terminado'" [dataType]="'boolean'" [allowFiltering]="false" [width]="60"> </dxi-column>
                                 <div *dxTemplate="let cell of 'cellCheckReqDes'">
                                     <div>
                                         <input type="checkbox" class="cssCheckBox" 
@@ -87,26 +93,39 @@
                                 </div>
                                 <dxi-column dataField="plaDetId" caption="" [width]="25" [visible]="false"></dxi-column>
                                 <dxi-column dataField="descriCliente" caption="Cliente" [width]="150"></dxi-column>
-                                <dxi-column dataField="pedNumero" caption="Factura"></dxi-column>
+                                <dxi-column dataField="pedNumero" caption="Factura" [width]="100"></dxi-column>
                                 <dxi-column dataField="prodCodcor" caption="Codigo"></dxi-column>
                                 <dxi-column dataField="descriTalla" caption="Talla"></dxi-column>
                                 <dxi-column dataField="proClase" caption="Clase"></dxi-column>
                                 <dxi-column dataField="descriProducto" caption="Producto"></dxi-column>
                                 <dxi-column dataField="Congelamiento" caption="Congelamiento"></dxi-column>
                                 <dxi-column dataField="librasPlanificadas" caption="Libras" format="#,###.##"></dxi-column>
-                                <dxi-column dataField="librasLiquidadas" caption="LibrasLiq" format="#,###.##"></dxi-column>
-                                <dxi-column dataField="librasDespFresco" caption="DespFre" format="#,###.##"></dxi-column>
-                                <dxi-column dataField="librasDespTerminado" caption="DespTer" format="#,###.##"></dxi-column>
+                                <dxi-column dataField="totalLibrasPeladas" caption="Libras Peladas" format="#,###.##"></dxi-column>
+                                <!-- <dxi-column dataField="librasLiquidadas" caption="LibrasLiq" format="#,###.##"></dxi-column> -->
+                                <!-- <dxi-column dataField="librasDespFresco" caption="DespFre" format="#,###.##"></dxi-column>
+                                <dxi-column dataField="librasDespTerminado" caption="DespTer" format="#,###.##"></dxi-column> -->
                                 <dxi-column dataField="fechaPlanificado" caption="fechaPlanificado" [visible]="false" dataType="date">
                                     <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                                 </dxi-column>
-                                <dxi-column dataField="Dia" caption="Día"></dxi-column>
+                                <dxi-column dataField="Dia" caption="Día" [width]="100"></dxi-column>
                                 <dxi-column dataField="turno" caption="turno" [visible]="false"></dxi-column>
                                 <dxi-column dataField="descriTurno" caption="Turno"></dxi-column>
                                 <dxi-column dataField="manualAutomatico" caption="Man/Aut"></dxi-column>
                                 <dxi-column dataField="tiempoCorte" caption="Tiempo Corte" format="#.###"></dxi-column>
-                                <dxi-column dataField="numeroReqFresco" caption="ReqFresco"></dxi-column>
-                                <dxi-column dataField="numeroReqTerminado" caption="ReqTerminado"></dxi-column>
+                                <!-- <dxi-column dataField="numeroReqFresco" caption="ReqFresco"></dxi-column>
+                                <dxi-column dataField="numeroReqTerminado" caption="ReqTerminado"></dxi-column> -->
+                                <dxi-column cellTemplate="reqFrescolibrasDespTemplate" dataField="reqFrescolibrasDesp" caption="Req Fresco" [width]="75" [visible]="!esPlanificacionHistorica"></dxi-column>
+                                <div *dxTemplate="let cell of 'reqFrescolibrasDespTemplate'">
+                                    <div style="white-space: wrap; text-align: end;">
+                                        {{ cell.value }}
+                                    </div>
+                                </div>
+                                <dxi-column cellTemplate="reqTerminadolibrasDespTemplate" dataField="reqTerminadolibrasDesp" caption="Req Terminado" [width]="75" [visible]="!esPlanificacionHistorica"></dxi-column>
+                                <div *dxTemplate="let cell of 'reqTerminadolibrasDespTemplate'">
+                                    <div style="white-space: wrap; text-align: end;">
+                                        {{ cell.value }}
+                                    </div>
+                                </div>
                                 <!-- Opciones de paginación -->
                                 <dxo-paging [pageSize]="50" [pageIndex]="0"></dxo-paging>
                                 <dxo-pager [showInfo]="true" infoText="Page {0} of {1} ({2} items)"></dxo-pager>
@@ -169,7 +188,94 @@
                             [selectedIndex]="0" [loop]="false" [animationEnabled]="true" [swipeEnabled]="true" [width]="'100%'"
                             [scrollingEnabled]="true"
                         >
-                            <dxi-item title="Producto Fresco" icon="description" [disabled]="disabledTabRequerimientoProFresco">
+                        
+                            <dxi-item title="Producto Terminado" icon="description">
+                                <div class="row p-1">
+                                    <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1">
+                                        <dx-button
+                                            icon="plus"
+                                            class="btnAccion2"
+                                            (onClick)="onClickAgregarProTerminado()"
+                                            text="Agregar" style="width: 100%;">
+                                        </dx-button>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                                        <dx-data-grid #GridRequerimientoProTerminado 
+                                            id="GridRequerimientoProTerminado" 
+                                            style="width: 100%;"
+                                            [dataSource]="RequerimientoProTerminado"
+                                            keyExpr="numdet"  
+                                            [showColumnLines]="true" 
+                                            [showRowLines]="true" 
+                                            [showBorders]="true"
+                                            [rowAlternationEnabled]="false" 
+                                            [columnHidingEnabled]="false" 
+                                            [columnAutoWidth]="true"
+                                            (onInitialized)="onInitializedRequerimientoProTerminado(GridRequerimientoProTerminado)"
+                                        >
+                                            <dxi-column caption="" cellTemplate="deleteTemplateTer" [width]="30" cssClass="cell-temp-valor"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'deleteTemplateTer'">
+                                                <div>
+                                                    <button class="btn small-button" (click)="onClickDeleteProTerminado(cell.data)">
+                                                        <span class="dx-button-content">
+                                                            <i class="dx-icon dx-icon-remove"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numdet" caption="" [width]="30"></dxi-column>
+                                            <dxi-column dataField="codpro" caption="Cod. Producto" [width]="150" cellTemplate="cellTempProdTer" cssClass="cell-temp-valor"></dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempProdTer'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template"
+                                                        (change)=" onChangeValorProductoTer($event.target.value, cell) " 
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                        (paste)="_utilService.onPasteValidateNumber($event)"
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: left; " />
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="despro" caption="Producto" ></dxi-column>
+                                            <dxi-column dataField="codtal" caption="Talla" [width]="150" cellTemplate="cellTempTallaTer" cssClass="cell-temp-valor-cmb"> </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempTallaTer'" >
+                                                <div>
+                                                    <ng-select style="width: 100%;" 
+                                                        [(ngModel)]="cell.value"  
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        (change)="OnChangeCmbTallaTer($event, cell)"
+                                                        [searchable]="false" 
+                                                        class=""
+                                                        [clearable]="false" 
+                                                        appendTo="body"
+                                                    >
+                                                        <ng-option *ngFor="let data of filter(dataCmbTalla, cell.data.codpro)" [value]="data.codigo">
+                                                            <div title="{{data.descripcion}}" style="font-size: 12px;"> 
+                                                                {{data.descripcion}}
+                                                            </div>
+                                                        </ng-option>
+                                                    </ng-select>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="libras" caption="Libras" [width]="150" cellTemplate="cellTempLibrasTer" cssClass="cell-temp-valor"></dxi-column>
+                                            <div *dxTemplate="let cell of 'cellTempLibrasTer'">
+                                                <div>
+                                                    <input type="text" class="form-control sng-template"
+                                                        (change)=" onChangeValorLibrasTer($event.target.value, cell) " 
+                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                        (paste)="_utilService.onPasteValidateNumber($event)"
+                                                        [(ngModel)]="cell.value"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        style="text-align: right; " />
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="numcaj" caption="Cajas" [width]="150"> </dxi-column>
+                                        </dx-data-grid>
+                                    </div>
+                                </div>
+
+                            </dxi-item>
+                            <dxi-item title="Producto Fresco" icon="description" [visible]="false" [disabled]="disabledTabRequerimientoProFresco">
                                 <div class="row p-1">
                                     <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1">
                                         <dx-button
@@ -256,92 +362,6 @@
                                 </div>
                             </dxi-item>
 
-                            <dxi-item title="Producto Terminado" icon="description" [disabled]="disabledTabRequerimientoProTerminado">
-                                <div class="row p-1">
-                                    <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1">
-                                        <dx-button
-                                            icon="plus"
-                                            class="btnAccion2"
-                                            (onClick)="onClickAgregarProTerminado()"
-                                            text="Agregar" style="width: 100%;">
-                                        </dx-button>
-                                    </div>
-                                    <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
-                                        <dx-data-grid #GridRequerimientoProTerminado 
-                                            id="GridRequerimientoProTerminado" 
-                                            style="width: 100%;"
-                                            [dataSource]="RequerimientoProTerminado"
-                                            keyExpr="numdet"  
-                                            [showColumnLines]="true" 
-                                            [showRowLines]="true" 
-                                            [showBorders]="true"
-                                            [rowAlternationEnabled]="false" 
-                                            [columnHidingEnabled]="false" 
-                                            [columnAutoWidth]="true"
-                                            (onInitialized)="onInitializedRequerimientoProTerminado(GridRequerimientoProTerminado)"
-                                        >
-                                            <dxi-column caption="" cellTemplate="deleteTemplateTer" [width]="30" cssClass="cell-temp-valor"> </dxi-column>
-                                            <div *dxTemplate="let cell of 'deleteTemplateTer'">
-                                                <div>
-                                                    <button class="btn small-button" (click)="onClickDeleteProTerminado(cell.data)">
-                                                        <span class="dx-button-content">
-                                                            <i class="dx-icon dx-icon-remove"></i>
-                                                        </span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <dxi-column dataField="numdet" caption="" [width]="30"></dxi-column>
-                                            <dxi-column dataField="codpro" caption="Cod. Producto" [width]="150" cellTemplate="cellTempProdTer" cssClass="cell-temp-valor"></dxi-column>
-                                            <div *dxTemplate="let cell of 'cellTempProdTer'">
-                                                <div>
-                                                    <input type="text" class="form-control sng-template"
-                                                        (change)=" onChangeValorProductoTer($event.target.value, cell) " 
-                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
-                                                        (paste)="_utilService.onPasteValidateNumber($event)"
-                                                        [(ngModel)]="cell.value"
-                                                        [ngModelOptions]="{standalone: true}"
-                                                        style="text-align: left; " />
-                                                </div>
-                                            </div>
-                                            <dxi-column dataField="despro" caption="Producto" ></dxi-column>
-                                            <dxi-column dataField="codtal" caption="Talla" [width]="150" cellTemplate="cellTempTallaTer" cssClass="cell-temp-valor-cmb"> </dxi-column>
-                                            <div *dxTemplate="let cell of 'cellTempTallaTer'" >
-                                                <div>
-                                                    <ng-select style="width: 100%;" 
-                                                        [(ngModel)]="cell.value"  
-                                                        [ngModelOptions]="{standalone: true}"
-                                                        (change)="OnChangeCmbTallaTer($event, cell)"
-                                                        [searchable]="false" 
-                                                        class=""
-                                                        [clearable]="false" 
-                                                        appendTo="body"
-                                                    >
-                                                        <ng-option *ngFor="let data of filter(dataCmbTalla, cell.data.codpro)" [value]="data.codigo">
-                                                            <div title="{{data.descripcion}}" style="font-size: 12px;"> 
-                                                                {{data.descripcion}}
-                                                            </div>
-                                                        </ng-option>
-                                                    </ng-select>
-                                                </div>
-                                            </div>
-                                            <dxi-column dataField="libras" caption="Libras" [width]="150" cellTemplate="cellTempLibrasTer" cssClass="cell-temp-valor"></dxi-column>
-                                            <div *dxTemplate="let cell of 'cellTempLibrasTer'">
-                                                <div>
-                                                    <input type="text" class="form-control sng-template"
-                                                        (change)=" onChangeValorLibrasTer($event.target.value, cell) " 
-                                                        (keypress)="_utilService.onKeypressValidateNumber($event)"
-                                                        (paste)="_utilService.onPasteValidateNumber($event)"
-                                                        [(ngModel)]="cell.value"
-                                                        [ngModelOptions]="{standalone: true}"
-                                                        style="text-align: right; " />
-                                                </div>
-                                            </div>
-                                            <dxi-column dataField="numcaj" caption="Cajas" [width]="150"> </dxi-column>
-                                        </dx-data-grid>
-                                    </div>
-                                </div>
-
-                            </dxi-item>
                         </dx-tab-panel>
                     </div>
                     <div class="pt-1 sng-dbtn" style="float: right;display: flex">

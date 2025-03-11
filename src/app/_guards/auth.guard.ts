@@ -14,13 +14,15 @@ export class AuthGuard {
 
     async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         let params = (state.url.split('?').length > 1 ? state.url.split('?')[1] : "");
+        let tokenuSr = "";
+        let validaToken = true;
 
-           
+ 
         if(params !== ""){
             let contra = this._login.Decrypt(decodeURIComponent(params.toString()), 2);
             let Listparams = contra.split(';');
             let usr = "";
-            let tokenuSr = "";
+            
             if(Listparams.length > 0){
                 let params = Listparams[0].split('&');
                 for (let index = 0; index < params.length; index++) {
@@ -36,15 +38,22 @@ export class AuthGuard {
                     tokenuSr =state['root'].queryParams.tk;
                 }
             }
-            if (tokenuSr === ''){
-                if(localStorage.getItem(varToken) !== null){
-                    tokenuSr = localStorage.getItem(varToken);
+
+            if(tokenuSr === undefined){
+                tokenuSr = "";
+            }
+            
+            if (tokenuSr === ""){
+                if(await localStorage.getItem(varToken) !== null && await localStorage.getItem(varToken) !== ""){
+                    tokenuSr = await localStorage.getItem(varToken);
+                    validaToken = false;
                 }
             }
-            if(tokenuSr === "") {
+
+            if(tokenuSr === ""){
                 usr = "";
             }else{
-                if (!await this.validatorToken(usr,tokenuSr)){
+                if (!await this.validatorToken(usr,tokenuSr) && validaToken){
                     usr = "";
                     localStorage.removeItem(varUser);
                     localStorage.removeItem(varUser2);
@@ -67,8 +76,15 @@ export class AuthGuard {
 
         }
         
-             
-        if(params === "" && state.url.includes("/ext-") ){
+        //debugger;
+        if (tokenuSr === ""){
+            if(await localStorage.getItem(varToken) !== null && await localStorage.getItem(varToken) !== ""){
+                tokenuSr = await localStorage.getItem(varToken);
+            }
+        }
+        
+        //debugger;
+        if(tokenuSr === "" && state.url.includes("/ext-") ){
             localStorage.removeItem(varUser);
             localStorage.removeItem(varUser2);
             localStorage.removeItem(varExpire);
@@ -81,7 +97,7 @@ export class AuthGuard {
             return true;
         }
 
-        const Token = localStorage.getItem(varUser) || '';
+        const Token = await localStorage.getItem(varUser) || '';
         
         if (Token != '') {
             if (state.url.includes("/login") ||
@@ -92,7 +108,7 @@ export class AuthGuard {
             }
 
             var now = Date.now(); 
-            var expiresIn = Number(localStorage.getItem(varExpire));
+            var expiresIn = Number(await localStorage.getItem(varExpire));
             if (expiresIn===undefined || expiresIn===null) 
             { 
                 expiresIn = 0; 

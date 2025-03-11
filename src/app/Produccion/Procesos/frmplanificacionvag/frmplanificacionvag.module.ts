@@ -40,7 +40,7 @@ import {MatIconModule} from '@angular/material/icon';
     MatTableModule, 
     MatIconModule,
     RouterModule.forChild([
-      { path: 'ext-planificacionVA', canActivate: [AuthGuard], component: FrmplanificacionvagComponent },
+      { path: 'ext-planificacionVA', component: FrmplanificacionvagComponent },
     ]) 
   ],
   exports: [

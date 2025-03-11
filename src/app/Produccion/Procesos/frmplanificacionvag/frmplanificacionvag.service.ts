@@ -1,6 +1,7 @@
+import { formatDate } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CONNECTION_PROD, URL_CONSULT, URL_TRANSACIMAGEN } from 'src/app/config/url.servicios';
+import { CONNECTION_PROD, CONNECTION_RRHH, URL_CONSULT, URL_CONSULTRRHH, URL_TRANSACIMAGEN } from 'src/app/config/url.servicios';
 import { ResultWS } from 'src/app/Interfaces/interfaces';
 
 @Injectable({
@@ -57,4 +58,17 @@ export class FrmplanificacionvagService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
+  getDisponibilidadPersonal(fechaDesde, fechaHasta) {
+    const ListParam = [
+      { "Name": "i_fechaDesde", "Type": "varchar", "Value": formatDate(fechaDesde, 'yyyy-MM-dd', 'en-US') },
+      { "Name": "i_fechaHasta", "Type": "varchar", "Value": formatDate(fechaHasta, 'yyyy-MM-dd', 'en-US') }
+    ];
+    const base = {
+      sp: 'horario.sp_jornadaResumenPeladoVAConsultar',
+      param: ListParam,
+      conexion: CONNECTION_RRHH
+    };
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+
+  }
 }

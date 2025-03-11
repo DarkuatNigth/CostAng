@@ -7,12 +7,15 @@ export const varMenuDT = 'MenuPRODDT';
 export const varMenu = 'MenuPROD';
 export const varEmpresa = 'EmpresaPROD';
 export const varNombreEmpresa = 'nombreEmpresaPROD';
+export const varToken = 'TokenPROD';
 
 /*CONEXION SONGA*/
 export const BaseConexion = "SONGA";//"SEAFOOD";//"SONGA";
 // let DomainSite = "http://localhost";//PREPRODUCCION
 let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
+let DomainSiteRRHH = 'https://talentohumano.songa.com';
+
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";
 export const URL_CONSULT = DomainSite + "/api/Consult";
@@ -27,6 +30,7 @@ export const URL_APIREPORTPLANIFICACION = DomainSite + "/SiteReports/Api/Planifi
 export const URL_BARCODE = DomainSite + "/SiteReports/Api/Barcode";
 //export const URL_OTHERAPI = "http://localhost:1814/Signature";
 export const URL_OTHERAPI = DomainSite + "/ApiBackend/Signature";
+export const URL_CONSULTRRHH = DomainSiteRRHH + '/api/Consult';
 
 
 /*CONEXION MARINA*/
@@ -45,6 +49,6 @@ export const CONNECTION_PRODIMG = "PRODIMAGENES";
 export const CONNECTION_PROD_SA = "PREPRO";
 export const CONNECTION_SONG = "SONG";
 export const CONNECTION_PROYECTO = "PROYECTO";
-
+export const CONNECTION_RRHH = 'RRHH';
 
 
