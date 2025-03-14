@@ -150,6 +150,21 @@ input[type=radio]:checked{
     height: 20px;
     width: 20px;
   }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
+  }
 }
 
 ::ng-deep #GridFacturasSelected {
@@ -163,6 +178,21 @@ input[type=radio]:checked{
   .ng-select .ng-arrow-wrapper {
     width: 20px;
     padding-right: 0px;
+  }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
   }
 }
 

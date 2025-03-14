@@ -55,6 +55,17 @@
     }
 }
 
+::ng-deep #GridPlanificacion {
+    .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+        padding-left: 22px;
+    }
+    .dx-datagrid-headers .dx-texteditor-input {
+        padding: 5px;
+        padding-left: 5px;
+        min-height: 30px;
+    }
+}
+
 .form-control.sng-template {
     height: auto;
     padding: 5px;

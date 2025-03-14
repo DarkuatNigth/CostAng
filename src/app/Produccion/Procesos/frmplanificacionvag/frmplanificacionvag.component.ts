@@ -223,10 +223,11 @@ export class FrmplanificacionvagComponent implements OnInit {
 
         if (this.isReplanificacion) {
           this.generarReplanificacion(this.idPlanificacion);
+        } else {
+          this.getDisponibilidadPersonal();
         }
       });
 
-      this.getDisponibilidadPersonal();
 
       this.loadingVisible = false;
 
@@ -416,9 +417,9 @@ export class FrmplanificacionvagComponent implements OnInit {
   }
 
   onChangeModulos(value: string, rowData: any) {
-    const { id } = rowData;
-    const index = this.facturasSelected.findIndex(x => x.id === id);
-    this.facturasSelected[index].numModulos = value;
+    const { index } = rowData;
+    const indexR = this.facturasSelected.findIndex(x => x.index === index);
+    this.facturasSelected[indexR].numModulos = value;
   }
 
   
@@ -712,9 +713,9 @@ export class FrmplanificacionvagComponent implements OnInit {
             let saldoParcial = (saldoPedido * factorFaltante) / factor;
             // console.log('saldoParcial verificar en automatico', saldoParcial);
             saldoParcial = this._utilService.redondear(saldoParcial, 'S', 100);
-            // console.log('saldoParcial verificar en automatico', saldoParcial);
             factorSuma += factorFaltante;
             saldoPendiente = saldoPedido - saldoParcial;
+            // congelaSuma += saldoParcial;
             this.addItemsToPlanificacion(item, fecha, turno, factorFaltante, numPersonas, saldoParcial, origen);
           }
         } 
@@ -723,6 +724,7 @@ export class FrmplanificacionvagComponent implements OnInit {
             let factorFaltante = turno.factorMaximo - factorSuma;
             if (factorFaltante > 1) {
               let saldoParcial = (saldoPedido * factorFaltante) / factor;
+              saldoParcial = this._utilService.redondear(saldoParcial, 'S', 100);
               factorSuma += factorFaltante;
               saldoPendiente = saldoPedido - saldoParcial;
               congelaSuma += saldoParcial;
@@ -730,7 +732,7 @@ export class FrmplanificacionvagComponent implements OnInit {
 
             }
           }
-          else if ((congelaSuma + saldoPedido) > maxCongelamiento) {
+          else if ((congelaSuma + saldoPedido) > maxCongelamiento && (maxCongelamiento - congelaSuma) > 0) {
             let saldoParcial = maxCongelamiento - congelaSuma;
             if (item.manualAutomatico === 'M') {
               let disponibilidad = this.DisponibilidadPersonal.find(x => moment(x.fecha).format('YYYY-MM-DD') === moment(fecha).format('YYYY-MM-DD'));
@@ -750,8 +752,8 @@ export class FrmplanificacionvagComponent implements OnInit {
         }
       }
 
-      if (turno.factorMaximo - factorSuma < 1 || congelaSuma === maxCongelamiento) {
-        if (turno.turno === 'N' || congelaSuma === maxCongelamiento){
+      if (turno.factorMaximo - factorSuma < 1 || congelaSuma >= maxCongelamiento) {
+        if (turno.turno === 'N' || congelaSuma >= maxCongelamiento){
           fecha.setDate(fecha.getDate() + 1);
           congelaSuma = 0;
           turno = this.turnoObj.find(x => x.turno === 'D');
@@ -794,6 +796,7 @@ export class FrmplanificacionvagComponent implements OnInit {
         this.numPersonasNoche = plaCab[0].pla_nroPersonasNoche;
         this.numModulos = plaCab[0].pla_nroModulos;
         this.txtObservacion = 'Replanificación de la planificación: ' + idPlanificacion;
+        this.getDisponibilidadPersonal();
         let plaDet2 = [];
         plaDet.forEach((item) => {
           let index = plaDet2.findIndex((x) => x.pedNumero === item.pedNumero && x.prodCodcor === item.prodCodcor && x.talCodigo === item.talCodigo && x.prioridad === item.prioridad);
@@ -816,6 +819,7 @@ export class FrmplanificacionvagComponent implements OnInit {
             itemFactura.orderAux = this.facturasSelected.length + 1;
             itemFactura.prioridad = item.prioridad;
             itemFactura.manualAutomatico = item.manualAutomatico;
+            itemFactura.numModulos = item.manualAutomatico === 'A' ? item.numModulos : null;
 
             let totalPedidoSeleccionado = this.facturasSelected.reduce((acc, item2) => {
               return (item2.id === itemFactura.id && item2.index != itemFactura.index) ? acc + item2.saldoPedido : acc;
@@ -871,6 +875,8 @@ export class FrmplanificacionvagComponent implements OnInit {
       if (this.dia != this.getDateCustomFormat(fecha, 1).split(' ')[0] || this.turno != turno.turno)
       {
         this.indiceColor = this.indiceColor == this.colores.length - 1 ? 0 : this.indiceColor + 1;
+        this.dia = this.getDateCustomFormat(fecha, 1).split(' ')[0];
+        this.turno = turno.turno;
       }
     }
     this.Planificacion.push({
@@ -898,6 +904,8 @@ export class FrmplanificacionvagComponent implements OnInit {
       descriTurno: turno.turno === 'D' ? 'Día' : 'Noche',
       factor: item.manualAutomatico === 'M' ? item.factor : item.factorAut,
       numPersonas: numPersonas,
+      numModulos: item.manualAutomatico === 'A' ? item.numModulos : 0,
+      tiempoCorteHora: item.manualAutomatico === 'M' ? item.factor : item.factorAut,
       tiempoCorte: factor,
       numLote: null,      
       colorBackground: this.colores[this.indiceColor],
@@ -936,6 +944,13 @@ export class FrmplanificacionvagComponent implements OnInit {
   onRowPrepared(e) {
     if (e.data && e.data.Dia && e.data.Dia !== '' ) {
       e.rowElement.style.backgroundColor = e.data.colorBackground;
+      if (e.data.manualAutomatico == 'A' && e.rowType === 'data') {
+        // solo pintar la celda no toda la fila
+        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="13"]');
+        if (manualAutomaticoCell) {
+          manualAutomaticoCell.style.backgroundColor = 'yellow';
+        }
+      }
     }
   }
   
