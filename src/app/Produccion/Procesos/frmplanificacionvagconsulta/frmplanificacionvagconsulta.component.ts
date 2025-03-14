@@ -286,6 +286,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   onRowPrepared(e) {
     if (e.data && e.data.Dia && e.data.Dia !== '' ) {
       e.rowElement.style.backgroundColor = e.data.colorBackground;
+      if (e.data.manualAutomatico == 'A' && e.rowType === 'data') {
+        // solo pintar la celda no toda la fila
+        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="14"]');
+        if (manualAutomaticoCell) {
+          manualAutomaticoCell.style.backgroundColor = 'yellow';
+        }
+      }
     }
   }
 
@@ -683,6 +690,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         turno: item.turno,
         descriTurno: item.turno === 'D' ? 'Día' : 'Noche',
         tiempoCorte: item.tiempoCorte,
+        tiempoCorteHora: item.tiempoCorteHora,
+        numPersonas: item.numPersonas,
+        numModulos: item.numModulos,
         colorBackground: this.colores[indiceColor],
         certificadoASC: item.certificadoASC,
         numLote: item.numLote,

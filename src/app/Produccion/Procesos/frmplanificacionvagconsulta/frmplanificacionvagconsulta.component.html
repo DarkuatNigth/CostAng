@@ -94,24 +94,27 @@
                                 <dxi-column dataField="plaDetId" caption="" [width]="25" [visible]="false"></dxi-column>
                                 <dxi-column dataField="descriCliente" caption="Cliente" [width]="150"></dxi-column>
                                 <dxi-column dataField="pedNumero" caption="Factura" [width]="100"></dxi-column>
-                                <dxi-column dataField="prodCodcor" caption="Codigo"></dxi-column>
-                                <dxi-column dataField="descriTalla" caption="Talla"></dxi-column>
-                                <dxi-column dataField="proClase" caption="Clase"></dxi-column>
-                                <dxi-column dataField="descriProducto" caption="Producto"></dxi-column>
-                                <dxi-column dataField="Congelamiento" caption="Congelamiento"></dxi-column>
-                                <dxi-column dataField="librasPlanificadas" caption="Libras" format="#,###.##"></dxi-column>
-                                <dxi-column dataField="totalLibrasPeladas" caption="Libras Peladas" format="#,###.##"></dxi-column>
+                                <dxi-column dataField="numLote" caption="Lote" [width]="60"></dxi-column>
+                                <dxi-column dataField="prodCodcor" caption="Codigo" [width]="60"></dxi-column>
+                                <dxi-column dataField="descriTalla" caption="Talla" [width]="60"></dxi-column>
+                                <dxi-column dataField="proClase" caption="Clase" [width]="60"></dxi-column>
+                                <dxi-column dataField="descriProducto" caption="Producto" [width]="120"></dxi-column>
+                                <dxi-column dataField="Congelamiento" caption="Congela" [width]="80"></dxi-column>
+                                <dxi-column dataField="librasPlanificadas" caption="Libras" format="#,###.##" [allowFiltering]="false"></dxi-column>
+                                <dxi-column dataField="totalLibrasPeladas" caption="Libras Peladas" format="#,###.##" [allowFiltering]="false"></dxi-column>
                                 <!-- <dxi-column dataField="librasLiquidadas" caption="LibrasLiq" format="#,###.##"></dxi-column> -->
                                 <!-- <dxi-column dataField="librasDespFresco" caption="DespFre" format="#,###.##"></dxi-column>
                                 <dxi-column dataField="librasDespTerminado" caption="DespTer" format="#,###.##"></dxi-column> -->
                                 <dxi-column dataField="fechaPlanificado" caption="fechaPlanificado" [visible]="false" dataType="date">
                                     <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                                 </dxi-column>
-                                <dxi-column dataField="Dia" caption="Día" [width]="100"></dxi-column>
+                                <dxi-column dataField="Dia" caption="Día" [width]="80"></dxi-column>
                                 <dxi-column dataField="turno" caption="turno" [visible]="false"></dxi-column>
-                                <dxi-column dataField="descriTurno" caption="Turno"></dxi-column>
-                                <dxi-column dataField="manualAutomatico" caption="Man/Aut"></dxi-column>
-                                <dxi-column dataField="tiempoCorte" caption="Tiempo Corte" format="#.###"></dxi-column>
+                                <dxi-column dataField="descriTurno" caption="Turno" [width]="50" [allowFiltering]="false"></dxi-column>
+                                <dxi-column dataField="manualAutomatico" caption="Ma/Au" [width]="50" [allowFiltering]="false" alignment="center"></dxi-column>
+                                <dxi-column dataField="tiempoCorteHora" caption="TC/H" [width]="50" [allowFiltering]="false"></dxi-column>
+                                <dxi-column dataField="numPersonas" caption="# Per" [width]="50" [allowFiltering]="false"></dxi-column>
+                                <dxi-column dataField="tiempoCorte" caption="T.Cort" format="#.##" [width]="50" [allowFiltering]="false"></dxi-column>
                                 <!-- <dxi-column dataField="numeroReqFresco" caption="ReqFresco"></dxi-column>
                                 <dxi-column dataField="numeroReqTerminado" caption="ReqTerminado"></dxi-column> -->
                                 <dxi-column cellTemplate="reqFrescolibrasDespTemplate" dataField="reqFrescolibrasDesp" caption="Req Fresco" [width]="75" [visible]="!esPlanificacionHistorica"></dxi-column>
