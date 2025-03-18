@@ -18,6 +18,7 @@ declare var window;
 export interface CabeceraRequerimiento {
   observ: string;
   tiplot: string;
+  genLotOtr: string;
   codprod: string;
   proClase: string;
   descriProducto: string;
@@ -32,6 +33,9 @@ export interface CabeceraRequerimiento {
   // detPlanifica_id: number;
   certificadoASC: string;
   numLote: number;
+  numSecuencial: number;
+  tipoProceso: string;
+  tipoLote: string;
 }
 
 export interface DetalleRequerimiento {
@@ -64,6 +68,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   fechaConsultaDesde: Date = new Date();
   fechaConsultaHasta: Date = new Date();
   esPlanificacionHistorica: boolean = false;
+  esVistaRequerimiento: boolean = false;
 
   cabeceraReq: CabeceraRequerimiento = {} as CabeceraRequerimiento;
   observacion: string = '';
@@ -136,6 +141,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
   limpiarNuevo() {
     this.esPlanificacionHistorica = false;
+    this.esVistaRequerimiento = false;
     if (this.tabPanel) {
       this.tabPanel.instance.option('selectedIndex', 0);
     }
@@ -284,11 +290,11 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
 
   onRowPrepared(e) {
-    if (e.data && e.data.Dia && e.data.Dia !== '' ) {
+    if (e.data && e.data.Dia && e.data.Dia !== '' && !this.esPlanificacionHistorica ) {
       e.rowElement.style.backgroundColor = e.data.colorBackground;
       if (e.data.manualAutomatico == 'A' && e.rowType === 'data') {
         // solo pintar la celda no toda la fila
-        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="14"]');
+        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="16"]');
         if (manualAutomaticoCell) {
           manualAutomaticoCell.style.backgroundColor = 'yellow';
         }
@@ -302,14 +308,19 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     if (value) {
       this.Planificacion.forEach(async (item) => {
         // se debe permitir chequear mas de un registro solo si coincide (pedido, producto, clase, talla, dia)
-        if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia)
-          && (item.numeroReqTerminado === null && item.numeroReqFresco === null)) {
-          item.checkReqMp = false;
-          item.checkReqDes = false;
-        }
-        // if (item.plaDetId !== data.data.plaDetId && item.numeroReqFresco === null) {
+        // if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia)
+        //   && (item.numeroReqTerminado === null && item.numeroReqFresco === null)) {
         //   item.checkReqMp = false;
+        //   item.checkReqDes = false;
         // }
+        if (item.plaDetId !== data.data.plaDetId) {
+          if (item.numeroReqTerminado === null) {
+            item.checkReqDes = false;
+          }
+          if (item.numeroReqFresco === null) {
+            item.checkReqMp = false;
+          }          
+        }
       });
     }
     this.GridPlanificacion.instance.refresh();
@@ -325,8 +336,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         //   item.checkReqMp = false;
         //   item.checkReqDes = false;
         // }
-        if (item.plaDetId !== data.data.plaDetId  && item.numeroReqTerminado === null) {
-          item.checkReqDes = false;
+        if (item.plaDetId !== data.data.plaDetId) {
+          if (item.numeroReqTerminado === null) {
+            item.checkReqDes = false;
+          }
+          if (item.numeroReqFresco === null) {
+            item.checkReqMp = false;
+          }          
         }
       });
     }
@@ -365,8 +381,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   async onClickGenerarRequerimiento() {
+    this.esVistaRequerimiento = false;
     this.limpiarRequerimientoProducto();
-    this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqDes && x.numeroReqTerminado === null));
+    this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqDes && x.numeroReqTerminado === null) || (x.checkReqMp && x.numeroReqFresco === null));
     if (this.itemSelectedForReq.length === 0) {
       this._notificationService.warning('Debe seleccionar al menos un registro para generar el requerimiento de producto');
       return;
@@ -382,32 +399,28 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     // totalizar libras de requerimientos
     this.librasPlanificadasTotal = 0;
     for (let i = 0; i < this.itemSelectedForReq.length; i++) {
-      // if (this.itemSelectedForReq[i].checkReqMp) {
-      //   this.disabledTabRequerimientoProFresco = false;
-      // }
-      // if (this.itemSelectedForReq[i].checkReqDes) {
-      //   this.disabledTabRequerimientoProTerminado = false;
-      // }
+      if (this.itemSelectedForReq[i].checkReqMp && this.itemSelectedForReq[i].numeroReqFresco === null) {
+        this.disabledTabRequerimientoProFresco = false;
+      }
+      if (this.itemSelectedForReq[i].checkReqDes && this.itemSelectedForReq[i].numeroReqTerminado === null) {
+        this.disabledTabRequerimientoProTerminado = false;
+      }
       this.librasPlanificadasTotal += this.itemSelectedForReq[i].librasPlanificadas;
     }
 
-    // setTimeout(() => {
-    //   if (this.tabPanel) {
-    //     this.tabPanel.instance.option('selectedIndex', (!this.disabledTabRequerimientoProFresco ? 0 : 1));
-    //   }
-    // }, 500);
-
     let MastPed = 0;
     MastPed = await this.calcularCajasProdByLibras(this.librasPlanificadasTotal, this.itemSelectedForReq[0].prodCodcor, 'M');
+    MastPed = this._utilService.redondear(MastPed, 'S', 1);
     
     this.cmbBodegaDestino = "VQ"; // 'TR VAG S2'
     this.cabeceraReq = {
       observ: '',
-      tiplot: '21',
+      tiplot: this.itemSelectedForReq[0].tipLotOtr,
+      genLotOtr: this.itemSelectedForReq[0].numSecuencial ? '2' : '1',
       codprod: this.itemSelectedForReq[0].prodCodcor,
       proClase: this.itemSelectedForReq[0].proClase,
       descriProducto: this.itemSelectedForReq[0].descriProducto,
-      ConLote: this.itemSelectedForReq[0].numLote > 0 ? 'S' : 'N',
+      ConLote: 'N', //this.itemSelectedForReq[0].numLote > 0 ? 'S' : 'N',
       factura: this.itemSelectedForReq[0].pedNumero,
       talPed: this.itemSelectedForReq[0].talCodigo,
       descriTalla: this.itemSelectedForReq[0].descriTalla,
@@ -417,15 +430,36 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       boddes: this.cmbBodegaDestino,
       // detPlanifica_id: this.itemSelectedForReq.plaDetId,
       certificadoASC: this.itemSelectedForReq[0].certificadoASC,
-      numLote: this.itemSelectedForReq[0].numLote,
+      numLote: this.itemSelectedForReq[0].numLote || null,
+      numSecuencial: this.itemSelectedForReq[0].numSecuencial || null,
+      tipoProceso: this.itemSelectedForReq[0].tipoProceso,
+      tipoLote: "Valor Agregado"
     }
 
     if (!this.disabledTabRequerimientoProFresco){
-      // this.onClickAgregarProFresco();
+      this.onClickAgregarProFresco();
     }
-
-    this.onClickAgregarProTerminado();
+    if (!this.disabledTabRequerimientoProTerminado){
+      this.onClickAgregarProTerminado();
+    }
     
+    setTimeout(() => {
+      if (!this.disabledTabRequerimientoProFresco) {
+        $('.dx-tab-text').each(function() {
+          if ($(this).text() === 'Producto Fresco') {
+            $(this).click();
+          }
+        });
+      } else {
+        $('.dx-tab-text').each(function() {
+          if ($(this).text() === 'Producto Terminado') {
+            $(this).click();
+          }
+        });
+      }
+    }, 500);
+
+
   }
 
 
@@ -464,7 +498,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   
-  onClickDeleteProFresco(rowData: any) {
+  async onClickDeleteProFresco(rowData: any) {
     let {numdet} = rowData;
     this.RequerimientoProFresco = this.RequerimientoProFresco.filter(item => item.numdet !== numdet);
     this.RequerimientoProFresco.forEach((item, index) => {
@@ -508,7 +542,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
   }
 
-  onClickDeleteProTerminado(rowData: any) {
+  async onClickDeleteProTerminado(rowData: any) {
     let {numdet} = rowData;
     this.RequerimientoProTerminado = this.RequerimientoProTerminado.filter(item => item.numdet !== numdet);
     this.RequerimientoProTerminado.forEach((item, index) => {
@@ -517,6 +551,147 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     if (this.GridRequerimientoProTerminado){
       this.GridRequerimientoProTerminado.instance.refresh();
     }
+  }
+
+  async onClickReqFresco(rowData: any) {
+    this.esVistaRequerimiento = true;
+    this.limpiarRequerimientoProducto();
+    
+    this.modalReferenceItem = await this.modalService.open(this.modalRequerimientoProducto, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalGenerarRequerimiento',
+    });
+
+    this.disabledTabRequerimientoProFresco = false;
+    this.disabledTabRequerimientoProTerminado = true;
+    
+    this._service.getRequerimientoProducto(rowData.numeroReqFresco).subscribe((data) => {
+      if (data.Codigo) {
+        let datosCab: any = data.Dt.Table;
+        let datosDet: any = data.Dt.Table1;
+        if (datosCab.length > 0) {
+          this.cabeceraReq = {
+            observ: datosCab[0].rpc_observ,
+            tiplot: datosCab[0].rpc_tiplot,
+            genLotOtr: datosCab[0].rpc_GenLotOtr,
+            codprod: datosCab[0].rpc_prodPed,
+            proClase: rowData.proClase,
+            descriProducto: rowData.descriProducto,
+            ConLote: datosCab[0].rpc_ConLote, 
+            factura: datosCab[0].rpc_factura,
+            talPed: datosCab[0].rpc_talPed,
+            descriTalla: rowData.descriTalla,
+            MastPed: datosCab[0].rpc_MastPed,
+            LibPed: datosCab[0].rpc_libPed,
+            MaxLibPed: 0,
+            boddes: datosCab[0].rpc_boddes,
+            certificadoASC: rowData.certificadoASC,
+            numLote: datosCab[0].rpc_loteExistente,
+            numSecuencial: datosCab[0].rpc_nroSeLotOtr,
+            tipoProceso: rowData.tipoProceso,
+            tipoLote: "Valor Agregado"
+          }
+
+          this.RequerimientoProFresco = datosDet.map((item: any) => {
+            return {
+              numdet: item.rpd_numdet,
+              codpro: item.rpd_codpro,
+              despro: item.rpd_despro,
+              codtal: item.rpd_codtal,
+              codtalvta: item.rpd_codtalvta,
+              numcaj: item.rpd_numcaj,
+              libras: item.rpd_libras, 
+              lote: item.rpd_lote,
+            };
+          });
+          this.totalLibrasRequerimientos = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
+          if (this.GridRequerimientoProFresco){
+            this.GridRequerimientoProFresco.instance.refresh();
+          }
+
+        }
+      }
+    });
+
+    
+    setTimeout(() => {
+      $('.dx-tab-text').each(function() {
+        if ($(this).text() === 'Producto Fresco') {
+          $(this).click();
+        }
+      });
+    }, 500);
+
+  }
+
+  async onClickReqTerminado(rowData: any) {
+    this.esVistaRequerimiento = true;
+    this.limpiarRequerimientoProducto();
+    
+    this.modalReferenceItem = await this.modalService.open(this.modalRequerimientoProducto, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalGenerarRequerimiento',
+    });
+
+    this.disabledTabRequerimientoProFresco = true;
+    this.disabledTabRequerimientoProTerminado = false;
+    
+    this._service.getRequerimientoProducto(rowData.numeroReqTerminado).subscribe((data) => {
+      if (data.Codigo) {
+        let datosCab: any = data.Dt.Table;
+        let datosDet: any = data.Dt.Table1;
+        if (datosCab.length > 0) {
+          this.cabeceraReq = {
+            observ: datosCab[0].rpc_observ,
+            tiplot: datosCab[0].rpc_tiplot,
+            genLotOtr: datosCab[0].rpc_GenLotOtr,
+            codprod: datosCab[0].rpc_prodPed,
+            proClase: rowData.proClase,
+            descriProducto: rowData.descriProducto,
+            ConLote: datosCab[0].rpc_ConLote, 
+            factura: datosCab[0].rpc_factura,
+            talPed: datosCab[0].rpc_talPed,
+            descriTalla: rowData.descriTalla,
+            MastPed: datosCab[0].rpc_MastPed,
+            LibPed: datosCab[0].rpc_libPed,
+            MaxLibPed: 0,
+            boddes: datosCab[0].rpc_boddes,
+            certificadoASC: rowData.certificadoASC,
+            numLote: datosCab[0].rpc_loteExistente,
+            numSecuencial: datosCab[0].rpc_nroSeLotOtr,
+            tipoProceso: rowData.tipoProceso,
+            tipoLote: "Valor Agregado"
+          }
+
+          this.RequerimientoProTerminado = datosDet.map((item: any) => {
+            return {
+              numdet: item.rpd_numdet,
+              codpro: item.rpd_codpro,
+              despro: item.rpd_despro,
+              codtal: item.rpd_codtal,
+              codtalvta: item.rpd_codtalvta,
+              numcaj: item.rpd_numcaj,
+              libras: item.rpd_libras, 
+              lote: item.rpd_lote,
+            };
+          });
+          this.totalLibrasRequerimientos = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
+          if (this.GridRequerimientoProTerminado){
+            this.GridRequerimientoProTerminado.instance.refresh();
+          }
+
+        }
+      }
+    });
+    
+    setTimeout(() => {
+      $('.dx-tab-text').each(function() {
+        if ($(this).text() === 'Producto Terminado') {
+          $(this).click();
+        }
+      });
+    }, 500);
+
   }
 
   validarDatos () {
@@ -573,7 +748,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         }
       }
     }
-    if (this.calcularTotalLibrasRequerimientos() > this.librasPlanificadasTotal) {
+    if (this.calcularTotalLibrasRequerimientos() > (this.librasPlanificadasTotal * 1.05)) {
       return false;
     }
     return true;
@@ -607,21 +782,26 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       userAud: localStorage.getItem(varUser)
     };
 
-    await this._service.postRequerimientoProductoVA(dataReq).subscribe((data) => {
-      this.loadingVisible = false;
-      if (data.Codigo) {
-        this.showAlert('', 'Registro guardado correctamente', 'success'); // , 'this.modalReferenceItem.close();'
-        this.modalReferenceItem.close();
-        this._service.getLastPlanificacion().subscribe((data) => {
-          this.loadDataPlanificacion(data);
-        });    
-        this.limpiarNuevo();
-      } else {
-        this.showAlert('', `Error al guardar el registro` + data.Description, 'error');
+    await this._service.postRequerimientoProductoVA(dataReq).subscribe(
+      (data) => {
+        this.loadingVisible = false;
+        if (data.Codigo) {
+          this.showAlert('', 'Registro guardado correctamente', 'success'); // , 'this.modalReferenceItem.close();'
+          this.modalReferenceItem.close();
+          this._service.getLastPlanificacion().subscribe((data) => {
+            this.loadDataPlanificacion(data);
+          });    
+          this.limpiarNuevo();
+        } else {
+          this.showAlert('', `Error al guardar el registro` + data.Description, 'error');
+        }
+      },
+      (error) => {
+        console.log(error);
+        this.loadingVisible = false;
+        this.showAlert('', 'Error al guardar el registro', error.message);
       }
-    });
-
-
+    );
   }
 
   
@@ -661,6 +841,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           indiceColor = indiceColor == this.colores.length - 1 ? 0 : indiceColor + 1;
       }
       return {
+        planId: item.planId,
         plaDetId: item.plaDetId,
         prioridad: item.prioridad,
         checkReqMp: (item.numeroReqFresco !== null && item.numeroReqFresco !== 0) , 
@@ -696,10 +877,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         colorBackground: this.colores[indiceColor],
         certificadoASC: item.certificadoASC,
         numLote: item.numLote,
+        numSecuencial: item.numSecuencial,
         numeroReqFresco: item.numeroReqFresco,
         numeroReqTerminado: item.numeroReqTerminado,
         reqFrescolibrasDesp: item.reqFrescolibrasDesp,
         reqTerminadolibrasDesp: item.reqTerminadolibrasDesp,
+        tipLotOtr: item.tipLotOtr,
+        tipoProceso: item.tipoProceso,
       };
     });
     // this.GridFacturas.instance.refresh();
@@ -742,7 +926,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     // autocompletar la cantidad de libras si el total es 27000 y de fresco pongo 20000, en descongelado debe de poner 7000
     if (this.totalLibrasRequerimientos < this.cabeceraReq.LibPed && this.RequerimientoProTerminado.length == 1 && this.RequerimientoProTerminado[0].libras == 0){
       this.RequerimientoProTerminado[0].libras = this.cabeceraReq.LibPed - value;
-      this.RequerimientoProTerminado[0].numcaj = await this.calcularCajasProdByLibras(this.RequerimientoProTerminado[0].libras, this.RequerimientoProTerminado[0].codpro);
+      let cajasTer = await this.calcularCajasProdByLibras(this.RequerimientoProTerminado[0].libras, this.RequerimientoProTerminado[0].codpro);
+      this.RequerimientoProTerminado[0].numcaj = this._utilService.redondear(cajasTer, 'S', 1);
       this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
       if (this.GridRequerimientoProTerminado){
         this.GridRequerimientoProTerminado.instance.refresh();
@@ -794,6 +979,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     value = this._utilService.validateNumberInt(value);
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).libras = value;
     let cajas = await this.calcularCajasProdByLibras(value, codpro);
+    cajas = this._utilService.redondear(cajas, 'S', 1);
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).numcaj = cajas;    
     this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
     if (this.GridRequerimientoProTerminado){
@@ -861,9 +1047,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     let librasProTerminado = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
     let librasProFresco = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
     let librasTotal = librasProTerminado + librasProFresco;
-    // La cantidad total de libras no puede ser mayor al 2% más de la cantidad planificada    
-    if (librasTotal > (this.cabeceraReq.LibPed * 1.02)) {
-      this._notificationService.warning('La cantidad total de libras no puede ser mayor al 2% más de la cantidad planificada');
+    // La cantidad total de libras no puede ser mayor al 5% más de la cantidad planificada    
+    if (librasTotal > (this.cabeceraReq.LibPed * 1.05)) {
+      this._notificationService.warning('La cantidad total de libras no puede ser mayor al 5% más de la cantidad planificada');
     }
     return librasTotal;
   }
@@ -891,6 +1077,41 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     });
   }
 
+  
+  async onChangeValorLote(value: string, data: any) {
+    this.indiceColor = 0;
+    const { plaDetId } = data.data;
+    var numLote: number = value == '' ? null : parseInt(value);
+    await this._service.updateLotePlanificacion(plaDetId, numLote, localStorage.getItem(varUser)).subscribe((data) => {
+      if (data.Codigo) {
+        const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
+        if (index >= 0) {
+          this.Planificacion[index].numLote = numLote;
+        }
+        // this.showAlert('', 'Número de lote actualizado correctamente', 'success');
+      } else {
+        this.showAlert('', 'Error al actualizar el número de lote', 'error');
+      }
+    });
+  }
+  
+  async onChangeValorSecuencial(value: string, data: any) {
+    this.indiceColor = 0;
+    const { plaDetId } = data.data;
+    var numSecuencial: number = value == '' ? null : parseInt(value);
+    const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
+    await this._service.updateSecuencialPlanificacion(plaDetId, numSecuencial, localStorage.getItem(varUser)).subscribe((data) => {
+      if (data.Codigo) {
+        const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
+        if (index >= 0) {
+          this.Planificacion[index].numSecuencial = numSecuencial;
+        }
+        // this.showAlert('', 'Número de secuencial actualizado correctamente', 'success');
+      } else {
+        this.showAlert('', 'Error al actualizar el número de secuencial', 'error');
+      }
+    });
+  }
 
   filter(d, codpro){
     if(d !== undefined && d.length > 0){

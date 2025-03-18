@@ -359,6 +359,16 @@
                                                         style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
                                                 </div>
                                             </div>
+                                            <dxi-column dataField="numSecuencial" caption="Secuencial" cellTemplate="cellSecuencialValor" [width]="75" [allowFiltering]="false"
+                                                cssClass="cell-temp-valor"> 
+                                            </dxi-column>
+                                            <div *dxTemplate="let cell of 'cellSecuencialValor'">
+                                                <div>
+                                                    <input type="text" class="form-control"
+                                                        (change)=" onChangeValorSecuencial($event.target.value, cell) " [(ngModel)]="cell.value"
+                                                        style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                                </div>
+                                            </div>
                                             <dxi-column dataField="prodCodcor" caption="Codigo"></dxi-column>
                                             <dxi-column dataField="descriTalla" caption="Talla"></dxi-column>
                                             <dxi-column dataField="proClase" caption="Clase"></dxi-column>

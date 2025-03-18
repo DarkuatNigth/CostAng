@@ -71,7 +71,9 @@ export class FrmplanificacionvagconsultaService {
       { "Name": "i_accion", "Type": "char", "Value": "I" },
       { "Name": "rpc_observ", "Type": "varchar", "Value": data.cab.observ },
       { "Name": "rpc_tiplot", "Type": "varchar", "Value": data.cab.tiplot },
-      { "Name": "rpc_codprod", "Type": "varchar", "Value": data.cab.codprod },
+      { "Name": "rpc_GenLotOtr", "Type": "varchar", "Value": data.cab.genLotOtr },
+      { "Name": "rpc_prodPed", "Type": "varchar", "Value": data.cab.codprod },
+      { "Name": "rpc_nroSeLotOtr", "Type": "nvarchar", "Value": data.cab.numSecuencial?.toString() || null },
       { "Name": "rpc_ConLote", "Type": "varchar", "Value": data.cab.ConLote },
       { "Name": "rpc_factura", "Type": "varchar", "Value": data.cab.factura },
       { "Name": "rpc_talPed", "Type": "nvarchar", "Value": data.cab.talPed.toString() },
@@ -79,12 +81,17 @@ export class FrmplanificacionvagconsultaService {
       { "Name": "rpc_LibPed", "Type": "nvarchar", "Value": data.cab.LibPed.toString() },
       { "Name": "rpc_MaxLibPed", "Type": "nvarchar", "Value": data.cab.MaxLibPed.toString() },
       { "Name": "rpc_boddes", "Type": "varchar", "Value": data.cab.boddes },
+      { "Name": "rpc_loteExistente", "Type": "nvarchar", "Value": data.cab.numLote?.toString() || null },
       // { "Name": "detPlanifica_id", "Type": "int", "Value": data.cab.detPlanifica_id.toString() },
       { "Name": "i_detPlanifica", "Type": "varchar", "Value": JSON.stringify(data.detPlanifica) },
-      { "Name": "i_detalleFr", "Type": "varchar", "Value": JSON.stringify(data.detFr) },
-      { "Name": "i_detalleTe", "Type": "varchar", "Value": JSON.stringify(data.detTe) },
       { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud }
     ];
+    if (data.detFr && data.detFr.length > 0) {
+      listParam.push({ "Name": "i_detalleFr", "Type": "varchar", "Value": JSON.stringify(data.detFr) });
+    }
+    if (data.detTe && data.detTe.length > 0) {
+      listParam.push({ "Name": "i_detalleTe", "Type": "varchar", "Value": JSON.stringify(data.detTe) });
+    }
     console.log('listParam', listParam);
     const base = {
       sp: 'valoragregado.spr_RequerimientoProductoVAInsert',
@@ -207,6 +214,49 @@ export class FrmplanificacionvagconsultaService {
     const base = {
       sp: 'valoragregado.spr_RequerimientoProductoVAConsultar',
       param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+  
+  getRequerimientoProducto(idRequerimiento: number) {
+    const ListParam = [
+      { "Name": "i_tipoB", "Type": "varchar", "Value": "byId" },
+      { "Name": "rpc_numero", "Type": "nvarchar", "Value": idRequerimiento.toString() },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_RequerimientoProductoVAConsultar',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  updateLotePlanificacion(plaDetId, numLote, userAud) {
+    const listParam = [
+      { "Name": "i_accion", "Type": "char", "Value": "UL" },
+      { "Name": "pld_id", "Type": "nvarchar", "Value": plaDetId.toString() },
+      { "Name": "pld_numLote", "Type": "nvarchar", "Value": numLote.toString() },
+      { "Name": "i_user_aud", "Type": "varchar", "Value": userAud },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_planificacionVAInsert',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  updateSecuencialPlanificacion(plaDetId, numSecuencial, userAud) {
+    const listParam = [
+      { "Name": "i_accion", "Type": "char", "Value": "US" },
+      { "Name": "pld_id", "Type": "nvarchar", "Value": plaDetId.toString() },
+      { "Name": "pld_numSecuencial", "Type": "nvarchar", "Value": numSecuencial.toString() },
+      { "Name": "i_user_aud", "Type": "varchar", "Value": userAud },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_planificacionVAInsert',
+      param: listParam,
       conexion: CONNECTION_PROD
     };
     return this.http.post<ResultWS>(URL_CONSULT, base);

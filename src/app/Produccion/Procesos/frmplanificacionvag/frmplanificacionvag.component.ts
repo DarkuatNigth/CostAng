@@ -907,7 +907,8 @@ export class FrmplanificacionvagComponent implements OnInit {
       numModulos: item.manualAutomatico === 'A' ? item.numModulos : 0,
       tiempoCorteHora: item.manualAutomatico === 'M' ? item.factor : item.factorAut,
       tiempoCorte: factor,
-      numLote: null,      
+      numLote: null,     
+      numSecuencial: null, 
       colorBackground: this.colores[this.indiceColor],
     });
     if (this.Planificacion.length === 1) {
@@ -937,6 +938,16 @@ export class FrmplanificacionvagComponent implements OnInit {
       this.Planificacion[index].numLote = numLote;
     }
   }
+  
+  async onChangeValorSecuencial(value: string, data: any) {
+    this.indiceColor = 0;
+    const { prioridad } = data.data;
+    var numSecuencial: number = value == '' ? null : parseInt(value);
+    const index = this.Planificacion.findIndex(item => item.prioridad === prioridad);
+    if (index >= 0) {
+      this.Planificacion[index].numSecuencial = numSecuencial;
+    }
+  }
 
   async onPlantaChange(idPlanta: string) {
   }
@@ -946,7 +957,7 @@ export class FrmplanificacionvagComponent implements OnInit {
       e.rowElement.style.backgroundColor = e.data.colorBackground;
       if (e.data.manualAutomatico == 'A' && e.rowType === 'data') {
         // solo pintar la celda no toda la fila
-        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="13"]');
+        const manualAutomaticoCell = e.rowElement.querySelector('td[aria-colindex="14"]');
         if (manualAutomaticoCell) {
           manualAutomaticoCell.style.backgroundColor = 'yellow';
         }
