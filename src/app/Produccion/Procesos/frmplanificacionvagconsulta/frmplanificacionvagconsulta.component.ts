@@ -16,6 +16,8 @@ declare var $: any;
 declare var window;
 
 export interface CabeceraRequerimiento {
+  numeroReq?: string;
+  estado?: string;
   observ: string;
   tiplot: string;
   genLotOtr: string;
@@ -34,6 +36,7 @@ export interface CabeceraRequerimiento {
   certificadoASC: string;
   numLote: number;
   numSecuencial: number;
+  esmaquina: string;
   tipoProceso: string;
   tipoLote: string;
 }
@@ -414,6 +417,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     
     this.cmbBodegaDestino = "VQ"; // 'TR VAG S2'
     this.cabeceraReq = {
+      numeroReq: null,
+      estado: '',
       observ: '',
       tiplot: this.itemSelectedForReq[0].tipLotOtr,
       genLotOtr: this.itemSelectedForReq[0].numSecuencial ? '2' : '1',
@@ -432,6 +437,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       certificadoASC: this.itemSelectedForReq[0].certificadoASC,
       numLote: this.itemSelectedForReq[0].numLote || null,
       numSecuencial: this.itemSelectedForReq[0].numSecuencial || null,
+      esmaquina: this.itemSelectedForReq[0].manualAutomatico === 'A' ? '1' : null,
       tipoProceso: this.itemSelectedForReq[0].tipoProceso,
       tipoLote: "Valor Agregado"
     }
@@ -570,7 +576,18 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         let datosCab: any = data.Dt.Table;
         let datosDet: any = data.Dt.Table1;
         if (datosCab.length > 0) {
+          let estadoDescri = datosCab[0].rpc_estado === 'AC' ? 'ACTIVO' :
+                            datosCab[0].rpc_estado === 'EN' ? 'ENVIADO' :
+                            datosCab[0].rpc_estado === 'AN' ? 'ANULADO' :
+                            datosCab[0].rpc_estado === 'AP' ? 'APROBADO' :
+                            datosCab[0].rpc_estado === 'PR' ? 'PRE APROBADO' :
+                            datosCab[0].rpc_estado === 'DE' ? 'DENEGADO' :
+                            datosCab[0].rpc_estado === 'DS' ? 'DESPACHADO' :
+                            datosCab[0].rpc_estado === 'DP' ? 'DESPACHADO PARCIAL' : '';
+          this.cmbBodegaDestino = datosCab[0].rpc_boddes.toString().trim();
           this.cabeceraReq = {
+            numeroReq: datosCab[0].rpc_numero,
+            estado: estadoDescri,
             observ: datosCab[0].rpc_observ,
             tiplot: datosCab[0].rpc_tiplot,
             genLotOtr: datosCab[0].rpc_GenLotOtr,
@@ -588,6 +605,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             certificadoASC: rowData.certificadoASC,
             numLote: datosCab[0].rpc_loteExistente,
             numSecuencial: datosCab[0].rpc_nroSeLotOtr,
+            esmaquina: rowData.manualAutomatico === 'A' ? '1' : null,
             tipoProceso: rowData.tipoProceso,
             tipoLote: "Valor Agregado"
           }
@@ -641,7 +659,18 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         let datosCab: any = data.Dt.Table;
         let datosDet: any = data.Dt.Table1;
         if (datosCab.length > 0) {
+          let estadoDescri = datosCab[0].rpc_estado === 'AC' ? 'ACTIVO' :
+                            datosCab[0].rpc_estado === 'EN' ? 'ENVIADO' :
+                            datosCab[0].rpc_estado === 'AN' ? 'ANULADO' :
+                            datosCab[0].rpc_estado === 'AP' ? 'APROBADO' :
+                            datosCab[0].rpc_estado === 'PR' ? 'PRE APROBADO' :
+                            datosCab[0].rpc_estado === 'DE' ? 'DENEGADO' :
+                            datosCab[0].rpc_estado === 'DS' ? 'DESPACHADO' :
+                            datosCab[0].rpc_estado === 'DP' ? 'DESPACHADO PARCIAL' : '';
+          this.cmbBodegaDestino = datosCab[0].rpc_boddes.toString().trim();
           this.cabeceraReq = {
+            numeroReq: datosCab[0].rpc_numero,
+            estado: estadoDescri,
             observ: datosCab[0].rpc_observ,
             tiplot: datosCab[0].rpc_tiplot,
             genLotOtr: datosCab[0].rpc_GenLotOtr,
@@ -659,6 +688,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             certificadoASC: rowData.certificadoASC,
             numLote: datosCab[0].rpc_loteExistente,
             numSecuencial: datosCab[0].rpc_nroSeLotOtr,
+            esmaquina: rowData.manualAutomatico === 'A' ? '1' : null,
             tipoProceso: rowData.tipoProceso,
             tipoLote: "Valor Agregado"
           }
@@ -694,7 +724,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
   }
 
-  validarDatos () {
+  async validarDatos () {
     if (this.cmbBodegaDestino === undefined || this.cmbBodegaDestino === '00') {
       this._notificationService.warning('Debe seleccionar la bodega destino');
       return false;
@@ -746,6 +776,12 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
           this._notificationService.warning('Debe ingresar la cantidad de cajas de producto terminado');
           return false;
         }
+        // calcular el stock en base de datos
+        let validaStock = await this.verificarStockProducto(this.RequerimientoProTerminado[i].codpro, this.RequerimientoProTerminado[i].codtal, this.RequerimientoProTerminado[i].numcaj);
+        if (!validaStock){
+          return false;
+        }
+        
       }
     }
     if (this.calcularTotalLibrasRequerimientos() > (this.librasPlanificadasTotal * 1.05)) {
@@ -757,7 +793,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
   async onClickGuardarRequerimientoProducto () {
     this.loadingVisible = true;
-    if (!this.validarDatos()) {
+    if (! await this.validarDatos()) {
       this.loadingVisible = false;
       return;
     }
@@ -949,18 +985,24 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   }
 
   async onChangeValorProductoTer(value: any, cell: any) {
-    const { numdet } = cell.data;
-    value = this._utilService.validateNumberInt(value);
-    await this._service.getProductoRequerimientoSearch({ codpro: value, tipo: 'PT'}).subscribe(async (data) => {
+    const { numdet, numcaj } = cell.data;
+    let codpro = this._utilService.validateNumberInt(value);
+    await this._service.getProductoRequerimientoSearch({ codpro: codpro, tipo: 'PT'}).subscribe(async (data) => {
       var dat: any = data.Dt.Table;
       const index = this.RequerimientoProTerminado.findIndex(x => x.numdet === numdet);
       if (dat.length > 0) {
-        this.RequerimientoProTerminado[index].codpro = value.toString();
+        this.RequerimientoProTerminado[index].codpro = codpro.toString();
         this.RequerimientoProTerminado[index].despro = dat[0].pro_desesp;
-        let codtal = await this.SSLlenaTallas(value.toString(), this.cabeceraReq.descriTalla);
+        let codtal = await this.SSLlenaTallas(codpro.toString(), this.cabeceraReq.descriTalla);
         if (codtal !== null) {
           this.RequerimientoProTerminado[index].codtal = codtal;
           this.RequerimientoProTerminado[index].codtalvta = codtal;
+          if (codpro && codtal && numcaj > 0){
+            await this.verificarStockProducto(codpro, codtal, numcaj);
+          }
+        } else {
+          this.RequerimientoProTerminado[index].codtal = null;
+          this.RequerimientoProTerminado[index].codtalvta = null;
         }
       } else {
         this.RequerimientoProTerminado[index].codpro = '';
@@ -975,26 +1017,54 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
 
 
   async onChangeValorLibrasTer(value: any, cell: any) {
-    const { numdet, codpro } = cell.data;
+    const { numdet, codpro, codtal } = cell.data;
     value = this._utilService.validateNumberInt(value);
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).libras = value;
     let cajas = await this.calcularCajasProdByLibras(value, codpro);
     cajas = this._utilService.redondear(cajas, 'S', 1);
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).numcaj = cajas;    
     this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+    if (codpro && codtal && cajas > 0){
+      await this.verificarStockProducto(codpro, codtal, cajas);
+    }
     if (this.GridRequerimientoProTerminado){
       this.GridRequerimientoProTerminado.instance.refresh();
     }
   }
 
   async OnChangeCmbTallaTer(value,cell){
-    const { numdet } = cell.data;
+    const { numdet, codpro, numcaj } = cell.data;
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).codtal = value;
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).codtalvta = value;
+    let codtal = value;
+    if (codpro && codtal && numcaj > 0){
+      await this.verificarStockProducto(codpro, codtal, numcaj);
+    }
     if (this.GridRequerimientoProTerminado){
       this.GridRequerimientoProTerminado.instance.refresh();
     }
   }
+
+  async verificarStockProducto(codpro, codtal, cajas: number){
+    let valida = true;
+    var data = await this._service.getStockProducto(codpro, codtal, 0).toPromise();
+    if (data.Codigo) {
+      let datosDet: any = data.Dt.Table1;
+      if (data.Dt.Table.length > 0) {
+        let stockObj: any = data.Dt.Table;
+        let SaldoTodo: number = stockObj[0].Column1;
+        let SaldoDisponible: number = stockObj[0].Column2;
+        let SaldoBloqueado: number = stockObj[0].Column3;
+        let SaldoBloqueadoPreLiberado: number = stockObj[0].Column4;  
+        if (cajas > SaldoTodo) {
+          this._notificationService.warning(`No existe stock suficiente para el producto terminado ${codpro} en la talla seleccionada`);
+          valida = false;
+        }      
+      }
+    }
+    return valida;
+  }
+        
 
   SSLlenaTallas(codigoProd, descriTalla): Promise<any>{
     if (this.dataCmbTalla.filter(d=> d["codpro"] == codigoProd).length > 0){

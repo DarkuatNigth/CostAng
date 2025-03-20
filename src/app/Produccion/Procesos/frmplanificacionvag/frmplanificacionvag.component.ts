@@ -51,6 +51,7 @@ interface Pedidos {
 
 interface Turno {
   turno: string;
+  turnoDesc: string;
   factorMaximo: number;
   numPersonas: number;
   numModulos: number;
@@ -83,6 +84,7 @@ export class FrmplanificacionvagComponent implements OnInit {
   fechaDesde: Date = new Date();
   fechaHasta: Date = new Date();
   cmbPlanta?: string = undefined;
+  cmbTurno?: string = undefined;
   numPersonasDia: number = 0;
   numPersonasNoche: number = 0;
   numModulos: number = 0;
@@ -102,12 +104,14 @@ export class FrmplanificacionvagComponent implements OnInit {
   turnoObj: Turno[] = [
     {
       turno: 'D',
+      turnoDesc: 'Día',
       factorMaximo: 0,
       numPersonas: 0,
       numModulos: 0
     },
     {
       turno: 'N',
+      turnoDesc: 'Noche',
       factorMaximo: 0,
       numPersonas: 0,
       numModulos: 0
@@ -468,7 +472,8 @@ export class FrmplanificacionvagComponent implements OnInit {
     this.fechaDesde = new Date();
     this.fechaHasta = new Date();
     this.fechaHasta.setDate(this.fechaHasta.getDate() + 15)
-    this.cmbPlanta = undefined;
+    this.cmbPlanta = '11'; //S2
+    this.cmbTurno = 'D'; 
     this.txtObservacion = '';
     this.numPersonasDia = 200;
     this.numPersonasNoche = 200;
@@ -532,32 +537,6 @@ export class FrmplanificacionvagComponent implements OnInit {
     if (this.tabPanel) {
       this.tabPanel.instance.option('selectedIndex', 0);
     }
-  }
-
-  async onClickConsultar() {
-    this.loadingVisible = true;
-    if (!this.fechaDesde || !this.fechaHasta) {
-      this._notificationService.error('Debe ingresar un rango de fechas para generar la preplanificación');
-      this.loadingVisible = false;
-      return;
-    }
-    if (!this.numPersonasDia || !this.numPersonasNoche) {
-      this._notificationService.error('Debe ingresar el número de personas para generar la preplanificación');
-      this.loadingVisible = false;
-      return;
-    }
-    if (!this.numModulos) {
-      this._notificationService.error('Debe ingresar el número de Módulos para generar la preplanificación');
-      this.loadingVisible = false;
-      return;
-    }
-    // if (this.cmbPlanta === undefined) {
-    //   this._notificationService.error('Debe seleccionar una planta');
-    //   this.loadingVisible = false;
-    //   return;
-    // }
-    this.generarPlanificacion('facturas');
-    this.loadingVisible = false;
   }
 
   async onClickGuardar() {
@@ -655,7 +634,8 @@ export class FrmplanificacionvagComponent implements OnInit {
     }
 
     let maxCongelamiento = this.parametrosGenerales.IQF_S1 + this.parametrosGenerales.IQF_S2;
-    let turno = this.turnoObj.find(x => x.turno === 'D');
+    let turno = this.turnoObj.find(x => x.turno === this.cmbTurno); // this.turnoObj.find(x => x.turno === 'D');
+    console.log('turno', turno);
     let factorSuma = 0;
     let congelaSuma = 0;
     let saldoPendiente = 0;

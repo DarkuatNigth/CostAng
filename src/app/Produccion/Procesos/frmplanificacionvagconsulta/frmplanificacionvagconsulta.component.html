@@ -162,7 +162,7 @@
                                 </dxi-column>
                                 <div *dxTemplate="let cell of 'ReqTerminadoTemplate'">
                                     <div *ngIf="cell.value !== null">
-                                        <button class="btn small-button" (click)="onClickReqFresco(cell.data)">
+                                        <button class="btn small-button" (click)="onClickReqTerminado(cell.data)">
                                             <span class="dx-button-content">
                                                 <i class="dx-icon dx-icon-eyeopen"></i>
                                                 {{ cell.value }}
@@ -201,7 +201,12 @@
 
 <ng-template #modalRequerimientoProducto let-modal>
     <div class="modal-header">
-        <h4 class="modal-title" id="modal-basic-title">Requerimiento de Producto</h4>
+        <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Requerimiento de Producto 
+            <span *ngIf="cabeceraReq.numeroReq" class="" style="float: right;display: flex">
+                N°: <span class="ml-2 mr-4" style="font-weight: bold;">{{cabeceraReq.numeroReq}}</span>
+                Estado: <span class="ml-2" style="color: brown; font-weight: bold;">{{cabeceraReq.estado}}</span>
+            </span>
+        </h4>
     </div>
     <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
         <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
@@ -250,8 +255,8 @@
                     <div class="w-100 d-lg-none d-md-block"></div>
                     <div class="w-100 d-lg-block"></div>
                     
-                    <label class="col-12 pb-1 control-label">Motivo por el que solicita el producto</label>
-                    <div class="col-12 pb-1" style="display: flex">
+                    <label class="col-12 pb-1 pl-0 control-label">Motivo por el que solicita el producto</label>
+                    <div class="col-12 pb-1 pl-0" style="display: flex">
                         <textarea type="text" class="form-control" rows="1" [(ngModel)]="observacion" name="observacion" [disabled]="esVistaRequerimiento"></textarea>
                     </div>
                 </div>
