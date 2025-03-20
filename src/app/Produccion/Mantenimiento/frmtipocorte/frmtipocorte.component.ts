@@ -11,11 +11,12 @@ declare var window;
 
 
 interface Catalogo {
-  codigo: number;
+  codigo: any;
   descripcion: string;
 }
 
 interface Tallas_TiemposCortes {
+  tipo: string;
   codigo: string;
   descripcion: string;
   valor: number;
@@ -33,9 +34,14 @@ export class FrmtipocorteComponent implements OnInit {
   loadingVisible: boolean = false;
   disabledBtnGuardar: boolean = false;
   cmbTipoCorte?: number;
+  cmbTipo?: string;
 
   Tallas_TiemposCortes: Tallas_TiemposCortes[] = [];
   TiposCortes: Catalogo[] = []
+  Tipos: Catalogo[] = [
+    { codigo: 'SC', descripcion: 'Cola' },
+    { codigo: 'CC', descripcion: 'Entero' }
+  ]
 
   @ViewChild('GridTallas_TiemposCortes', { static: false }) GridTallas_TiemposCortes: DxDataGridComponent;
 
@@ -52,16 +58,19 @@ export class FrmtipocorteComponent implements OnInit {
   
 
   async ngOnInit() {
+    this.onClickNuevo();
   }
 
   public constructor(
     private _service: FrmtipocorteService,
     private _notificationService: NotificationService,
   ) {
+    this.loadingVisible = true;
     this._service.getTiposCortes().subscribe((data) => {
       this.TiposCortes = data.Dt.Table;
       this.Tallas_TiemposCortes = data.Dt.Table1.map((x: any) => {
         return {
+          tipo: x.tipo,
           codigo: x.codigo,
           descripcion: x.descripcion,
           valor: null,
@@ -69,11 +78,13 @@ export class FrmtipocorteComponent implements OnInit {
           idValorCorte: null
         }
       });
+      this.loadingVisible = false;
     });
   }
 
   onClickNuevo() {
     this.cmbTipoCorte = null;
+    this.cmbTipo = 'SC';
     this.Tallas_TiemposCortes.forEach(x => {x.valor = null; x.valorAutomatico = null; x.idValorCorte = null});
   }
 
@@ -162,6 +173,10 @@ export class FrmtipocorteComponent implements OnInit {
         });
       }
     });
+  }
+
+  async onTipoChange(idTipo: string) {
+    this.cmbTipo = idTipo;
   }
 
 }
