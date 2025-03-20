@@ -17,11 +17,6 @@
             </dx-button>
         </div>
 
-        <!-- <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
-            <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
-            </dx-button>
-        </div> -->
-
         <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
             <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()"
                 [disabled]="disabledBtnGuardar">
@@ -52,6 +47,18 @@
                             </dx-date-box>
                         </div>
 
+                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Turno inicio:</label>
+                        <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
+                            <!-- <input type="number" min="0" class="form-control" [(ngModel)]="numModulos" name="numModulos" (keypress)="_utilService.onKeypressValidateNumber($event)"/> -->
+                            <ng-select style="width: 100%" [(ngModel)]="cmbTurno" appendTo="body" [searchable]="true" [clearable]="false">
+                                <ng-option *ngFor="let data of turnoObj" [value]="data.turno">
+                                    <div title="{{ data.turnoDesc }}" style="font-size: 12px">
+                                        {{ data.turnoDesc }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
                         <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">Planta:</label>
                         <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1">
                             <ng-select style="width: 100%" [(ngModel)]="cmbPlanta" appendTo="body" [searchable]="true" [clearable]="false"
@@ -62,11 +69,6 @@
                                     </div>
                                 </ng-option>
                             </ng-select>
-                        </div>
-
-                        <label class="col-12 col-sm-2 col-md-2 col-lg-1 pb-1 control-label">*Módulos (Aut):</label>
-                        <div class="col-12 col-sm-4 col-md-2 col-lg-2 pb-1" style="display: flex">
-                            <input type="number" min="0" class="form-control" [(ngModel)]="numModulos" name="numModulos" (keypress)="_utilService.onKeypressValidateNumber($event)"/>
                         </div>
 
                         <div class="w-100 d-lg-none d-md-block"></div>
