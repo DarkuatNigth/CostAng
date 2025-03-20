@@ -82,6 +82,7 @@ export class FrmplanificacionvagconsultaService {
       { "Name": "rpc_MaxLibPed", "Type": "nvarchar", "Value": data.cab.MaxLibPed.toString() },
       { "Name": "rpc_boddes", "Type": "varchar", "Value": data.cab.boddes },
       { "Name": "rpc_loteExistente", "Type": "nvarchar", "Value": data.cab.numLote?.toString() || null },
+      { "Name": "rpc_esmaquina", "Type": "varchar", "Value": data.cab.esmaquina },
       // { "Name": "detPlanifica_id", "Type": "int", "Value": data.cab.detPlanifica_id.toString() },
       { "Name": "i_detPlanifica", "Type": "varchar", "Value": JSON.stringify(data.detPlanifica) },
       { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud }
@@ -256,6 +257,21 @@ export class FrmplanificacionvagconsultaService {
     ];
     const base = {
       sp: 'valoragregado.spr_planificacionVAInsert',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  getStockProducto(codpro, codtal, numlote) {
+    const listParam = [
+      { "Name": "codpro", "Type": "varchar", "Value": codpro.toString() },
+      { "Name": "codtal", "Type": "nvarchar", "Value": codtal.toString() },
+      { "Name": "tipo", "Type": "nvarchar", "Value": "1" },
+      { "Name": "numlote", "Type": "nvarchar", "Value": numlote.toString() },
+    ];
+    const base = {
+      sp: 'dbo.spr_SaldoProdNew3',
       param: listParam,
       conexion: CONNECTION_PROD
     };
