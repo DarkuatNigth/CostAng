@@ -100,6 +100,7 @@ export class FrmplanificacionvagComponent implements OnInit {
     IQF_S2: number,
     MX_DIA: number,
     MX_NOC: number,
+    POR_AU: number,
   }
   turnoObj: Turno[] = [
     {
@@ -177,6 +178,7 @@ export class FrmplanificacionvagComponent implements OnInit {
           IQF_S2: result.find(x => x.pgv_codigo === 'IQF_S2')?.pgv_valor || 0,
           MX_DIA: result.find(x => x.pgv_codigo === 'MX_DIA')?.pgv_valor || 0,
           MX_NOC: result.find(x => x.pgv_codigo === 'MX_NOC')?.pgv_valor || 0,
+          POR_AU: result.find(x => x.pgv_codigo === 'POR_AU')?.pgv_valor || 0,
         }
         this.turnoObj.find(x => x.turno === 'D').factorMaximo = this.parametrosGenerales.MX_DIA;
         this.turnoObj.find(x => x.turno === 'N').factorMaximo = this.parametrosGenerales.MX_NOC;
@@ -230,6 +232,11 @@ export class FrmplanificacionvagComponent implements OnInit {
         } else {
           this.getDisponibilidadPersonal();
         }
+
+        setTimeout(() => {
+          
+          
+        }, 1000);
       });
 
 
@@ -320,7 +327,7 @@ export class FrmplanificacionvagComponent implements OnInit {
       this.facturas[index].prioridad = prioridad;
       // la agrego a la lista de facturas seleccionadas, y ordeno por prioridad ascendente, fecha estimada de embarque ascendente y id || a.fechaEstimadaEmbarque.getTime() - b.fechaEstimadaEmbarque.getTime() 
       this.facturasSelected.push(this.facturas[index]);
-      this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad || ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) ); //|| (a.id < b.id ? -1 : 1)
+      this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad && ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) && a.id.localeCompare(b.id) ); //|| (a.id < b.id ? -1 : 1)
       this.updateFacturasSelected();      
       let selected = true;
       let saldoPedido = this.facturas[index].saldoPedido;
@@ -355,7 +362,6 @@ export class FrmplanificacionvagComponent implements OnInit {
       return;
     }
     rowData.saldoPedido = saldoPedido;
-
   }
 
   previousValue: any; // Variable para almacenar el valor anterior
@@ -401,6 +407,8 @@ export class FrmplanificacionvagComponent implements OnInit {
   }
 
   onFocusFormat(event: any) {
+    // get event type
+    console.log(event.type);
     this.previousValue = event.target.value;
     event.target.value = this.parseNumber(event.target.value).toString();
     event.target.value = this.formatNumber(event.target.value);
@@ -942,8 +950,28 @@ export class FrmplanificacionvagComponent implements OnInit {
           manualAutomaticoCell.style.backgroundColor = 'yellow';
         }
       }
+      if (e.data.saldoPedido && e.rowType === 'data') {
+        // aplicar onFocusFormat a la celda
+        const saldoPedidoCell = e.rowElement.querySelector('td[aria-colindex="12"]');
+        if (saldoPedidoCell) {
+          saldoPedidoCell.addEventListener('focus', this.onFocusFormat.bind(this));
+          saldoPedidoCell.addEventListener('blur', this.onBlur.bind(this));
+        }
+      }
     }
   }
+
+  // onGridFacturasContentReady(e) {
+  //   setTimeout(() => {
+  //     let list = document.querySelectorAll(`input.form-control.sng-template.sng-format.ng-valid`); 
+  //     list.forEach((element: HTMLInputElement) => { 
+  //       let value = element.value;
+  //       value = this.formatNumber(this.parseNumber(value));
+  //       element.value = value;
+  //     });
+  //   }, 100);
+  // }
+
   
   onRowPreparedFacturasSelected(e) {
     if (e.data) {
@@ -1047,14 +1075,17 @@ export class FrmplanificacionvagComponent implements OnInit {
   async getDisponibilidadPersonal() {
     this._service.getDisponibilidadPersonal(this.fechaDesde, this.fechaHasta).subscribe((data) => {
       let id = 1;
+      // obtener el porcentaje de ausentismo POR_AU de la tabla de parametros generales
+      let porcentajeAusentismo = this.parametrosGenerales?.POR_AU || 0;
+      let factorAusentismo = 1 - (porcentajeAusentismo / 100);
       this.DisponibilidadPersonal = data.Dt.Table.map((item: any) => {
         return {
           id: id++,
           dia: item.Dia,
           fecha: item.FechaTurno,
           // fecha: new Date(item.FechaTurno),
-          nroPersonasDia: item.D,
-          nroPersonasNoche: item.N,
+          nroPersonasDia: Math.round(item.D * factorAusentismo),
+          nroPersonasNoche: Math.round(item.N * factorAusentismo),
         };
       });
     });

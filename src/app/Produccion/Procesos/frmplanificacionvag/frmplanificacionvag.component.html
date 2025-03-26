@@ -128,7 +128,9 @@
                                                     (onRowClick)="onFocus('first')" 
                                                     (blur)="onBlur()"
                                                 >
-                                                    <dxo-scrolling mode="virtual"></dxo-scrolling> <!-- con esto no funciona el pagineo -->
+                                                    <!--
+                                                    (onContentReady)="onGridFacturasContentReady($event)"
+                                                    <dxo-scrolling mode="virtual"></dxo-scrolling>--> <!-- con esto no funciona el pagineo -->
                                                     <dxo-sorting mode="none"></dxo-sorting>
                                                     <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
                                                     <dxo-row-dragging [showDragIcons]="true" [data]="false" group="facturasGroup" [onAdd]="onAdd">
@@ -167,6 +169,7 @@
                                                                 (change)="onChangeOrder($event.target.value, cell.data)"
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event)"
                                                                 [(ngModel)]="cell.value" 
                                                                 style="text-align: right;" />
                                                         </div>
@@ -181,14 +184,14 @@
                                                     </dxi-column>
                                                     <div *dxTemplate="let cell of 'saldoPedidoTemplate'">
                                                         <div>
-                                                            <input type="text" class="form-control sng-template" 
-                                                                (change)="onChangeSaldoPedido($event.target.value, cell.data)"
+                                                            <input type="text" class="form-control sng-template sng-format" 
+                                                                (change)="onChangeSaldoPedido($event.target.value, cell.data);"
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event);onFocusFormat($event);"
+                                                                (blur)="onFocusFormat($event);"
                                                                 [(ngModel)]="cell.value" 
-                                                                (focus)="onFocusFormat($event)"
                                                                 style="text-align: right;" />
-                                                            <!-- <span>{{ cell.value | number:'1.2-2' }}</span> -->
                                                         </div>
                                                     </div>
                                                     <dxi-column caption="Pri" dataField="prioridad" [width]="35" [allowFiltering]="false"
@@ -200,6 +203,7 @@
                                                                 (change)="onChangePrioridad($event.target.value, cell.data)"
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event)"
                                                                 [(ngModel)]="cell.value" 
                                                                 style="text-align: right;" />
                                                         </div>
@@ -229,7 +233,7 @@
                                                     (blur)="onBlur()"
                                                     (onRowPrepared)="onRowPreparedFacturasSelected($event)"
                                                     >
-                                                    <dxo-scrolling mode="virtual"></dxo-scrolling>
+                                                    <!-- <dxo-scrolling mode="virtual"></dxo-scrolling> -->
                                                     <dxo-sorting mode="none"></dxo-sorting>
                                                     <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
                                                     <dxo-row-dragging [allowReordering]="true" [onReorder]="onReorder" [showDragIcons]="true" [data]="true"
@@ -268,6 +272,7 @@
                                                                 (change)="onChangeReorder($event.target.value, cell.data)" 
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event)"
                                                                 [(ngModel)]="cell.value" 
                                                                 style="text-align: right;" />
                                                         </div>
@@ -286,6 +291,7 @@
                                                                 (change)="onChangeModulos($event.target.value, cell.data)" 
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event)"
                                                                 [(ngModel)]="cell.value" 
                                                                 [disabled]="cell.data.manualAutomatico !== 'A'"
                                                                 style="text-align: right;" />
@@ -296,14 +302,16 @@
                                                     </dxi-column>
                                                     <div *dxTemplate="let cell of 'saldoPedidoTemplate2'">
                                                         <div>
-                                                            <input type="text" class="form-control sng-template" 
+                                                            <input type="text" class="form-control sng-template sng-format" 
                                                                 (change)="onChangeSaldoPedido2($event.target.value, cell.data)"                                                                
                                                                 (keypress)="_utilService.onKeypressValidateNumber($event)"
                                                                 (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event);onFocusFormat($event);"
+                                                                (blur)="onFocusFormat($event);"
                                                                 [(ngModel)]="cell.value" 
-                                                                (focus)="onFocusFormat($event)"
                                                                 style="text-align: right;" />
                                                             <!--  
+                                                                (focus)="onFocusFormat($event)"
                                                                 <span>{{ cell.value | number:'1.2-2' }}</span> -->
                                                         </div>
                                                     </div>
