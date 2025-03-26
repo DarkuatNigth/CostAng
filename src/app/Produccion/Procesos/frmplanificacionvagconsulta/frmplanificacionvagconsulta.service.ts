@@ -83,6 +83,7 @@ export class FrmplanificacionvagconsultaService {
       { "Name": "rpc_boddes", "Type": "varchar", "Value": data.cab.boddes },
       { "Name": "rpc_loteExistente", "Type": "nvarchar", "Value": data.cab.numLote?.toString() || null },
       { "Name": "rpc_esmaquina", "Type": "varchar", "Value": data.cab.esmaquina },
+      { "Name": "chkGeneraLotReq", "Type": "varchar", "Value": data.cab.chkGeneraLotReq ? '1' : null },
       // { "Name": "detPlanifica_id", "Type": "int", "Value": data.cab.detPlanifica_id.toString() },
       { "Name": "i_detPlanifica", "Type": "varchar", "Value": JSON.stringify(data.detPlanifica) },
       { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud }

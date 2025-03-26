@@ -39,6 +39,7 @@ export interface CabeceraRequerimiento {
   esmaquina: string;
   tipoProceso: string;
   tipoLote: string;
+  chkGeneraLotReq?: boolean;
 }
 
 export interface DetalleRequerimiento {
@@ -47,9 +48,14 @@ export interface DetalleRequerimiento {
   despro?: string;
   codtal?: number;
   codtalvta?: number;
+  taldescri: string;
+  lote: number;
   numcaj: number;
   libras: number;
-  lote: number;
+  masters: number;
+  numcajdesp: number;
+  librrasdesp: number;
+  mastersdesp: number;
 }
 
 @Component({
@@ -72,6 +78,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   fechaConsultaHasta: Date = new Date();
   esPlanificacionHistorica: boolean = false;
   esVistaRequerimiento: boolean = false;
+  disabledChkGeneraLote: boolean = false;
 
   cabeceraReq: CabeceraRequerimiento = {} as CabeceraRequerimiento;
   observacion: string = '';
@@ -86,7 +93,10 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   RequerimientoProFresco: DetalleRequerimiento[] = [];
   RequerimientoProTerminado: DetalleRequerimiento[] = [];
   modalReferenceItem: any;
-  totalLibrasRequerimientos: number = 0;
+  totalLibrasReq: number = 0;
+  totalMastersReq: number = 0;
+  totalLibrasDesp: number = 0;
+  totalMastersDesp: number = 0;
 
   
   colores = ['lightblue', 'lightgreen', 'aquamarine', 'lightpink', 'lightyellow', 'lightsteelblue', 'lightcyan', 'LightSalmon', 'lavender', 'Thistle', 'antiquewhite', 'PowderBlue', 'lightskyblue', 'lightcoral'];
@@ -145,6 +155,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
   limpiarNuevo() {
     this.esPlanificacionHistorica = false;
     this.esVistaRequerimiento = false;
+    this.disabledChkGeneraLote = false;
     if (this.tabPanel) {
       this.tabPanel.instance.option('selectedIndex', 0);
     }
@@ -380,16 +391,23 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.observacion = '';
     this.RequerimientoProFresco = [];
     this.RequerimientoProTerminado = [];
-    this.totalLibrasRequerimientos = 0;
+    this.totalLibrasReq = 0;
+    this.totalMastersReq = 0;
+    this.totalLibrasDesp = 0;
+    this.totalMastersDesp = 0;
   }
 
   async onClickGenerarRequerimiento() {
     this.esVistaRequerimiento = false;
+    this.disabledChkGeneraLote = false;
     this.limpiarRequerimientoProducto();
     this.itemSelectedForReq = this.Planificacion.filter((x) => (x.checkReqDes && x.numeroReqTerminado === null) || (x.checkReqMp && x.numeroReqFresco === null));
     if (this.itemSelectedForReq.length === 0) {
       this._notificationService.warning('Debe seleccionar al menos un registro para generar el requerimiento de producto');
       return;
+    }
+    if (this.itemSelectedForReq[0].numLote > 0) {
+      this.disabledChkGeneraLote = true;
     }
     
     this.modalReferenceItem = await this.modalService.open(this.modalRequerimientoProducto, {
@@ -439,7 +457,8 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       numSecuencial: this.itemSelectedForReq[0].numSecuencial || null,
       esmaquina: this.itemSelectedForReq[0].manualAutomatico === 'A' ? '1' : null,
       tipoProceso: this.itemSelectedForReq[0].tipoProceso,
-      tipoLote: "Valor Agregado"
+      tipoLote: "Valor Agregado",
+      chkGeneraLotReq: null,
     }
 
     if (!this.disabledTabRequerimientoProFresco){
@@ -493,9 +512,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       despro: desProd,
       codtal: codtal || null,
       codtalvta: codtal || null,
+      taldescri: '',
+      lote: 0,
       numcaj: 0,
       libras: 0,
-      lote: 0,
+      masters: 0,
+      numcajdesp: 0,
+      librrasdesp: 0,
+      mastersdesp: 0,
     };
     this.RequerimientoProFresco = [...this.RequerimientoProFresco, reqFr];
     if (this.GridRequerimientoProFresco){
@@ -538,9 +562,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       despro: desProd,
       codtal: codtal || null,
       codtalvta: codtal || null,
+      taldescri: '',
+      lote: 0,
       numcaj: 0,
       libras: 0,
-      lote: 0,
+      masters: 0,
+      numcajdesp: 0,
+      librrasdesp: 0,
+      mastersdesp: 0,
     };
     this.RequerimientoProTerminado = [...this.RequerimientoProTerminado, reqTe];
     if (this.GridRequerimientoProTerminado){
@@ -576,18 +605,10 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         let datosCab: any = data.Dt.Table;
         let datosDet: any = data.Dt.Table1;
         if (datosCab.length > 0) {
-          let estadoDescri = datosCab[0].rpc_estado === 'AC' ? 'ACTIVO' :
-                            datosCab[0].rpc_estado === 'EN' ? 'ENVIADO' :
-                            datosCab[0].rpc_estado === 'AN' ? 'ANULADO' :
-                            datosCab[0].rpc_estado === 'AP' ? 'APROBADO' :
-                            datosCab[0].rpc_estado === 'PR' ? 'PRE APROBADO' :
-                            datosCab[0].rpc_estado === 'DE' ? 'DENEGADO' :
-                            datosCab[0].rpc_estado === 'DS' ? 'DESPACHADO' :
-                            datosCab[0].rpc_estado === 'DP' ? 'DESPACHADO PARCIAL' : '';
-          this.cmbBodegaDestino = datosCab[0].rpc_boddes.toString().trim();
+          this.cmbBodegaDestino = datosCab[0].rpc_boddes?.toString().trim() || null;
           this.cabeceraReq = {
             numeroReq: datosCab[0].rpc_numero,
-            estado: estadoDescri,
+            estado: datosCab[0].rpc_estadoDescri,
             observ: datosCab[0].rpc_observ,
             tiplot: datosCab[0].rpc_tiplot,
             genLotOtr: datosCab[0].rpc_GenLotOtr,
@@ -603,11 +624,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             MaxLibPed: 0,
             boddes: datosCab[0].rpc_boddes,
             certificadoASC: rowData.certificadoASC,
-            numLote: datosCab[0].rpc_loteExistente,
+            numLote: (datosCab[0].rpc_loteExistente ? datosCab[0].rpc_loteExistente : 
+              datosCab[0].rpc_rlonumero ? datosCab[0].rpc_rlonumero : null),
             numSecuencial: datosCab[0].rpc_nroSeLotOtr,
             esmaquina: rowData.manualAutomatico === 'A' ? '1' : null,
             tipoProceso: rowData.tipoProceso,
-            tipoLote: "Valor Agregado"
+            tipoLote: "Valor Agregado",
+            chkGeneraLotReq: datosCab[0].rpc_rlonumero ? true : null,
           }
 
           this.RequerimientoProFresco = datosDet.map((item: any) => {
@@ -617,12 +640,21 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
               despro: item.rpd_despro,
               codtal: item.rpd_codtal,
               codtalvta: item.rpd_codtalvta,
-              numcaj: item.rpd_numcaj,
-              libras: item.rpd_libras, 
+              taldescri: item.tal_descri,
               lote: item.rpd_lote,
+              numcaj: item.rpd_numcaj,
+              numcajdesp: item.rpd_numcajdesp,
+              libras: item.cant_librasReq, 
+              masters: item.cant_mastersReq,
+              librrasdesp: item.cant_librasDesp,
+              mastersdesp: item.cant_mastersDesp,
             };
           });
-          this.totalLibrasRequerimientos = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
+          this.totalLibrasReq = this.RequerimientoProFresco.reduce((acc, item) => acc + item.libras, 0);
+          this.totalMastersReq = this.RequerimientoProFresco.reduce((acc, item) => acc + item.masters, 0);
+          this.totalLibrasDesp = this.RequerimientoProFresco.reduce((acc, item) => acc + item.librrasdesp, 0);
+          this.totalMastersDesp = this.RequerimientoProFresco.reduce((acc, item) => acc + item.mastersdesp, 0);
+          
           if (this.GridRequerimientoProFresco){
             this.GridRequerimientoProFresco.instance.refresh();
           }
@@ -659,18 +691,10 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         let datosCab: any = data.Dt.Table;
         let datosDet: any = data.Dt.Table1;
         if (datosCab.length > 0) {
-          let estadoDescri = datosCab[0].rpc_estado === 'AC' ? 'ACTIVO' :
-                            datosCab[0].rpc_estado === 'EN' ? 'ENVIADO' :
-                            datosCab[0].rpc_estado === 'AN' ? 'ANULADO' :
-                            datosCab[0].rpc_estado === 'AP' ? 'APROBADO' :
-                            datosCab[0].rpc_estado === 'PR' ? 'PRE APROBADO' :
-                            datosCab[0].rpc_estado === 'DE' ? 'DENEGADO' :
-                            datosCab[0].rpc_estado === 'DS' ? 'DESPACHADO' :
-                            datosCab[0].rpc_estado === 'DP' ? 'DESPACHADO PARCIAL' : '';
-          this.cmbBodegaDestino = datosCab[0].rpc_boddes.toString().trim();
+          this.cmbBodegaDestino = datosCab[0].rpc_boddes?.toString().trim() || null;
           this.cabeceraReq = {
             numeroReq: datosCab[0].rpc_numero,
-            estado: estadoDescri,
+            estado: datosCab[0].rpc_estadoDescri,
             observ: datosCab[0].rpc_observ,
             tiplot: datosCab[0].rpc_tiplot,
             genLotOtr: datosCab[0].rpc_GenLotOtr,
@@ -686,11 +710,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             MaxLibPed: 0,
             boddes: datosCab[0].rpc_boddes,
             certificadoASC: rowData.certificadoASC,
-            numLote: datosCab[0].rpc_loteExistente,
+            numLote: (datosCab[0].rpc_loteExistente ? datosCab[0].rpc_loteExistente : 
+              datosCab[0].rpc_rlonumero ? datosCab[0].rpc_rlonumero : null),
             numSecuencial: datosCab[0].rpc_nroSeLotOtr,
             esmaquina: rowData.manualAutomatico === 'A' ? '1' : null,
             tipoProceso: rowData.tipoProceso,
-            tipoLote: "Valor Agregado"
+            tipoLote: "Valor Agregado",
+            chkGeneraLotReq: datosCab[0].rpc_rlonumero ? true : null,
           }
 
           this.RequerimientoProTerminado = datosDet.map((item: any) => {
@@ -700,12 +726,20 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
               despro: item.rpd_despro,
               codtal: item.rpd_codtal,
               codtalvta: item.rpd_codtalvta,
-              numcaj: item.rpd_numcaj,
-              libras: item.rpd_libras, 
+              taldescri: item.tal_descri,
               lote: item.rpd_lote,
+              numcaj: item.rpd_numcaj,
+              numcajdesp: item.rpd_numcajdesp,
+              libras: item.cant_librasReq, 
+              masters: item.cant_mastersReq,
+              librrasdesp: item.cant_librasDesp,
+              mastersdesp: item.cant_mastersDesp,
             };
           });
-          this.totalLibrasRequerimientos = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
+          this.totalLibrasReq = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.libras, 0);
+          this.totalMastersReq = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.masters, 0);
+          this.totalLibrasDesp = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.librrasdesp, 0);
+          this.totalMastersDesp = this.RequerimientoProTerminado.reduce((acc, item) => acc + item.mastersdesp, 0);
           if (this.GridRequerimientoProTerminado){
             this.GridRequerimientoProTerminado.instance.refresh();
           }
@@ -958,13 +992,13 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     this.RequerimientoProFresco.find(x => x.numdet === numdet).libras = value;
     let cajas = await this.calcularCajasProdByLibras(value, codpro);
     this.RequerimientoProFresco.find(x => x.numdet === numdet).numcaj = cajas;    
-    this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+    this.totalLibrasReq = this.calcularTotalLibrasRequerimientos();
     // autocompletar la cantidad de libras si el total es 27000 y de fresco pongo 20000, en descongelado debe de poner 7000
-    if (this.totalLibrasRequerimientos < this.cabeceraReq.LibPed && this.RequerimientoProTerminado.length == 1 && this.RequerimientoProTerminado[0].libras == 0){
+    if (this.totalLibrasReq < this.cabeceraReq.LibPed && this.RequerimientoProTerminado.length == 1 && this.RequerimientoProTerminado[0].libras == 0){
       this.RequerimientoProTerminado[0].libras = this.cabeceraReq.LibPed - value;
       let cajasTer = await this.calcularCajasProdByLibras(this.RequerimientoProTerminado[0].libras, this.RequerimientoProTerminado[0].codpro);
       this.RequerimientoProTerminado[0].numcaj = this._utilService.redondear(cajasTer, 'S', 1);
-      this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+      this.totalLibrasReq = this.calcularTotalLibrasRequerimientos();
       if (this.GridRequerimientoProTerminado){
         this.GridRequerimientoProTerminado.instance.refresh();
       }
@@ -1023,7 +1057,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     let cajas = await this.calcularCajasProdByLibras(value, codpro);
     cajas = this._utilService.redondear(cajas, 'S', 1);
     this.RequerimientoProTerminado.find(x => x.numdet === numdet).numcaj = cajas;    
-    this.totalLibrasRequerimientos = this.calcularTotalLibrasRequerimientos();
+    this.totalLibrasReq = this.calcularTotalLibrasRequerimientos();
     if (codpro && codtal && cajas > 0){
       await this.verificarStockProducto(codpro, codtal, cajas);
     }
@@ -1153,14 +1187,15 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     const { plaDetId } = data.data;
     var numLote: number = value == '' ? null : parseInt(value);
     await this._service.updateLotePlanificacion(plaDetId, numLote, localStorage.getItem(varUser)).subscribe((data) => {
+      const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
       if (data.Codigo) {
-        const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
         if (index >= 0) {
           this.Planificacion[index].numLote = numLote;
         }
         // this.showAlert('', 'Número de lote actualizado correctamente', 'success');
       } else {
-        this.showAlert('', 'Error al actualizar el número de lote', 'error');
+        this.Planificacion[index].numLote = null;
+        this.showAlert('', data.Description, 'error');
       }
     });
   }
@@ -1171,13 +1206,14 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     var numSecuencial: number = value == '' ? null : parseInt(value);
     const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
     await this._service.updateSecuencialPlanificacion(plaDetId, numSecuencial, localStorage.getItem(varUser)).subscribe((data) => {
+      const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
       if (data.Codigo) {
-        const index = this.Planificacion.findIndex(item => item.plaDetId === plaDetId);
         if (index >= 0) {
           this.Planificacion[index].numSecuencial = numSecuencial;
         }
         // this.showAlert('', 'Número de secuencial actualizado correctamente', 'success');
       } else {
+        this.Planificacion[index].numSecuencial = null;
         this.showAlert('', 'Error al actualizar el número de secuencial', 'error');
       }
     });
@@ -1189,7 +1225,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     }
   }
 
-
+  
   async showAlert(title, mensaje, tipo, event = null) {
     this.loadingVisible = false;
 
