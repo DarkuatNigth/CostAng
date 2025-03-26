@@ -23,6 +23,20 @@ export class UtilService {
       event.preventDefault();
     }
   }
+
+  focusNextElement(event: any) {
+    debugger;
+    const element = event.target as HTMLInputElement;
+    // obtener el siguiente elemento input que tengan las mismas clases
+    const clases = "form-control.sng-template.ng-valid";  // element.className.split(' ').join('.');
+    const elements = document.querySelectorAll(`input.${clases}`);
+    const index = Array.from(elements).indexOf(element);
+    if (index < elements.length - 1) {
+      const elementNext = elements[index + 1] as HTMLInputElement;
+      elementNext.focus();
+      // elements[index + 1].focus();
+    }
+  }
   
   onPasteValidateNumber(event: ClipboardEvent) {
     const clipboardData = event.clipboardData || (window as any).clipboardData;
@@ -32,6 +46,9 @@ export class UtilService {
     }
   }
 
+  selectAllContent(event: any) {
+    event.target.select(); // Selecciona todo el contenido del input
+  }
   
   // (redondear(12345.99, 'S', 100)); // Resultado: 12400
   // (redondear(12345.99, 'I', 100)); // Resultado: 12300
