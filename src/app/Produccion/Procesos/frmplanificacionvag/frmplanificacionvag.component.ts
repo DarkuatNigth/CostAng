@@ -325,9 +325,21 @@ export class FrmplanificacionvagComponent implements OnInit {
       const {id} = rowData;
       let index = this.facturas.findIndex((item) => item.id === id);
       this.facturas[index].prioridad = prioridad;
-      // la agrego a la lista de facturas seleccionadas, y ordeno por prioridad ascendente, fecha estimada de embarque ascendente y id || a.fechaEstimadaEmbarque.getTime() - b.fechaEstimadaEmbarque.getTime() 
       this.facturasSelected.push(this.facturas[index]);
-      this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad && ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) && a.id.localeCompare(b.id) ); //|| (a.id < b.id ? -1 : 1)
+      // la agrego a la lista de facturas seleccionadas, y ordeno por: 1. prioridad ascendente 2. fecha estimada de embarque ascendente 3. id ascendente      
+      // this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad && ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) && a.id.localeCompare(b.id) ); //|| (a.id < b.id ? -1 : 1)
+      this.facturasSelected.sort((a, b) => {
+        if (a.prioridad !== b.prioridad) {
+          return a.prioridad - b.prioridad;
+        }
+        if (new Date(a.fechaEstimadaEmbarque) < new Date(b.fechaEstimadaEmbarque)) {
+          return -1;
+        }
+        if (new Date(a.fechaEstimadaEmbarque) > new Date(b.fechaEstimadaEmbarque)) {
+          return 1;
+        }
+        return a.id.localeCompare(b.id);
+      });
       this.updateFacturasSelected();      
       let selected = true;
       let saldoPedido = this.facturas[index].saldoPedido;
