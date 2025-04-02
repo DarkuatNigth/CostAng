@@ -1,0 +1,258 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()"
+                [disabled]="disabledBtnGuardar">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group mt-1">
+                    <div class="row margin-container">
+
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                    </div>
+                </div>
+                
+                <div class="form-group mt-1">
+                    <div class="row">
+                        <dx-tab-panel #tabPanel style="width: 100%; height: auto; overflow-x: auto; white-space: nowrap"
+                            [selectedIndex]="0" [loop]="false" [animationEnabled]="true" [swipeEnabled]="true" [width]="'100%'"
+                            [scrollingEnabled]="true"
+                        >
+                            <dxi-item title="Facturas" icon="description">
+                                <div class="row p-1">
+                                    <div class="col-sm-12 col-md-12 col-lg-12 pb-1">
+                                        <!-- <p class="sng-grid-title">Selección de Facturas y Prioridades</p> -->
+                                        
+                                        <!-- [height]="440" -->
+                                        <div id="data-grid-demo" class="tables">
+                                            
+                                            <div class=""
+                                                [ngClass]="{'first-focused': focusedColumn === 'first', 'second-focused': focusedColumn === 'second'}"
+                                            >
+                                                <dx-data-grid #GridFacturas 
+                                                    id="GridFacturas" 
+                                                    style="width: 100%; max-height: 75vh; display: none;" 
+                                                    [dataSource]="facturas"
+                                                    keyExpr="id" 
+                                                    [showColumnLines]="true" 
+                                                    [showRowLines]="true" 
+                                                    [showBorders]="true" 
+                                                    [filterValue]="['Selected', '=', false]" 
+                                                    [columnAutoWidth]="true"
+                                                    (onInitialized)="onInitializedFacturas(GridFacturas)" 
+                                                    (onRowClick)="onFocus('first')" 
+                                                    (blur)="onBlur()"
+                                                >
+                                                    <dxo-group-panel [visible]="false"></dxo-group-panel>
+                                                    <dxo-grouping #expand [autoExpandAll]="true"></dxo-grouping>
+                                                    <dxo-sorting mode="none"></dxo-sorting>
+                                                    <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
+                                                    <!-- <dxo-row-dragging [showDragIcons]="true" [data]="false" group="facturasGroup" [onAdd]="onAdd">
+                                                    </dxo-row-dragging> -->
+
+                                                    <dxi-column dataField="pedNumero" caption="Factura" [width]="85"></dxi-column>
+                                                    <dxi-column dataField="descriCliente" caption="Cliente" [width]="100" [groupIndex]="0"></dxi-column>
+                                                    <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
+                                                    <dxi-column dataField="descriTalla" caption="Talla" [width]="50"></dxi-column>
+                                                    <dxi-column dataField="saldoPedido" caption="Libras" format="#,###.##" [width]="65" [allowFiltering]="false"> </dxi-column>
+                                                    <dxi-column caption="Pri" dataField="prioridad" [width]="35" [allowFiltering]="false"
+                                                        cellTemplate="prioridadTemplate" cssClass="cell-temp-valor">
+                                                    </dxi-column>
+                                                    <div *dxTemplate="let cell of 'prioridadTemplate'">
+                                                        <div>
+                                                            <input type="text" class="form-control sng-template" 
+                                                                (change)="onChangePrioridad($event.target.value, cell.data)"
+                                                                (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                                                (paste)="_utilService.onPasteValidateNumber($event)"
+                                                                (focus)="_utilService.selectAllContent($event)"
+                                                                [(ngModel)]="cell.value" 
+                                                                style="text-align: right;" />
+                                                        </div>
+                                                    </div>
+                                                    <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="65" [visible]="false"></dxi-column>
+                                                    <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
+                                                    <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date" [allowFiltering]="false">
+                                                        <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                    </dxi-column>
+                                                    <dxi-column dataField="Selected" [visible]="false"></dxi-column>
+                                                </dx-data-grid>
+
+                                                <dx-data-grid #GridPedidosPorPais 
+                                                    id="GridPedidosPorPais" 
+                                                    style="width: 100%; max-height: 120vh;" 
+                                                    [dataSource]="pedidosPorPais"
+                                                    keyExpr="id" 
+                                                    [showColumnLines]="true" 
+                                                    [showRowLines]="true" 
+                                                    [showBorders]="true" 
+                                                    [columnAutoWidth]="true"
+                                                    (onInitialized)="onInitializedPedidosPorPais(GridPedidosPorPais)" 
+                                                    (onRowClick)="onFocus('first')" 
+                                                    (blur)="onBlur()"
+                                                >
+                                                    <dxo-paging [pageSize]="50" [pageIndex]="0"></dxo-paging>
+                                                    <dxi-column dataField="pais" caption="Pais"></dxi-column>
+                                                    <dxi-column dataField="vendido" caption="Vendido (Masters)" [width]="100" format="#,###.##"></dxi-column>
+                                                    <dxi-column dataField="stock" caption="Stock (Masters)" [width]="100" format="#,###.##"></dxi-column>
+                                                    <dxi-column dataField="bloqueado" caption="Bloqueado (Masters)" [width]="100" format="#,###.##"></dxi-column>
+                                                    <dxo-master-detail [enabled]="true" template="detail"></dxo-master-detail>
+                                                    <div *dxTemplate="let pais of 'detail'">
+                                                        <div class="detail">
+                                                            <dx-data-grid #GridPedidosPaisDetail 
+                                                                id="GridPedidosPaisDetail" 
+                                                                style="width: 100%; max-height: 85vh;" 
+                                                                [dataSource]="pedidosPaisDetail"
+                                                                keyExpr="id" 
+                                                                [showColumnLines]="true" 
+                                                                [showRowLines]="true" 
+                                                                [showBorders]="true" 
+                                                                [columnAutoWidth]="true"
+                                                                [filterValue]="['paisCodigo', '=', pais.data.id]"
+                                                                (onInitialized)="onInitializedPedidosPaisDetail(GridPedidosPaisDetail)" 
+                                                            >
+                                                                <dxo-group-panel [visible]="false"></dxo-group-panel>
+                                                                <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
+                                                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
+                                                                <dxi-column cellTemplate="checkPlanificarTemplate" dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
+                                                                <div *dxTemplate="let cell of 'checkPlanificarTemplate'">
+                                                                    <div>
+                                                                        <input type="checkbox" class="cssCheckBox" 
+                                                                            [(ngModel)]="cell.value" 
+                                                                            style="text-align: right; " />
+                                                                    </div>
+                                                                </div>
+                                                                <dxi-column dataField="paisCodigo" caption="paisCodigo" [visible]="false"></dxi-column>
+                                                                <dxi-column dataField="destino" caption="Destino" [width]="100"></dxi-column>
+                                                                <dxi-column dataField="pedido" caption="Factura" [width]="100"></dxi-column>
+                                                                <dxi-column dataField="cliente" caption="Cliente" [width]="100" [groupIndex]="0"></dxi-column>
+                                                                <dxi-column dataField="producto" caption="Producto" [width]="200"></dxi-column>
+                                                                <dxi-column dataField="talla" caption="Talla" [width]="50"></dxi-column>
+                                                                <!-- <dxi-column dataField="mastersOriginal" caption="Mas.Ori" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column> -->
+                                                                <dxi-column dataField="mastersPedido" caption="Mas.Ped" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column>
+                                                                <dxi-column dataField="xEmbarcar" caption="Sald.Ped" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column>
+                                                                <dxi-column dataField="saldoSonga" caption="Stock" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column>
+                                                                <dxi-column dataField="bloqueado" caption="Bloqueado" cellTemplate="bloqueadoTemplate" [width]="75" [allowFiltering]="false"
+                                                                    cssClass="cell-temp-valor-2">
+                                                                </dxi-column>
+                                                                <div *dxTemplate="let cell of 'bloqueadoTemplate'">
+                                                                    <div *ngIf="cell.value">
+                                                                        <button class="btn small-button" (click)="onClickBloqueado(cell.data)" title="Ver Bloqueados">
+                                                                            <span class="dx-button-content">
+                                                                                <i class="dx-icon dx-icon-eyeopen"></i>
+                                                                                {{ cell.value }}
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <dxi-column dataField="xFabricar" caption="Saldo" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column>
+                                                                <!-- <dxi-column dataField="libras" caption="libras" format="#,###.##" [allowFiltering]="false" [width]="75"></dxi-column> -->
+                                                                <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="50"
+                                                                    cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
+                                                                </dxi-column>
+                                                                <div *dxTemplate="let cell of 'porcentajeTemplate'">
+                                                                    <div class="progress-container">
+                                                                        <div class="progress-bar" [style.width.%]="cell.value" [attr.aria-valuenow]="cell.value">
+                                                                            {{ cell.value }}%
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <dxi-column dataField="pedFechaEstimado" caption="F.Estimada" [allowFiltering]="false" [width]="100" dataType="date">
+                                                                    <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                                </dxi-column>
+                                                            </dx-data-grid>
+                                                        </div>
+                                                    </div>
+                                                </dx-data-grid>
+                                            </div>
+                                            
+                                        </div>
+                                        
+                                        
+                                        <div class=""
+                                        [ngClass]="{'first-focused': focusedColumn === 'second', 'second-focused': focusedColumn === 'first'}"
+                                    >
+                                        <dx-data-grid #GridFacturasSelected 
+                                            id="GridFacturasSelected" 
+                                            style="width: 100%; max-height: 75vh;"
+                                            [dataSource]="facturasSelected" 
+                                            keyExpr="index" 
+                                            [showColumnLines]="true" 
+                                            [showRowLines]="true" 
+                                            [showBorders]="true"
+                                            (onInitialized)="onInitializedFacturasSelected(GridFacturasSelected)" 
+                                            (onRowClick)="onFocus('second')"
+                                            (blur)="onBlur()"
+                                            >
+                                            <dxo-sorting mode="none"></dxo-sorting>
+                                            <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
+                                            <dxo-row-dragging [allowReordering]="true" [onReorder]="onReorder" [showDragIcons]="true" [data]="true"
+                                                group="facturasGroup" [onAdd]="onAdd">
+                                            </dxo-row-dragging>
+                                            <dxi-column caption="" cellTemplate="deleteTemplate" [width]="30"
+                                                cssClass="cell-temp-valor">
+                                            </dxi-column>
+                                            <div *dxTemplate="let cell of 'deleteTemplate'">
+                                                <div>
+                                                    <button class="btn small-button" (click)="deleteRecord(cell.data)">
+                                                        <span class="dx-button-content">
+                                                            <i class="dx-icon dx-icon-remove"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <dxi-column dataField="prioridad" caption="Pri" [width]="35" [allowFiltering]="false"></dxi-column>
+                                            <dxi-column dataField="pedNumero" caption="Factura" [width]="90"></dxi-column>
+                                            <dxi-column dataField="descriCliente" caption="Cliente" [width]="100"></dxi-column>
+                                            <dxi-column dataField="prodCodcor" caption="CodProd" [width]="50"></dxi-column>
+                                            <dxi-column dataField="descriTalla" caption="Talla" [width]="60"></dxi-column>
+                                            <dxi-column dataField="saldoPedido" caption="Libras" format="#,###.##" [width]="65" [allowFiltering]="false"> </dxi-column>
+                                            <dxi-column dataField="saldoPedidoMed" caption="Libras" format="#,###.##" [width]="70" [visible]="false"></dxi-column>
+                                            <dxi-column dataField="descriProducto" caption="Corte" [width]="80"></dxi-column>
+                                            <dxi-column dataField="fechaEstimadaEmbarque" caption="F.Est" [width]="90" dataType="date" [allowFiltering]="false">
+                                                <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                            </dxi-column>
+                                            <dxi-column dataField="Selected" [visible]="false"></dxi-column>
+                                        </dx-data-grid>
+                                    </div>
+                                  
+            
+                                    </div>
+                                </div>
+                            </dxi-item>
+
+                        </dx-tab-panel>
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
+</div>
+

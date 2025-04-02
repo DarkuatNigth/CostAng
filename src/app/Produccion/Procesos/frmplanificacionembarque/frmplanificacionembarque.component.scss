@@ -1,0 +1,186 @@
+
+  
+
+
+  .tables {
+    display: flex;
+  }
+  
+  .column:first-child {
+    // width: 50%;
+    padding-right: 15px;
+  }
+  
+  .column:last-child {
+    // width: 50%;
+    padding-left: 15px;
+  }
+
+  // .column {
+  //   width: 50%; /* Tamaño por defecto */
+  //   transition: width 0.3s;
+  // }
+
+  // .first-focused {
+  //     width: 60%;
+  // }
+
+  // .second-focused {
+  //     width: 40%;
+  // }
+
+
+
+.small-button {
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  color: #d43f3a;
+}
+.small-button:hover {
+  background-color: rgba(212,63,58,.1);
+  border-color: transparent;
+}
+
+
+::ng-deep #GridFacturas {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+  .dx-datagrid-checkbox-size .dx-checkbox-icon {
+    height: 20px;
+    width: 20px;
+  }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
+  }
+
+  .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+	width: 10px;
+	min-width: 10px;
+	max-width: 10px;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+  }
+}
+
+::ng-deep #GridFacturasSelected {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+  .ng-select .ng-select-container .ng-value-container {
+    align-items: center;
+    padding-left: 5px;
+  }
+  .ng-select .ng-arrow-wrapper {
+    width: 20px;
+    padding-right: 0px;
+  }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
+  }
+}
+
+
+::ng-deep #GridPedidosPorPais {
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+  .dx-datagrid-checkbox-size .dx-checkbox-icon {
+    height: 20px;
+    width: 20px;
+  }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
+  }
+
+  // .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+  //   width: 10px;
+  //   min-width: 10px;
+  //   max-width: 10px;
+  //   -webkit-user-select: none;
+  //   user-select: none;
+  //   -webkit-touch-callout: none;
+  // }
+
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 15px 5px 10px 5px;
+  }
+
+  // obtener el parent del td con attr aria-label="Collapse"
+  tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
+    background-color: #d43f3a; //414580
+  }
+  
+  td.cell-temp-valor-2[role="gridcell"] {
+    padding: 2px;
+  }
+}
+
+
+.form-control.sng-template {
+  height: auto;
+  padding: 5px;
+  border: 0px;
+}
+
+
+.progress-container {
+  width: 100%;
+  background-color: #e3e3e3;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 20px;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50; /* Color de la barra de progreso */
+  text-align: center;
+  line-height: 20px;
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 4px;
+}

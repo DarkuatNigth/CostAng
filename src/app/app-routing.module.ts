@@ -7,6 +7,7 @@ import { LoginComponent } from './login/login.component';
 import { FrmplanificacionvagconsultaModuleFactory } from './Produccion/Procesos/frmplanificacionvagconsulta/frmplanificacionvagconsulta.module';
 import { FrmplanificacionvagModuleFactory } from './Produccion/Procesos/frmplanificacionvag/frmplanificacionvag.module';
 import { TokenexpiredModuleFactory } from './tokenexpired/tokenexpired.module';
+import { FrmplanificacionembarqueModuleFactory } from './Produccion/Procesos/frmplanificacionembarque/frmplanificacionembarque.module';
 
 const routes: Routes = [
   {
@@ -52,6 +53,10 @@ const routes: Routes = [
       { 
         path: '', 
         loadChildren: FrmplanificacionvagModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmplanificacionembarqueModuleFactory 
       },
       { 
         path: '', 
