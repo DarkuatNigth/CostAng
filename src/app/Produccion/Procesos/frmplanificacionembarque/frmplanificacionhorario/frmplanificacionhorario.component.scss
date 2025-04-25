@@ -1,0 +1,96 @@
+.PedPendiente{
+    background-color: white;
+    color: black;
+}
+
+.PedCompleto{
+    background-color: #00CECE;
+    color: black;
+}
+
+.Planificado{
+    background-color: #F5C68D;
+    color: black;
+}
+.Facturado{
+    background-color: #F5C68D;
+    color: black;
+}
+.FacturadoSD{
+    background-color: #F5C68D;
+    color: rgb(0, 0, 124);
+}
+.Embarcado{
+    background-color: #F5C68D;
+    color: black;
+}
+
+table.table-bordered {
+    tr.header {
+        color: #366f00 !important;
+        font-size: 14px;
+        border-bottom: 2px solid #366f00;
+    }
+    thead th, tr.header td {
+        color: #366f00 !important;
+        width: 200px;
+    }
+    thead th, tr.header td, tr.dayOfWeek td {
+        background-color: #9ebcdb; 
+        // border: 1px solid #9ebcdb !important;
+        color: black; 
+        font-weight: 600; 
+        text-align: center; 
+        padding: 6px;
+        position: sticky;
+    }
+    thead tr.dayOfWeek, tr.header {
+        position: sticky; /* Fija el encabezado */
+        top: 0; /* Fija el encabezado en la parte superior */
+        z-index: 2; /* Asegura que el encabezado esté por encima del contenido */
+    }
+    tbody tr.dayOfWeek {
+        position: sticky; /* Hace que el elemento se fije en su contenedor */
+        top: 25px; /* Fija el elemento en la parte superior del contenedor */
+        z-index: 2; /* Asegura que esté por encima de otros elementos */
+    }
+    tbody tr.dayOfWeek td.dayDisabled {
+        opacity: 0.65;
+    }
+}
+
+.controlTemplate {
+    table {
+        font-size: 10.5px;
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        th, td {
+            text-overflow: ellipsis;
+            border: none;
+            padding: 1px;
+        }
+        th {
+            // text-align: justify;
+            white-space: wrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        th span, td.titulo {
+            font-weight: 600;            
+        }
+        td.descri {
+            max-width: 135px;
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap;
+        }
+    }
+}
+
+.month-year-display {
+    font-size: 18px;
+    font-weight: bold;
+    display: inline-block;
+    margin: auto;
+  }

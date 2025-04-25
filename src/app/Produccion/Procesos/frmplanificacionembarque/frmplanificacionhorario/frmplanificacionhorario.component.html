@@ -1,0 +1,135 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible2"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<dx-context-menu #contextMenu
+  [dataSource]="itemsMenuContext"
+  [width]="200"
+  target="#idDetalle"
+  (onItemClick)="itemMenuClick($event)"
+>
+</dx-context-menu>
+
+
+<div class="row" style="padding: 5px 1%;">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-12 pl-0 pr-0">
+        <div class="form-group row">
+            
+            <div class="col-lg-1 col-md-1 col-sm-2 col-2">
+                <dx-button icon="chevronleft" type="default" (onClick)="onPrevMonth()" text="" style="width: 100%;"
+                    [disabled]="!isPrevMonthEnabled">
+                </dx-button>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-8 col-8 text-center">
+                <span class="month-year-display">{{ selectedMonthYear }}</span>
+            </div>
+
+            <div class="col-lg-1 col-md-1 col-sm-2 col-2">
+                <dx-button icon="chevronright" type="default" (onClick)="onNextMonth()" text="" style="width: 100%;" 
+                    [disabled]="!isNextMonthEnabled">
+                </dx-button>
+            </div>
+            
+        </div>
+    </div>
+    
+</div>
+
+
+
+
+<div class="row" id="ContDetalle" style="padding: 0px 1%;">    
+    <div id="" #content class='mostly-customized-scrollbar' [style.height]="setearHeightDiv()" style="overflow: auto;">
+        <table tabindex="0" class="table table-bordered" style="font-size: 11px;">
+            <!-- <thead>
+                <tr class="dayOfWeek">
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Martes</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Miércoles</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Jueves</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Viernes</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Sábado</th>
+                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</th>
+                </tr>
+            </thead> -->
+            <tbody>
+                <tr class="header">
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Martes</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Miércoles</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Jueves</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Viernes</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Sábado</td>
+                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</td>
+                </tr>
+                <ng-container *ngFor="let week of dataByWeek; let w = index">
+                    <tr class="dayOfWeek">
+                        <td *ngFor="let day of week" tabindex="0"
+                            [ngClass]="day.disabled ? 'dayDisabled' : ''"
+                            (click)="Marcar($event, '')"
+                            (keydown)="MarcarCursor($event)"
+                            >
+                            {{ day.day }}
+                        </td>
+                    </tr>
+                    <tr *ngFor="let f of [].constructor(week[0].maxRows); let i = index">
+                        <td *ngFor="let day of week; let j = index" 
+                            [ngStyle]="{'height': '75px'}"
+                            [ngClass]="day.dataPedidos[i] !== undefined ? getClassEstado(day.dataPedidos[i].Estado, day.dataPedidos[i].emb_Documentacion, day.dataPedidos[i].emb_DocCaducado) : 'default-class'"
+                            (click)="Marcar($event, day.dataPedidos[i] !== undefined ? 'idDetalle' : '')"
+                            (keydown)="MarcarCursor($event)"
+                            tabindex="{{((w*i)+(7*i)+j)}}"
+                            >
+                            <span *ngIf="day.dataPedidos[i] !== undefined">
+                                <ng-container *ngTemplateOutlet="controlTemplate; context: { param: day.dataPedidos[i] }"></ng-container>
+                            </span>
+                        </td>
+                    </tr>
+                </ng-container>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<ng-template #controlTemplate let-param="param">
+    <div class="controlTemplate">
+        <table>
+            <tr>
+                <th colspan="2">
+                    <span>{{param.Factura}}</span> 
+                    {{ param.Cliente | slice:0:35 }}
+                </th>
+            </tr>
+            <tr>
+                <td class="titulo">ESTADO:</td>
+                <td class="descri">{{param.Estado}}</td>
+            </tr>
+            <tr>
+                <td class="titulo">DESTINO:</td>
+                <td class="descri">{{param.pto_descripcion}}</td>
+            </tr>
+            <tr>
+                <td class="titulo">F/EMB:</td>
+                <td class="descri">{{param.emb_fechacarga}}</td>
+            </tr>
+            <tr>
+                <td class="titulo">F/LIM:</td>
+                <td class="descri">{{param.emb_fechalimite}}</td>
+            </tr>
+        </table>
+    </div>
+</ng-template>
+
+
+
+
+	

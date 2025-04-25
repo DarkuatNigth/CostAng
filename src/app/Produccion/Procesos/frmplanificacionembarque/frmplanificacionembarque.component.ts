@@ -13,39 +13,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { parseNumber } from 'devextreme/localization';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FrmplanificacionembarqueService } from './frmplanificacionembarque.service';
+import { FrmplanificacionhorarioComponent } from './frmplanificacionhorario/frmplanificacionhorario.component';
 
 declare var $: any;
 declare var window;
 
-
-interface Pedidos {
-  id: string;
-  index?: number;
-  orderAux?: number;
-  prioridad?: number;
-  codigoTipo: string;
-  descriTipo: string;
-  cliCodigo: number;
-  descriCliente: string;
-  pedNumero: string;
-  prodCodcor: string;
-  descriProducto: string;
-  descriTalla: string;
-  talCodigo: string;
-  proClase: string;	
-  proModali: number;
-  proCongela: number; 
-  descriCongela: string;
-  mastersPedido: number;
-  saldoPedido: number;
-  saldoPedidoMed: number;
-  fechaEstimadaEmbarque: Date;
-  factor: number;
-  factorAut: number;
-  Selected: boolean;
-  manualAutomatico: string;
-  numModulos?: any;
-}
 
 interface PedidosPorPais {
   id: number;
@@ -61,8 +33,11 @@ interface PedidosPaisDetail {
   pais: string;
   destino: string;
   cliente: string;
+  codCliente: number;
   pedido: string;
+  codProducto: string;
   producto: string;
+  codTalla: number;
   talla: string;
   fecPedido: Date;
   pedFechaEstimado: Date;
@@ -72,9 +47,35 @@ interface PedidosPaisDetail {
   xFabricar: number;
   libras: number;
   saldoSonga: number;
+  saldoSonga2: number;
+  SaldoComin: number;
+  SaldoOtros: number;
+  StockEnProceso: number;
   bloqueado: number;
   porcentaje: number;
   checkPlanificar?: boolean;
+  agrupacionCodigo: number;
+  agrupacionDescri: string;
+  fechaPlanificacion?: Date;
+  plantaEmbarque?: string;
+  observacion?: string;
+}
+
+interface DetalleStockBloqueado {
+  lote: string;
+  codpro: string;
+  producto: string;
+  codTalla: number;
+  talla: string;
+  master: number;
+  proveedor: string;
+  fecha: Date;
+  fechaCuar: Date;
+  fechaLib: Date;
+  secuencial: number;
+  observa: string;
+  ccuMotivo: string;
+  descripcion: string;
 }
 
 
@@ -86,12 +87,22 @@ interface PedidosPaisDetail {
 export class FrmplanificacionembarqueComponent implements OnInit {
   title = 'Planificación de Embarque';
   loadingVisible: boolean = false;
-  disabledBtnGuardar: boolean = false;
-  
+
   pedidosPorPais: PedidosPorPais[] = [];
   pedidosPaisDetail: PedidosPaisDetail[] = [];
-  facturas: Pedidos[] = [];
-  facturasSelected: Pedidos[] = [];
+  plantasEmbarque: any[] = [];
+
+  pedidoSelectedForPlanificar: PedidosPaisDetail = null;
+  minFechaPlanificacion: Date = new Date(); 
+  maxFechaPlanificacion: Date = moment().add(3, 'month').toDate(); 
+
+  totalMastersBloq: number = 0;  
+  cabeceraStockBloqueado: {
+    producto: '',
+    talla: '',
+  }
+  detalleStockBloqueado: DetalleStockBloqueado[] = [];
+  
   
   applyFilterTypes = [{
     key: 'auto',
@@ -103,17 +114,23 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
   currentFilter = this.applyFilterTypes[0].key;
   currentFilter2 = this.applyFilterTypes[0].key;
+  modalReferenceItem: any;
+
   
-  @ViewChild('GridFacturas', { static: false }) GridFacturas: DxDataGridComponent;
   @ViewChild('GridPedidosPorPais', { static: false }) GridPedidosPorPais: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetail', { static: false }) GridPedidosPaisDetail: DxDataGridComponent;
-  @ViewChild('GridFacturasSelected', { static: false }) GridFacturasSelected: DxDataGridComponent;
+  @ViewChild('GridStockBloqueado', { static: false }) GridStockBloqueado: DxDataGridComponent;
+  
   @ViewChild('tabPanel') tabPanel: DxTabPanelComponent;
+  @ViewChild('modalStockBloqueado') modalStockBloqueado: any;
+  @ViewChild('modalPlanificarEmbarque') modalPlanificarEmbarque: any;
+  
+  @ViewChild(FrmplanificacionhorarioComponent, { static: false }) horarioComponent!: FrmplanificacionhorarioComponent;
+
 
   
   constructor(
     private _service: FrmplanificacionembarqueService,
-    private _serviceConsulta: FrmplanificacionvagService,
     private _notificationService: NotificationService,
     public _utilService: UtilService,
     private route: ActivatedRoute,
@@ -121,140 +138,87 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     private modalService: NgbModal,
   ) {
 
-    this.onClickNuevo();
-
+    
   }
-
+  
   
   async ngOnInit() {
+    this.onClickNuevo();
+  }
+  
+  
+  async onClickNuevo() {
     this.loadingVisible = true;
-    this._serviceConsulta.getPedidosParaPlanificacion().subscribe((data) => {
-      this.loadingVisible = false;
-
-      this.facturas = data.Dt.Table.map((item: any) => {
-        return {
-          id: `${item.pedNumero}_${item.prodCodcor}_${item.talCodigo}`, 
-          codigoTipo: item.codigoTipo,
-          descriTipo: item.descriTipo,
-          cliCodigo: item.cliCodigo,
-          descriCliente: item.descriCliente,
-          pedNumero: item.pedNumero,
-          prodCodcor: item.prodCodcor,
-          descriProducto: item.descriProducto,
-          talCodigo: item.talCodigo,
-          descriTalla: item.descriTalla,
-          proClase: item.proClase,
-          proModali: item.proModali,
-          proCongela: item.proCongela,
-          descriCongela: item.descriCongela,
-          mastersPedido: item.mastersPedido,
-          saldoPedido: item.saldoPedidoMed,
-          saldoPedidoMed: item.saldoPedidoMed,
-          fechaEstimadaEmbarque: item.fechaEstimadaEmbarque,
-          factor: item.factor,
-          factorAut: item.factorAut,
-          Selected: false,
-          manualAutomatico: 'M',
-        };
-      });
-      
+    this._service.getCatalogosPlanificacionEmbarque().subscribe((data) => {
+      if (data.Codigo && data.Dt.Table.length > 0) {
+        this.plantasEmbarque = data.Dt.Table.map((item: any) => {
+          return {
+            codigo: item.codigo,
+            descripcion: item.nombre,
+          };
+        });
+      }
     });
-    this.loadingVisible = false;
+    this._service.getPedidosPlanificacionEmbarque().subscribe({
+      next: (data) => {
+        if (!data.Codigo) {
+          throw new Error(data.Description);
+        }
+        this.pedidosPorPais = data.Dt.Table.map((item: any) => {
+          return {
+            id: item.CODIGO,
+            pais: item.PAIS,
+            vendido: item.VENDIDO,
+            stock: item.STOCK,
+            bloqueado: item.BLOQUEADO,
+          };
+        });
 
-  }
+        let idSec = 0;
+        this.pedidosPaisDetail = data.Dt.Table1.map((item: any) => {
+          return {
+            id: idSec++,
+            paisCodigo: item.pai_codigo,
+            pais: item.pai_descri?.trim() || '',
+            destino: item.Destino?.trim() || '',
+            cliente: item.CLIENTE?.trim() || '',
+            codCliente: item.cli_codigo,
+            codProducto: item.cod_produc,
+            producto: item.PRODUCTO,
+            codTalla: item.cod_talla,
+            talla: item.TALLA?.trim() || '',
+            pedido: item.PEDIDO || '',
+            fecPedido: item.fecpedido,
+            pedFechaEstimado: item.ped_fechaestimada,
+            mastersOriginal: item.MORIGINAL,
+            mastersPedido: item.MPEDIDO,
+            xEmbarcar: item.XEMBARCAR,
+            xFabricar: item.XFABRICAR,
+            libras: item.LIBRAS,
+            saldoSonga: item.SaldoSonga,
+            saldoSonga2: item.SaldoSonga2,
+            SaldoComin: item.SaldoComin,
+            SaldoOtros: item.SaldoOtros,
+            StockEnProceso: item.StockEnProceso,
+            bloqueado: item.Bloqueado,
+            porcentaje: parseFloat(item.Porcentaje),
+            agrupacionCodigo: item.OrdenAgrupacion,
+            agrupacionDescri: item.Agrupacion,
+          };
+        });
 
-  
-  onClickNuevo() {
-    this.facturas = [];
-    this.facturasSelected = [];
-    
-    this._serviceConsulta.getPedidosParaPlanificacion().subscribe((data) => {
-      this.loadingVisible = false;
-
-      this.facturas = data.Dt.Table.map((item: any) => {
-        return {
-          id: `${item.pedNumero}_${item.prodCodcor}_${item.talCodigo}`, 
-          codigoTipo: item.codigoTipo,
-          descriTipo: item.descriTipo,
-          cliCodigo: item.cliCodigo,
-          descriCliente: item.descriCliente,
-          pedNumero: item.pedNumero,
-          prodCodcor: item.prodCodcor,
-          descriProducto: item.descriProducto,
-          talCodigo: item.talCodigo,
-          descriTalla: item.descriTalla,
-          proClase: item.proClase,
-          proModali: item.proModali,
-          proCongela: item.proCongela,
-          descriCongela: item.descriCongela,
-          mastersPedido: item.mastersPedido,
-          saldoPedido: item.saldoPedidoMed,
-          saldoPedidoMed: item.saldoPedidoMed,
-          fechaEstimadaEmbarque: item.fechaEstimadaEmbarque,
-          factor: item.factor,
-          factorAut: item.factorAut,
-          Selected: false,
-          manualAutomatico: 'M',
-        };
-      });
+        console.log(this.pedidosPaisDetail);
+      }, 
+      error: (error) => {
+        this.showAlert('','Error al cargar los datos: ' + error, 'error');
+      },
+      complete: () => {
+        this.loadingVisible = false;
+      }
     });
 
-    this._service.getPedidosPlanificacionEmbarque().subscribe((data) => {
-      this.pedidosPorPais = data.Dt.Table.map((item: any) => {
-        return {
-          id: item.pai_codigo,
-          pais: item.pai_descri?.trim() || '',
-          vendido: item.VENDIDO,
-          stock: item.STOCK,
-          bloqueado: item.BLOQUEADO,
-        };
-      });
-
-      let idSec = 0;
-      this.pedidosPaisDetail = data.Dt.Table1.map((item: any) => {
-        return {
-          id: idSec++,
-          paisCodigo: item.pai_codigo,
-          pais: item.pai_descri?.trim() || '',
-          destino: item.Destino?.trim() || '',
-          cliente: item.CLIENTE?.trim() || '',
-          producto: item.PRODUCTO,
-          talla: item.TALLA?.trim() || '',
-          pedido: item.PEDIDO || '',
-          fecPedido: item.fecpedido,
-          pedFechaEstimado: item.ped_fechaestimada,
-          mastersOriginal: item.MORIGINAL,
-          mastersPedido: item.MPEDIDO,
-          xEmbarcar: item.XEMBARCAR,
-          xFabricar: item.XFABRICAR,
-          libras: item.LIBRAS,
-          saldoSonga: item.SaldoSonga,
-          bloqueado: item.Bloqueado,
-          porcentaje: parseFloat(item.Porcentaje),
-        };
-      });
-    });
-    
-    if (this.GridFacturas) {
-      this.GridFacturas.instance.refresh();
-    }
-    if (this.GridFacturasSelected) {
-      this.GridFacturasSelected.instance.refresh();
-    }
-    if (this.tabPanel) {
-      this.tabPanel.instance.option('selectedIndex', 0);
-    }
   }
 
-  async onClickGuardar() {
-    
-  }
-
-  
-  onInitializedFacturas(grid: any) {
-    this.GridFacturas = grid;
-  }
-  
   onInitializedPedidosPorPais(grid: any) {
     this.GridPedidosPorPais = grid;
   }
@@ -263,111 +227,218 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     this.GridPedidosPaisDetail = grid;
   }
 
-  onInitializedFacturasSelected(grid: any) {
-    this.GridFacturasSelected = grid;
+  onInitializedStockBloqueado(grid: any) {
+    this.GridStockBloqueado = grid;
   }
-
   
-  focusedColumn: string = '';
-  onFocus(column: string) {
-    this.focusedColumn = column;
-  }
-
-  onBlur() {
-    this.focusedColumn = '';
-  }
-
-  onChangePrioridad(value: string, rowData: any) {
-    let prioridad = parseInt(value, 10);
-    rowData.prioridad = prioridad;
-    if (!isNaN(prioridad)) {
-      const {id} = rowData;
-      let index = this.facturas.findIndex((item) => item.id === id);
-      this.facturas[index].prioridad = prioridad;
-      this.facturasSelected.push(this.facturas[index]);
-      // la agrego a la lista de facturas seleccionadas, y ordeno por: 1. prioridad ascendente 2. fecha estimada de embarque ascendente 3. id ascendente      
-      this.facturasSelected.sort((a, b) => {
-        if (a.prioridad !== b.prioridad) {
-          return a.prioridad - b.prioridad;
-        }
-        if (new Date(a.fechaEstimadaEmbarque) < new Date(b.fechaEstimadaEmbarque)) {
-          return -1;
-        }
-        if (new Date(a.fechaEstimadaEmbarque) > new Date(b.fechaEstimadaEmbarque)) {
-          return 1;
-        }
-        return a.id.localeCompare(b.id);
-      });
-      this.updateFacturasSelected();      
-      let selected = true;
-      this.facturas = this.facturas.map((item) => { 
-        return (item.id == id) ? { ...item, Selected: selected, prioridad: prioridad } : item; 
-      });
-      this.GridFacturas.instance.refresh();
-    }
-  }
-
-  updateFacturasSelected() {
-    this.facturasSelected = this.facturasSelected.map((item, index) => {
-      item.index = index + 1;
-      item.orderAux = item.index;
-      return item;
-    });
-  }
-
-  onAdd = (e: Parameters<DxDataGridTypes.RowDragging['onAdd']>[0]) => {
-    const {id} = e.itemData;
-    let prioridad = null;
-    if (e.toData) {
-      prioridad = this.facturasSelected[e.toIndex - 1]?.prioridad || 1;
-    }
-    this.facturas = this.facturas.map((item) => { 
-      return (item.id == id) ? { ...item, Selected: e.toData, prioridad: prioridad } : item; 
-    });
-    if (e.toData) {
-      this.facturasSelected.splice(e.toIndex, 0, this.facturas.find((item) => (item.id == id)));
-    } else {
-      this.facturasSelected = this.facturasSelected.filter((item) => (item.id !== id));
-    }
-    
-    this.updateFacturasSelected();
-  };
-
-  onReorder = (e: DxDataGridTypes.RowDraggingReorderEvent) => {
-    const visibleRows = e.component.getVisibleRows();
-    let prioridad = visibleRows[e.toIndex].data.prioridad;
-    let toIndex = this.facturasSelected.findIndex(
-      (item) => item.index === visibleRows[e.toIndex].data.index
-    );
-    let fromIndex = this.facturasSelected.findIndex(
-      (item) => item.index === e.itemData.index
-    );
-    this.facturasSelected.splice(fromIndex, 1);
-    this.facturasSelected.splice(toIndex, 0, {...e.itemData, prioridad});
-    this.updateFacturasSelected();
-  };
-
-
-  deleteRecord(rowData: any) {
-    let {index, id} = rowData;
-    this.facturasSelected = this.facturasSelected.filter(item => item.index !== index);
-    this.facturas = this.facturas.map((item) => {
-      return (item.id === id) ? { ...item, Selected: false, index: null, prioridad: null } : item;
-    });
-    this.updateFacturasSelected();
-  }
-
   dateFormatter(value: Date): string {
     return formatDate(value, 'yyyy/MM/dd', 'en-US');
   }
 
-  async onClickBloqueado(rowData: any) {
-    // this.limpiarRequerimientoProducto();
-    
-    // this.modalReferenceItem = await this.modalService.open(this.modalRequerimientoProducto, {
-    //   ariaLabelledBy: 'modal-basic-title',
-    //   windowClass: 'cssModalGenerarRequerimiento',
-    // });
+
+  limpiarDetalleStockBloqueado () {
+    this.cabeceraStockBloqueado = {
+      producto: '',
+      talla: '',
+    }
+    this.detalleStockBloqueado = [];
+    this.totalMastersBloq = 0;
+    if (this.GridStockBloqueado) {
+      this.GridStockBloqueado.instance.refresh();
+    }
   }
+
+
+  async onClickBloqueado(rowData: any) {
+    this.loadingVisible = true;
+    this.limpiarDetalleStockBloqueado();
+    this.modalReferenceItem = await this.modalService.open(this.modalStockBloqueado, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalStockBloqueado',
+    });
+    
+    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla).subscribe(
+      (data) => {
+      this.loadingVisible = false;
+      if (data.Codigo) {
+        let datosDet: any = data.Dt.Table;
+        if (datosDet.length > 0) {
+
+          this.cabeceraStockBloqueado = {
+            producto: rowData.producto,
+            talla: rowData.talla,
+          };
+          
+          this.detalleStockBloqueado = datosDet.map((item: any) => {
+            return {
+              lote: item.Lote,
+              codpro: item.Codpro,
+              producto: item.Producto,
+              codTalla: item.CodTalla,
+              talla: item.Talla,
+              master: item.Master,
+              proveedor: item.Proveedor,
+              fecha: item.Fecha,
+              fechaCuar: item.FechaCuar,
+              fechaLib: item.FechaLib,
+              secuencial: item.Secuencial,
+              observa: item.Observa,
+              ccuMotivo: item.ccu_motivo,
+              descripcion: item.Descripcion
+            };
+          });
+          // obtener el total de masters bloqueados solo sumar si son de diferentes lotes 
+          const uniqueLotes = new Set(this.detalleStockBloqueado.map(item => item.lote));
+          this.totalMastersBloq = Array.from(uniqueLotes).reduce((acc, lote) => {
+            const totalLote = this.detalleStockBloqueado.find(item => item.lote === lote)?.master || 0;
+            return acc + totalLote;
+          }, 0);
+          
+          if (this.GridStockBloqueado){
+            this.GridStockBloqueado.instance.refresh();
+          }
+
+        }
+      }
+      },
+      (error) => {
+        this.loadingVisible = false;
+        console.log(error);
+      }
+    );
+    
+  }
+
+  
+  limpiarPedidoSelected() {
+    this.pedidoSelectedForPlanificar = null;
+  }
+
+  async onChangeGridCheckPlanificar(value: any, data: any) {
+    this.pedidosPaisDetail.find((x) => x.id == data.data.id).checkPlanificar = value;
+    if (value) {
+      this.pedidosPaisDetail.forEach(async (item) => {
+        // se debe permitir chequear mas de un registro solo si coincide (pedido, producto, clase, talla, dia)
+        // if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia)
+        //   && (item.numeroReqTerminado === null && item.numeroReqFresco === null)) {
+        //   item.checkReqMp = false;
+        //   item.checkReqDes = false;
+        // }
+        if (item.id !== data.data.id) {
+          item.checkPlanificar = false;
+        }
+      });
+      this.limpiarPedidoSelected();
+      this.pedidoSelectedForPlanificar = data.data;
+      this.pedidoSelectedForPlanificar.checkPlanificar = true;
+      this.pedidoSelectedForPlanificar.fechaPlanificacion = this.minFechaPlanificacion;
+  
+      this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+        ariaLabelledBy: 'modal-basic-title',
+        windowClass: 'cssModalPlanificarEmbarque',
+      });
+      console.log(this.pedidoSelectedForPlanificar);
+    }
+    this.GridPedidosPaisDetail.instance.refresh();
+  }
+  
+
+  
+  async validarDatos() {
+    if (this.pedidoSelectedForPlanificar === null) {
+      this.showAlert('','Seleccione un pedido para planificar.','warning');
+      return false;
+    }
+    if (this.pedidoSelectedForPlanificar.plantaEmbarque === null || this.pedidoSelectedForPlanificar.plantaEmbarque === undefined) {
+      this.showAlert('','Seleccione una planta de embarque.','warning');
+      return false;
+    }
+    if (this.pedidoSelectedForPlanificar.fechaPlanificacion === null || this.pedidoSelectedForPlanificar.fechaPlanificacion === undefined) {
+      this.showAlert('','Seleccione una fecha de planificación.','warning');
+      return false;
+    }
+    if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.minFechaPlanificacion) {
+      this.showAlert('','La fecha de planificación no puede ser menor a la fecha actual.','warning');
+      return false;
+    }
+    if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.maxFechaPlanificacion) {
+      this.showAlert('','La fecha de planificación no puede ser mayor a un mes.','warning');
+      return false;
+    }
+    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.pedidoSelectedForPlanificar.fecPedido) {
+    //   this.showAlert('','La fecha de planificación no puede ser menor a la fecha del pedido.','warning');
+    //   return false;
+    // }
+    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.pedidoSelectedForPlanificar.pedFechaEstimado) {
+    //   this.showAlert('','La fecha de planificación no puede ser menor a la fecha estimada del pedido.','warning');
+    //   return false;
+    // }
+    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.pedidoSelectedForPlanificar.fecPedido) {
+    //   this.showAlert('','La fecha de planificación no puede ser mayor a la fecha del pedido.','warning');
+    //   return false;
+    // }
+    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.pedidoSelectedForPlanificar.pedFechaEstimado) {
+    //   this.showAlert('','La fecha de planificación no puede ser mayor a la fecha estimada del pedido.','warning');
+    //   return false;
+    // }
+  }
+
+  async onClickGuardarPlaEmbarque() {
+    this.loadingVisible = true;
+    if (!this.validarDatos()) {
+      this.loadingVisible = false;
+      return;
+    }
+//    console.log(this.pedidoSelectedForPlanificar);
+    const data = {
+      fecPedido: new Date(this.pedidoSelectedForPlanificar.fecPedido),
+      pedido: this.pedidoSelectedForPlanificar.pedido,
+      codCliente: this.pedidoSelectedForPlanificar.codCliente,
+      observacion: this.pedidoSelectedForPlanificar.observacion,
+      plantaEmbarque: this.pedidoSelectedForPlanificar.plantaEmbarque,
+      fechaPlanificacion: this.pedidoSelectedForPlanificar.fechaPlanificacion,
+      pedFechaEstimado: new Date(this.pedidoSelectedForPlanificar.pedFechaEstimado),
+      userAud: localStorage.getItem(varUser),
+    };
+    console.log(data);
+    await this._service.postPlanificacionEmbarque(data).subscribe((data) => {
+      this.loadingVisible = false;
+      if (data.Codigo) {
+        this.showAlert('','Registro guardado correctamente.','success');
+        // ejecutar el metodo updateSelectedMonthYear que está en el componente hijo FrmplanificacionhorarioComponent
+        if (this.horarioComponent) {
+          this.horarioComponent.updateSelectedMonthYear();
+        }
+        // this.limpiarPedidoSelected();
+        this.modalReferenceItem.close();
+      } else {
+        this.showAlert('','Error al guardar el registro:' + data.Description ,'error');
+      }
+    });
+  }
+
+
+
+  async showAlert(title, mensaje, tipo, event = null) {
+    this.loadingVisible = false;
+
+    return new Promise(async (resolve) => {
+      await Swal.fire({
+        title: title,
+        html: "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" + mensaje.replaceAll('\n','<br>').replaceAll('\\n','<br>') + "</div>",
+        icon: tipo,
+        showCancelButton: false,
+        confirmButtonColor: (tipo === 'error' ? '#d33' : tipo === 'warning' ? '#ff9800' :
+          tipo === 'success' ? '#4CAF50' : tipo === 'info' ? '#2196F3' : ''),
+        confirmButtonText: 'Aceptar'
+      }).then((result) => {
+          if(event !== null){
+            eval(event);
+          }
+          return resolve(true);
+      });
+    });
+  }
+  
 
 }
