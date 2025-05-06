@@ -43,6 +43,7 @@ table.table-bordered {
         text-align: center; 
         padding: 6px;
         position: sticky;
+
     }
     thead tr.dayOfWeek, tr.header {
         position: sticky; /* Fija el encabezado */
@@ -56,6 +57,15 @@ table.table-bordered {
     }
     tbody tr.dayOfWeek td.dayDisabled {
         opacity: 0.65;
+    }
+    td.pedido {
+        cursor: pointer;
+    }
+    td.dragging {
+        background-color: #385c7b; /* Azul claro durante el arrastre */
+    }
+    td.drop-target {
+        background-color: #f05907c1; /* Verde claro cuando es un objetivo válido */
     }
 }
 
@@ -87,13 +97,6 @@ table.table-bordered {
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap;
-        }
-        td.dragging {
-            background-color: #385c7b; /* Azul claro durante el arrastre */
-        }
-          
-        td.drop-target {
-            background-color: #f05907c1; /* Verde claro cuando es un objetivo válido */
         }
     }
 }

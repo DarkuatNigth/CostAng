@@ -67,7 +67,9 @@
 
 <div class="row" id="calendarioContent" style="padding: 0px 1%;">    
     <div id="" #content class='mostly-customized-scrollbar' [style.height]="setearHeightDiv()" style="overflow: auto;">
-        <table tabindex="0" class="table table-bordered" style="font-size: 11px;">
+        <table tabindex="0" class="table table-bordered" style="font-size: 11px;" 
+            (dragover)="onDragOver($event)" (drop)="onDrop($event)"> <!-- En lugar de agregar eventos a cada <td>, considera usar un solo evento delegado en el contenedor de la tabla. -->
+            
             <!-- <thead>
                 <tr class="dayOfWeek">
                     <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</th>
@@ -79,7 +81,7 @@
                     <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</th>
                 </tr>
             </thead> -->
-            <tbody>
+            <tbody >
                 <tr class="header">
                     <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</td>
                     <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Martes</td>
@@ -89,32 +91,29 @@
                     <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Sábado</td>
                     <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</td>
                 </tr>
-                <ng-container *ngFor="let week of dataByWeek; let w = index">
+                <ng-container *ngFor="let week of dataByWeek; let w = index" >
                     <tr class="dayOfWeek">
-                        <td *ngFor="let day of week" 
+                        <td *ngFor="let day of week; trackBy: trackByDay" 
                             tabindex="0"
                             [ngClass]="day.disabled ? 'dayDisabled' : ''"
                             (click)="Marcar($event, '')"
                             (keydown)="MarcarCursor($event)"
                             [attr.data-day]="day.day"
-                            (dragover)="onDragOver($event)"
-                            (drop)="onDrop($event, day)"
                             >
                             {{ day.day }}
                         </td>
                     </tr>
                     <tr *ngFor="let f of [].constructor(week[0].maxRows); let i = index">
-                        <td *ngFor="let day of week; let j = index" 
+                        <td *ngFor="let day of week; let j = index; trackBy: trackByDay" 
                             [id]="day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : ''"
                             [ngStyle]="{'height': '75px'}"
                             [ngClass]="day.dataPedidos[i] !== undefined ? getClassEstado(day.dataPedidos[i].Estado, day.dataPedidos[i].emb_Documentacion, day.dataPedidos[i].emb_DocCaducado) : 'default-class'"
                             (click)="Marcar($event, day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : '')"
                             (keydown)="MarcarCursor($event)"
                             tabindex="{{((w*i)+(7*i)+j)}}"
+                            [attr.data-day]="day.day"
                             draggable="true"
                             (dragstart)="onDragStart($event, day.dataPedidos[i])"
-                            (dragover)="onDragOver($event)"
-                            (drop)="onDrop($event, day)"
                             >
                             <span *ngIf="day.dataPedidos[i] !== undefined">
                                 <ng-container *ngTemplateOutlet="controlTemplate; context: { param: day.dataPedidos[i] }"></ng-container>

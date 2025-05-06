@@ -36,6 +36,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   
   dataPedidos: any[] = [];
   dataByWeek: any[] = [];
+  dayMap: Map<string, any> = new Map(); // Crea un mapa para acceder rápidamente a los días
   itemsMenuContext: any[] = [];
 
   currentDate: moment.Moment = moment(); // Fecha actual
@@ -109,50 +110,50 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   // Evento que se dispara al iniciar el arrastre
   onDragStart(event: DragEvent, item: any): void {
     this.draggedItem = item; // Guarda el elemento que se está arrastrando
-    event.dataTransfer?.setData('text/plain', JSON.stringify(item)); // Opcional: guarda datos en el evento
-    console.log('Drag Start:', item);
+    // event.dataTransfer?.setData('text/plain', JSON.stringify(item)); // Opcional: guarda datos en el evento
   }
 
   // Evento que permite que el elemento sea soltado
   onDragOver(event: DragEvent): void {
     event.preventDefault(); // Necesario para permitir el drop
   }
-
+  
+  
   // Evento que se dispara al soltar el elemento
-  onDrop(event: DragEvent, targetDay: any): void {
+  onDrop(event: DragEvent): void {
     event.preventDefault();
-    if (this.draggedItem) {
-      console.log('Dropped:', this.draggedItem, 'on day:', targetDay);
-      this.moveItemToDay(this.draggedItem, targetDay);
-      this.draggedItem = null; // Limpia el elemento arrastrado
+    const target = event.target as HTMLElement;
+    const targetDay = target.getAttribute('data-day');
+    if (this.draggedItem && targetDay) {
+      const day = this.dayMap.get(targetDay);
+      if (day) {
+        this.moveItemToDay(this.draggedItem, day);
+        this.draggedItem = null;
+      }
     }
   }
 
   // Lógica para mover el elemento al nuevo día
   moveItemToDay(item: any, targetDay: any): void {
     // Elimina el elemento del día original
-    this.dataByWeek.forEach(week => {
-      week.forEach(day => {
+    this.dataByWeek.forEach((week) => {
+      week.forEach((day) => {
         if (day.dataPedidos && day.day === item.Fecha) {
           day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido.ped_numero !== item.ped_numero);
-          return; // Salir del bucle si se encontró y eliminó el pedido
+          return;
         }
       });
     });
-    // const originalDay = this.dataByWeek.find(week =>
-    //   week.some(day => day.dataPedidos?.includes(item))
-    // );
-    // debugger;
-    // if (originalDay) {
-    //   const day = originalDay.find(d => d.dataPedidos?.includes(item));
-    //   if (day) {
-    //     day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido !== item);
-    //   }
-    // }
     // Agrega el elemento al nuevo día
     targetDay.dataPedidos = targetDay.dataPedidos || [];
     targetDay.dataPedidos.push(item);
     console.log('Item moved:', item, 'to day:', targetDay);
+  }
+
+  
+  // Reducir el Re-renderizado. Si Angular está re-renderizando toda la tabla después de cada cambio, esto puede causar demoras. Usa el atributo trackBy en *ngFor para optimizar el re-renderizado.
+  trackByDay(index: number, day: any): string {
+    return day.day; // Usa un identificador único para cada día
   }
 
   onPrevMonth(): void {
@@ -338,6 +339,11 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       week = week.map((day) => { return { ...day, maxRows: maxRows } });
       this.dataByWeek.push(week);
     }
+    this.dataByWeek.forEach((week) => {
+      week.forEach((day) => {
+        this.dayMap.set(day.day, day);
+      });
+    });
     console.log('this.dataByWeek', this.dataByWeek);
   }
 
@@ -457,23 +463,23 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     var clase = "";
     switch (estado) {
       case "(PED COMP)":
-        clase = "PedCompleto";
+        clase = "pedido PedCompleto";
         break;
       case "(PED)":
-        clase = "PedPendiente";
+        clase = "pedido PedPendiente";
         break;
       case "(FACT)":
         if ((documentacion === "N" || documentacion === "") && DocCaducado === "S") {
-          clase = "FacturadoSD";
+          clase = "pedido FacturadoSD";
         } else {
-          clase = "Facturado";
+          clase = "pedido Facturado";
         }
         break;
       case "(PLNF)":
-        clase = "Planificado";
+        clase = "pedido Planificado";
         break;
       case "(EMB)":
-        clase = "Embarcado";
+        clase = "pedido Embarcado";
         break;
     }
     return clase;
