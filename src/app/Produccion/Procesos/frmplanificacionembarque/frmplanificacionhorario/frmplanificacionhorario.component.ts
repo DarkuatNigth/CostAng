@@ -52,6 +52,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   disabledNextSearch = true; 
   disabledPrevSearch = true;
 
+  draggedItem: any = null; // Elemento que se está arrastrando
+
   @ViewChild('contextMenu') contextMenu;
   @ViewChild('content') content;
 
@@ -98,13 +100,60 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
   
   async itemMenuClick(e) {
     if(e.itemData.text === "Quitar de Planificación"){
     }
   }
 
+  // Evento que se dispara al iniciar el arrastre
+  onDragStart(event: DragEvent, item: any): void {
+    this.draggedItem = item; // Guarda el elemento que se está arrastrando
+    event.dataTransfer?.setData('text/plain', JSON.stringify(item)); // Opcional: guarda datos en el evento
+    console.log('Drag Start:', item);
+  }
+
+  // Evento que permite que el elemento sea soltado
+  onDragOver(event: DragEvent): void {
+    event.preventDefault(); // Necesario para permitir el drop
+  }
+
+  // Evento que se dispara al soltar el elemento
+  onDrop(event: DragEvent, targetDay: any): void {
+    event.preventDefault();
+    if (this.draggedItem) {
+      console.log('Dropped:', this.draggedItem, 'on day:', targetDay);
+      this.moveItemToDay(this.draggedItem, targetDay);
+      this.draggedItem = null; // Limpia el elemento arrastrado
+    }
+  }
+
+  // Lógica para mover el elemento al nuevo día
+  moveItemToDay(item: any, targetDay: any): void {
+    // Elimina el elemento del día original
+    this.dataByWeek.forEach(week => {
+      week.forEach(day => {
+        if (day.dataPedidos && day.day === item.Fecha) {
+          day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido.ped_numero !== item.ped_numero);
+          return; // Salir del bucle si se encontró y eliminó el pedido
+        }
+      });
+    });
+    // const originalDay = this.dataByWeek.find(week =>
+    //   week.some(day => day.dataPedidos?.includes(item))
+    // );
+    // debugger;
+    // if (originalDay) {
+    //   const day = originalDay.find(d => d.dataPedidos?.includes(item));
+    //   if (day) {
+    //     day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido !== item);
+    //   }
+    // }
+    // Agrega el elemento al nuevo día
+    targetDay.dataPedidos = targetDay.dataPedidos || [];
+    targetDay.dataPedidos.push(item);
+    console.log('Item moved:', item, 'to day:', targetDay);
+  }
 
   onPrevMonth(): void {
     this.isPrevMonthEnabled = true;
@@ -133,16 +182,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     }
   }
 
-  limpiarSearch(){
-    this.numCoincidenciasSearch = 0;
-    this.numIndiceSearch = 0;
-    this.dataSearch = [];
-    this.disabledNextSearch = true; 
-    this.disabledPrevSearch = true;
-  }
-
-
-  async onChangeSearchFilter(e, value){
+  
+  onChangeSearchFilter(e, value): void{
     this.txtSearch = value;
     if(value.length < 3){
       this.limpiarSearch();
@@ -178,15 +219,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
 
   }
 
-  async scrollToElement(id: string) {
-    const element = document.getElementById(id);
-    if (element) {
-      element.click();
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  async onClickNextSearch(){
+  
+  onClickNextSearch(): void{
     this.numIndiceSearch++;
     if(this.numIndiceSearch > this.numCoincidenciasSearch){
       this.numIndiceSearch = 1;
@@ -197,7 +231,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   }
 
 
-  async onClickPrevSearch(){
+  onClickPrevSearch(): void{
     this.numIndiceSearch--;
     if(this.numIndiceSearch < 1){
       this.numIndiceSearch = this.numCoincidenciasSearch;
@@ -207,8 +241,26 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     this.disabledPrevSearch = this.numIndiceSearch === 1;
   }
 
-  
-  updateSelectedMonthYear(): void {
+
+  async limpiarSearch(){
+    this.numCoincidenciasSearch = 0;
+    this.numIndiceSearch = 0;
+    this.dataSearch = [];
+    this.disabledNextSearch = true; 
+    this.disabledPrevSearch = true;
+  }
+
+
+  async scrollToElement(id: string) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.click();
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+
+  async updateSelectedMonthYear() {
     this.selectedMonthYear = this.selectedDate.format('MMMM YYYY'); // Ejemplo: "Abril 2025"
     var desde = this.selectedDate.clone().startOf('month').format("yyyy/MM/DD");
     var hasta = this.selectedDate.clone().endOf('month').format("yyyy/MM/DD");

@@ -96,6 +96,9 @@
                             [ngClass]="day.disabled ? 'dayDisabled' : ''"
                             (click)="Marcar($event, '')"
                             (keydown)="MarcarCursor($event)"
+                            [attr.data-day]="day.day"
+                            (dragover)="onDragOver($event)"
+                            (drop)="onDrop($event, day)"
                             >
                             {{ day.day }}
                         </td>
@@ -108,6 +111,10 @@
                             (click)="Marcar($event, day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : '')"
                             (keydown)="MarcarCursor($event)"
                             tabindex="{{((w*i)+(7*i)+j)}}"
+                            draggable="true"
+                            (dragstart)="onDragStart($event, day.dataPedidos[i])"
+                            (dragover)="onDragOver($event)"
+                            (drop)="onDrop($event, day)"
                             >
                             <span *ngIf="day.dataPedidos[i] !== undefined">
                                 <ng-container *ngTemplateOutlet="controlTemplate; context: { param: day.dataPedidos[i] }"></ng-container>

@@ -88,6 +88,13 @@ table.table-bordered {
             text-overflow: ellipsis; 
             white-space: nowrap;
         }
+        td.dragging {
+            background-color: #385c7b; /* Azul claro durante el arrastre */
+        }
+          
+        td.drop-target {
+            background-color: #f05907c1; /* Verde claro cuando es un objetivo válido */
+        }
     }
 }
 
