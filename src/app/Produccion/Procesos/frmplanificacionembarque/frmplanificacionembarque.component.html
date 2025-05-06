@@ -33,7 +33,7 @@
                                                 
                                                 <dx-data-grid #GridPedidosPorPais 
                                                     id="GridPedidosPorPais" 
-                                                    style="width: 100%; max-height: 120vh;" 
+                                                    style="width: 100%; max-height: 200vh;" 
                                                     [dataSource]="pedidosPorPais"
                                                     keyExpr="id" 
                                                     [showColumnLines]="true" 
@@ -52,7 +52,7 @@
                                                         <div class="detail">
                                                             <dx-data-grid #GridPedidosPaisDetail 
                                                                 id="GridPedidosPaisDetail" 
-                                                                style="width: 100%; max-height: 85vh;" 
+                                                                style="width: 100%; max-height: 180vh;" 
                                                                 [dataSource]="pedidosPaisDetail"
                                                                 keyExpr="id" 
                                                                 [showColumnLines]="true" 
@@ -63,10 +63,10 @@
                                                                 (onInitialized)="onInitializedPedidosPaisDetail(GridPedidosPaisDetail)" 
                                                             >
                                                                 <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
-                                                                <dxo-group-panel [visible]="false"></dxo-group-panel>
-                                                                <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
                                                                 <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
-                                                                <dxi-column cellTemplate="checkPlanificarTemplate" dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
+                                                                <dxi-column cellTemplate="checkPlanificarTemplate" dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"
+                                                                    [visible]="pais.data.pais != 'MIXES'"> 
+                                                                </dxi-column>
                                                                 <div *dxTemplate="let cell of 'checkPlanificarTemplate'">
                                                                     <div>
                                                                         <input type="checkbox" class="cssCheckBox" 
@@ -77,11 +77,14 @@
                                                                 </div>
                                                                 <dxi-column dataField="agrupacionCodigo" caption="agrupacionCodigo" [visible]="false"></dxi-column>
                                                                 <dxi-column dataField="paisCodigo" caption="paisCodigo" [visible]="false"></dxi-column>
-                                                                <dxi-column dataField="cliente" caption="Cliente" [width]="120"></dxi-column>
-                                                                <dxi-column dataField="destino" caption="Destino" [width]="120"></dxi-column>
+                                                                <dxi-column dataField="cliente" caption="Cliente" [width]="175"></dxi-column>
+                                                                <dxi-column dataField="destino" caption="Destino" [width]="175"></dxi-column>
                                                                 <dxi-column dataField="pedido" caption="Factura" [width]="90"></dxi-column>
-                                                                <dxi-column dataField="producto" caption="Producto" [width]="150"></dxi-column>
-                                                                <dxi-column dataField="talla" caption="Talla Venta" [width]="50"></dxi-column>
+                                                                <dxi-column dataField="pedFechaEstimado" caption="F.Estimada" [allowFiltering]="false" dataType="date" [width]="90">
+                                                                    <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                                                </dxi-column>
+                                                                <!-- <dxi-column dataField="producto" caption="Producto" [width]="150"></dxi-column>
+                                                                <dxi-column dataField="talla" caption="Talla Venta" [width]="50"></dxi-column> -->
                                                                 <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
                                                                 <dxi-column dataField="xEmbarcar" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
                                                                 <dxi-column dataField="saldoSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
@@ -89,7 +92,8 @@
                                                                 <dxi-column dataField="SaldoComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
                                                                 <dxi-column dataField="SaldoOtros" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
                                                                 <dxi-column dataField="StockEnProceso" caption="Stock Proceso" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
-                                                                <dxi-column dataField="bloqueado" caption="Bloqueo" cellTemplate="bloqueadoTemplate" [width]="70" [allowFiltering]="false"
+                                                                <dxi-column dataField="bloqueado" caption="Bloqueo" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                <!-- <dxi-column dataField="bloqueado" caption="Bloqueo" cellTemplate="bloqueadoTemplate" [width]="70" [allowFiltering]="false"
                                                                     cssClass="cell-temp-valor-2">
                                                                 </dxi-column>
                                                                 <div *dxTemplate="let cell of 'bloqueadoTemplate'">
@@ -101,7 +105,7 @@
                                                                             </span>
                                                                         </button>
                                                                     </div>
-                                                                </div>
+                                                                </div> -->
                                                                 <dxi-column dataField="xFabricar" caption="Por Producir" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
                                                                 <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="60"
                                                                     cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
@@ -113,9 +117,72 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <dxi-column dataField="pedFechaEstimado" caption="F.Estimada" [allowFiltering]="false" dataType="date">
-                                                                    <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
-                                                                </dxi-column>
+                                                                <dxo-master-detail [enabled]="pais.data.pais === 'MIXES'" template="detail2"></dxo-master-detail>
+                                                                <div *dxTemplate="let pedido of 'detail2'">
+                                                                    <div class="detail" style="width: 99.9%; border: 1px dashed darkgrey;">
+                                                                        <dx-data-grid #GridPedidosPaisDetailByProduct 
+                                                                            id="GridPedidosPaisDetailByProduct" 
+                                                                            style="width: 100%; max-height: 100vh;" 
+                                                                            [dataSource]="pedidosPaisDetailByProduct"
+                                                                            keyExpr="id" 
+                                                                            [showColumnHeaders]="false"
+                                                                            [showColumnLines]="true" 
+                                                                            [showRowLines]="true" 
+                                                                            [showBorders]="true" 
+                                                                            [columnAutoWidth]="true"
+                                                                            [filterValue]="['pedido', '=', pedido.data.pedido]"
+                                                                            (onInitialized)="onInitializedPedidosPaisDetailByProduct(GridPedidosPaisDetailByProduct)" 
+                                                                        >
+                                                                            <!-- (onContentReady)="expandAllPedidosPaisDetailByProduct($event)" -->
+                                                                            <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
+                                                                            <dxi-column cellTemplate="checkPlanificarTemplate2" dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="50"> </dxi-column>
+                                                                            <div *dxTemplate="let cell of 'checkPlanificarTemplate2'">
+                                                                                <div>
+                                                                                    <input type="checkbox" class="cssCheckBox" 
+                                                                                        [(ngModel)]="cell.value" 
+                                                                                        style="text-align: right; " />
+                                                                                </div>
+                                                                            </div>
+                                                                            <dxi-column dataField="pedido" caption="Factura" [width]="90" [visible]="false"></dxi-column>
+                                                                            <dxi-column dataField="producto" caption="Producto" [width]="450"></dxi-column>
+                                                                            <dxi-column dataField="talla" caption="Talla Venta" [width]="59"></dxi-column>
+                                                                            <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="xEmbarcar" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="saldoSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="SaldoComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="SaldoOtros" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="StockEnProceso" caption="Stock Proceso" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="bloqueado" caption="Bloqueo" cellTemplate="bloqueadoTemplate2" [width]="70" [allowFiltering]="false"
+                                                                                cssClass="cell-temp-valor-2">
+                                                                            </dxi-column>
+                                                                            <div *dxTemplate="let cell of 'bloqueadoTemplate2'">
+                                                                                <div *ngIf="cell.value">
+                                                                                    <button class="btn small-button" (click)="onClickBloqueado(cell.data)" title="Ver Bloqueados">
+                                                                                        <span class="dx-button-content">
+                                                                                            <i class="dx-icon dx-icon-eyeopen"></i>
+                                                                                            {{ cell.value }}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                            <dxi-column dataField="xFabricar" caption="Por Producir" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                                                                            <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="60"
+                                                                                cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
+                                                                            </dxi-column>
+                                                                            <div *dxTemplate="let cell of 'porcentajeTemplate'">
+                                                                                <div class="progress-container">
+                                                                                    <div class="progress-bar" [style.width.%]="cell.value" [attr.aria-valuenow]="cell.value">
+                                                                                        {{ cell.value }}%
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- <dxi-column dataField="" caption="F.Estimada" [allowFiltering]="false" ></dxi-column> -->
+                                                                        </dx-data-grid>
+                                                                    </div>
+                                                                </div>
+
+
+
                                                             </dx-data-grid>
                                                         </div>
                                                     </div>
@@ -194,7 +261,7 @@
                                 <dxi-column dataField="secuencial" caption="" [visible]="false"></dxi-column>
                                 <dxi-column dataField="lote" caption="Lote" [width]="70"></dxi-column>
                                 <dxi-column dataField="proveedor" caption="Proveedor" [width]="200"></dxi-column>
-                                <dxi-column dataField="descripcion" caption="Tipo" [width]="200" [groupIndex]="0"></dxi-column>
+                                <dxi-column dataField="descripcion" caption="Motivo de Bloqueo" [width]="200" [groupIndex]="0"></dxi-column>
                                 <dxi-column dataField="fechaCuar" caption="F.Cuarentena" [width]="80" dataType="date">
                                     <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                                 </dxi-column>
@@ -236,7 +303,7 @@
 
                 <div class="row">
 
-                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Pedido: </label>
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Referencia: </label>
                     <div class="col-12 col-sm-8 col-md-2 col-lg-2 mb-2 pl-0">
                         <span>{{pedidoSelectedForPlanificar.pedido}}</span>
                     </div>
@@ -292,8 +359,58 @@
                     <div class="w-100 d-lg-none d-md-block"></div>
                     <div class="w-100 d-lg-block"></div>
 
+                </div>
 
-
+                <div class="row">
+                    <dx-data-grid #GridPedidosPaisDetailByProduct2 
+                        id="GridPedidosPaisDetailByProduct2" 
+                        style="width: 100%; max-height: 85vh;" 
+                        [dataSource]="pedidosPaisDetailByProduct"
+                        keyExpr="id" 
+                        [showColumnHeaders]="true"
+                        [showColumnLines]="true" 
+                        [showRowLines]="true" 
+                        [showBorders]="true" 
+                        [columnAutoWidth]="true"
+                        [filterValue]="['pedido', '=', pedidoSelectedForPlanificar?.pedido]"
+                        (onInitialized)="onInitializedPedidosPaisDetailByProduct2(GridPedidosPaisDetailByProduct2)" 
+                    >
+                        <!-- (onContentReady)="expandAllPedidosPaisDetailByProduct($event)" -->
+                        <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
+                        <dxi-column dataField="pedido" caption="Factura" [width]="90" [visible]="false"></dxi-column>
+                        <dxi-column dataField="producto" caption="Producto" [width]="120"></dxi-column>
+                        <dxi-column dataField="talla" caption="Talla Venta" [width]="50"></dxi-column>
+                        <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="xEmbarcar" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="saldoSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="SaldoComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="SaldoOtros" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="StockEnProceso" caption="Stock Proceso" format="#,###.##" [allowFiltering]="false" [width]="60"></dxi-column>
+                        <dxi-column dataField="bloqueado" caption="Bloqueo" cellTemplate="bloqueadoTemplate2" [width]="60" [allowFiltering]="false"
+                            cssClass="cell-temp-valor-2">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'bloqueadoTemplate2'">
+                            <div *ngIf="cell.value">
+                                <button class="btn small-button" (click)="onClickBloqueado(cell.data)" title="Ver Bloqueados">
+                                    <span class="dx-button-content">
+                                        <i class="dx-icon dx-icon-eyeopen"></i>
+                                        {{ cell.value }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                        <dxi-column dataField="xFabricar" caption="Por Producir" format="#,###.##" [allowFiltering]="false" [width]="70"></dxi-column>
+                        <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="60"
+                            cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'porcentajeTemplate'">
+                            <div class="progress-container">
+                                <div class="progress-bar" [style.width.%]="cell.value" [attr.aria-valuenow]="cell.value">
+                                    {{ cell.value }}%
+                                </div>
+                            </div>
+                        </div>
+                    </dx-data-grid>
                 </div>
 
 

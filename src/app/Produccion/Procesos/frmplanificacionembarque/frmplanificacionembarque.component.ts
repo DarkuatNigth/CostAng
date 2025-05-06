@@ -35,10 +35,10 @@ interface PedidosPaisDetail {
   cliente: string;
   codCliente: number;
   pedido: string;
-  codProducto: string;
-  producto: string;
-  codTalla: number;
-  talla: string;
+  // codProducto: string;
+  // producto: string;
+  // codTalla: number;
+  // talla: string;
   fecPedido: Date;
   pedFechaEstimado: Date;
   mastersOriginal: number;
@@ -90,11 +90,12 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
   pedidosPorPais: PedidosPorPais[] = [];
   pedidosPaisDetail: PedidosPaisDetail[] = [];
+  pedidosPaisDetailByProduct: any[] = [];
   plantasEmbarque: any[] = [];
 
   pedidoSelectedForPlanificar: PedidosPaisDetail = null;
   minFechaPlanificacion: Date = new Date(); 
-  maxFechaPlanificacion: Date = moment().add(3, 'month').toDate(); 
+  maxFechaPlanificacion: Date = moment().add(3, 'month').endOf('month').toDate();
 
   totalMastersBloq: number = 0;  
   cabeceraStockBloqueado: {
@@ -119,6 +120,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
   @ViewChild('GridPedidosPorPais', { static: false }) GridPedidosPorPais: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetail', { static: false }) GridPedidosPaisDetail: DxDataGridComponent;
+  @ViewChild('GridPedidosPaisDetailByProduct', { static: false }) GridPedidosPaisDetailByProduct: DxDataGridComponent;
+  @ViewChild('GridPedidosPaisDetailByProduct2', { static: false }) GridPedidosPaisDetailByProduct2: DxDataGridComponent;
   @ViewChild('GridStockBloqueado', { static: false }) GridStockBloqueado: DxDataGridComponent;
   
   @ViewChild('tabPanel') tabPanel: DxTabPanelComponent;
@@ -183,6 +186,39 @@ export class FrmplanificacionembarqueComponent implements OnInit {
             destino: item.Destino?.trim() || '',
             cliente: item.CLIENTE?.trim() || '',
             codCliente: item.cli_codigo,
+            // codProducto: item.cod_produc,
+            // producto: item.PRODUCTO,
+            // codTalla: item.cod_talla,
+            // talla: item.TALLA?.trim() || '',
+            pedido: item.PEDIDO || '',
+            fecPedido: item.fecpedido,
+            pedFechaEstimado: item.ped_fechaestimada,
+            mastersOriginal: item.MORIGINAL,
+            mastersPedido: item.MPEDIDO,
+            xEmbarcar: item.XEMBARCAR,
+            xFabricar: item.XFABRICAR,
+            libras: item.LIBRAS,
+            saldoSonga: item.SaldoSonga,
+            saldoSonga2: item.SaldoSonga2,
+            SaldoComin: item.SaldoComin,
+            SaldoOtros: item.SaldoOtros,
+            StockEnProceso: item.StockEnProceso,
+            bloqueado: item.Bloqueado,
+            porcentaje: parseFloat(item.Porcentaje),
+            agrupacionCodigo: item.OrdenAgrupacion,
+            agrupacionDescri: item.Agrupacion,
+          };
+        });
+
+        let idSec2 = 0;
+        this.pedidosPaisDetailByProduct = data.Dt.Table2.map((item: any) => {
+          return {
+            id: idSec2++,
+            paisCodigo: item.pai_codigo,
+            pais: item.pai_descri?.trim() || '',
+            destino: item.Destino?.trim() || '',
+            cliente: item.CLIENTE?.trim() || '',
+            codCliente: item.cli_codigo,
             codProducto: item.cod_produc,
             producto: item.PRODUCTO,
             codTalla: item.cod_talla,
@@ -208,6 +244,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         });
 
         console.log(this.pedidosPaisDetail);
+        console.log(this.pedidosPaisDetailByProduct);
       }, 
       error: (error) => {
         this.showAlert('','Error al cargar los datos: ' + error, 'error');
@@ -225,6 +262,14 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
   onInitializedPedidosPaisDetail(grid: any) {
     this.GridPedidosPaisDetail = grid;
+  }
+
+  onInitializedPedidosPaisDetailByProduct(grid: any) {
+    this.GridPedidosPaisDetailByProduct = grid;
+  }
+
+  onInitializedPedidosPaisDetailByProduct2(grid: any) {
+    this.GridPedidosPaisDetailByProduct2 = grid;
   }
 
   onInitializedStockBloqueado(grid: any) {
@@ -257,55 +302,57 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       windowClass: 'cssModalStockBloqueado',
     });
     
-    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla).subscribe(
-      (data) => {
-      this.loadingVisible = false;
-      if (data.Codigo) {
-        let datosDet: any = data.Dt.Table;
-        if (datosDet.length > 0) {
-
-          this.cabeceraStockBloqueado = {
-            producto: rowData.producto,
-            talla: rowData.talla,
-          };
-          
-          this.detalleStockBloqueado = datosDet.map((item: any) => {
-            return {
-              lote: item.Lote,
-              codpro: item.Codpro,
-              producto: item.Producto,
-              codTalla: item.CodTalla,
-              talla: item.Talla,
-              master: item.Master,
-              proveedor: item.Proveedor,
-              fecha: item.Fecha,
-              fechaCuar: item.FechaCuar,
-              fechaLib: item.FechaLib,
-              secuencial: item.Secuencial,
-              observa: item.Observa,
-              ccuMotivo: item.ccu_motivo,
-              descripcion: item.Descripcion
+    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla).subscribe({
+      next: (data) => {
+        if (data.Codigo) {
+          let datosDet: any = data.Dt.Table;
+          if (datosDet.length > 0) {
+            this.cabeceraStockBloqueado = {
+              producto: rowData.producto,
+              talla: rowData.talla,
             };
-          });
-          // obtener el total de masters bloqueados solo sumar si son de diferentes lotes 
-          const uniqueLotes = new Set(this.detalleStockBloqueado.map(item => item.lote));
-          this.totalMastersBloq = Array.from(uniqueLotes).reduce((acc, lote) => {
-            const totalLote = this.detalleStockBloqueado.find(item => item.lote === lote)?.master || 0;
-            return acc + totalLote;
-          }, 0);
-          
-          if (this.GridStockBloqueado){
-            this.GridStockBloqueado.instance.refresh();
-          }
+            this.detalleStockBloqueado = datosDet.map((item: any) => {
+              return {
+                lote: item.Lote,
+                codpro: item.Codpro,
+                producto: item.Producto,
+                codTalla: item.CodTalla,
+                talla: item.Talla,
+                master: item.Master,
+                proveedor: item.Proveedor,
+                fecha: item.Fecha,
+                fechaCuar: item.FechaCuar,
+                fechaLib: item.FechaLib,
+                secuencial: item.Secuencial,
+                observa: item.Observa,
+                ccuMotivo: item.ccu_motivo,
+                descripcion: item.Descripcion
+              };
+            });
+            // obtener el total de masters bloqueados solo sumar si son de diferentes lotes 
+            const uniqueLotes = new Set(this.detalleStockBloqueado.map(item => item.lote));
+            this.totalMastersBloq = Array.from(uniqueLotes).reduce((acc, lote) => {
+              const totalLote = this.detalleStockBloqueado.find(item => item.lote === lote)?.master || 0;
+              return acc + totalLote;
+            }, 0);
+            
+            if (this.GridStockBloqueado){
+              this.GridStockBloqueado.instance.refresh();
+            }
 
+          }
+        } 
+        else {
+          throw new Error(data.Description);
         }
-      }
       },
-      (error) => {
+      error: (error) => {
+        this.showAlert('','Error al cargar los datos: ' + error, 'error');
+      },
+      complete: () => {
         this.loadingVisible = false;
-        console.log(error);
-      }
-    );
+      }      
+    });
     
   }
 

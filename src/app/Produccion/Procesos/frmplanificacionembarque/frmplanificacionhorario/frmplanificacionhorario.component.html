@@ -28,7 +28,7 @@
                 </dx-button>
             </div>
 
-            <div class="col-lg-2 col-md-3 col-sm-8 col-8 text-center">
+            <div class="col-lg-2 col-md-4 col-sm-8 col-8 text-center">
                 <span class="month-year-display">{{ selectedMonthYear }}</span>
             </div>
 
@@ -38,15 +38,34 @@
                 </dx-button>
             </div>
             
+            <div class="col-lg-8 col-md-6 col-sm-12 col-12 pb-1" style="min-height: 32px;">
+                 <div id="search_container">
+                     <input id="search-filter" name="" type="text"
+                        (keyup)="onChangeSearchFilter($event,txtSearch)" 
+                        [(ngModel)]="txtSearch" placeholder="Texto a buscar">
+                     <label id="label-count-search">{{numIndiceSearch}}/{{numCoincidenciasSearch}}</label>
+                     <button class="btn-model-search" id="btn-anterior" title="Anterior" type="button" [disabled]="disabledPrevSearch"
+                         (click)="onClickPrevSearch()">
+                         <i class="fas fa-arrow-circle-up"></i>
+                     </button>
+                     <button class="btn-model-search" id="btn-siguiente" title="Siguiente" type="button" [disabled]="disabledNextSearch"
+                         (click)="onClickNextSearch()">
+                         <i class="fas fa-arrow-circle-down"></i>
+                     </button>
+                     <button class="btn-model-search" id="btn-close-search" title="Limpiar flitro de busqueda" type="button"
+                         (click)="txtSearch = ''; onChangeSearchFilter($event, txtSearch)">
+                         <i class="fas fa-times-circle"></i>
+                     </button>
+                 </div>
+            </div>
+
         </div>
     </div>
     
 </div>
 
 
-
-
-<div class="row" id="ContDetalle" style="padding: 0px 1%;">    
+<div class="row" id="calendarioContent" style="padding: 0px 1%;">    
     <div id="" #content class='mostly-customized-scrollbar' [style.height]="setearHeightDiv()" style="overflow: auto;">
         <table tabindex="0" class="table table-bordered" style="font-size: 11px;">
             <!-- <thead>
@@ -72,7 +91,8 @@
                 </tr>
                 <ng-container *ngFor="let week of dataByWeek; let w = index">
                     <tr class="dayOfWeek">
-                        <td *ngFor="let day of week" tabindex="0"
+                        <td *ngFor="let day of week" 
+                            tabindex="0"
                             [ngClass]="day.disabled ? 'dayDisabled' : ''"
                             (click)="Marcar($event, '')"
                             (keydown)="MarcarCursor($event)"
@@ -82,9 +102,10 @@
                     </tr>
                     <tr *ngFor="let f of [].constructor(week[0].maxRows); let i = index">
                         <td *ngFor="let day of week; let j = index" 
+                            [id]="day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : ''"
                             [ngStyle]="{'height': '75px'}"
                             [ngClass]="day.dataPedidos[i] !== undefined ? getClassEstado(day.dataPedidos[i].Estado, day.dataPedidos[i].emb_Documentacion, day.dataPedidos[i].emb_DocCaducado) : 'default-class'"
-                            (click)="Marcar($event, day.dataPedidos[i] !== undefined ? 'idDetalle' : '')"
+                            (click)="Marcar($event, day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : '')"
                             (keydown)="MarcarCursor($event)"
                             tabindex="{{((w*i)+(7*i)+j)}}"
                             >
@@ -105,25 +126,25 @@
         <table>
             <tr>
                 <th colspan="2">
-                    <span>{{param.Factura}}</span> 
-                    {{ param.Cliente | slice:0:35 }}
+                    <span class="titulo">{{param.Factura}}</span> 
+                    {{ param.Cliente | slice:0:35}}
                 </th>
             </tr>
-            <tr>
-                <td class="titulo">ESTADO:</td>
-                <td class="descri">{{param.Estado}}</td>
+            <!-- <tr>
+                <td class="titulo">REF:</td>
+                <td class="descri">{{param.Factura}}</td>
             </tr>
+            <tr>
+                <td class="titulo">CLIENTE:</td>
+                <td class="descri">{{ param.Cliente | slice:0:35 }}</td>
+            </tr> -->
             <tr>
                 <td class="titulo">DESTINO:</td>
-                <td class="descri">{{param.pto_descripcion}}</td>
+                <td class="descri" title="{{param.pto_descripcion.length > 20 ? param.pto_descripcion : ''}}">{{param.pto_descripcion}}</td>
             </tr>
             <tr>
-                <td class="titulo">F/EMB:</td>
-                <td class="descri">{{param.emb_fechacarga}}</td>
-            </tr>
-            <tr>
-                <td class="titulo">F/LIM:</td>
-                <td class="descri">{{param.emb_fechalimite}}</td>
+                <td class="titulo">OBSERV:</td>
+                <td class="descri">{{param.emb_observaprogemb}}</td>
             </tr>
         </table>
     </div>

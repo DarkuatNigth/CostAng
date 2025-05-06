@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnInit, Renderer2, ViewChild } from '@angular
 import { FrmplanificacionhorarioService } from './frmplanificacionhorario.service';
 import * as moment from 'moment';
 import Swal from 'sweetalert2/src/sweetalert2.js';
+import { ClickEvent } from 'devextreme/ui/button';
 
 
 declare var window;
@@ -18,6 +19,7 @@ declare interface dataDayPlanificacion {
   Fecha: string;
   emb_Documentacion: string;
   emb_DocCaducado: string;
+  emb_observaprogemb: string;
 }
 
 
@@ -39,10 +41,16 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   currentDate: moment.Moment = moment(); // Fecha actual
   selectedDate: moment.Moment = moment(); // Fecha seleccionada
   selectedMonthYear: string = ''; 
+  txtSearch:string = "";
 
   isPrevMonthEnabled: boolean = true;
   isNextMonthEnabled: boolean = true;
-
+  
+  numCoincidenciasSearch = 0;
+  numIndiceSearch = 0;
+  dataSearch: any[] = [];
+  disabledNextSearch = true; 
+  disabledPrevSearch = true;
 
   @ViewChild('contextMenu') contextMenu;
   @ViewChild('content') content;
@@ -91,6 +99,12 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     });
   }
 
+  
+  async itemMenuClick(e) {
+    if(e.itemData.text === "Quitar de Planificación"){
+    }
+  }
+
 
   onPrevMonth(): void {
     this.isPrevMonthEnabled = true;
@@ -119,10 +133,78 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     }
   }
 
-  
-  async itemMenuClick(e) {
-    if(e.itemData.text === "Quitar de Planificación"){
+  limpiarSearch(){
+    this.numCoincidenciasSearch = 0;
+    this.numIndiceSearch = 0;
+    this.dataSearch = [];
+    this.disabledNextSearch = true; 
+    this.disabledPrevSearch = true;
+  }
+
+
+  async onChangeSearchFilter(e, value){
+    this.txtSearch = value;
+    if(value.length < 3){
+      this.limpiarSearch();
+      return;
     }
+
+    // si presiona enter y hay coincidencias ir al proximo elemento
+    if(e.keyCode === 13 && this.numCoincidenciasSearch > 0){
+      this.onClickNextSearch();
+      return;
+    }
+
+    this.dataSearch = this.dataPedidos.filter((item) => {
+      return item.Factura.toLowerCase().includes(value.toLowerCase()) || 
+             item.Cliente.toLowerCase().includes(value.toLowerCase()) || 
+             item.emb_observaprogemb.toLowerCase().includes(value.toLowerCase()) || 
+             item.pto_descripcion.toLowerCase().includes(value.toLowerCase());
+    }).map((item) => { return { Factura: item.Factura } });
+
+    if(this.dataSearch.length > 0){
+      this.numCoincidenciasSearch = this.dataSearch.length;
+      this.numIndiceSearch = 0;
+      this.disabledNextSearch = false;
+      if (this.dataSearch.length == 1) {
+        this.numIndiceSearch = 1;
+        this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+        this.disabledNextSearch = true;
+        this.disabledPrevSearch = true;
+      }
+    } else {
+      this.limpiarSearch();
+    }
+
+  }
+
+  async scrollToElement(id: string) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.click();
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  async onClickNextSearch(){
+    this.numIndiceSearch++;
+    if(this.numIndiceSearch > this.numCoincidenciasSearch){
+      this.numIndiceSearch = 1;
+    }
+    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+    this.disabledNextSearch = this.numIndiceSearch === this.numCoincidenciasSearch;
+    this.disabledPrevSearch = this.numIndiceSearch === 1;
+  }
+
+
+  async onClickPrevSearch(){
+    this.numIndiceSearch--;
+    if(this.numIndiceSearch < 1){
+      this.numIndiceSearch = this.numCoincidenciasSearch;
+    }
+    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+    this.disabledNextSearch = this.numIndiceSearch === this.numCoincidenciasSearch;
+    this.disabledPrevSearch = this.numIndiceSearch === 1;
   }
 
   
@@ -136,6 +218,9 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
 
   async getDataxMes(Desde, Hasta, mes) {
     this.loadingVisible2 = true;
+    this.dataPedidos = [];
+    this.dataByWeek = [];
+    this.limpiarSearch();
     return new Promise(async (resolve) => {
       let data = {
         fecIni: Desde,
@@ -309,12 +394,10 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     } else {
       this.controlAnterior.style.borderColor = "";
       this.controlAnterior.style.borderWidth = "";
-      this.controlAnterior.id = "";
       this.controlAnterior = v.currentTarget;
     }
     v.currentTarget.style.borderColor = "black";
     v.currentTarget.style.borderWidth = "1.5px";
-    v.currentTarget.id = idDetalle; // "idDetalle";
   }
 
 

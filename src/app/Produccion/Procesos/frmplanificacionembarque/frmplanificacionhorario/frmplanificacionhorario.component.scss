@@ -76,11 +76,14 @@ table.table-bordered {
             overflow: hidden; 
             text-overflow: ellipsis; 
         }
-        th span, td.titulo {
+        th span.titulo, td.titulo {
             font-weight: 600;            
         }
+        th span.titulo {
+            color: red  ;
+        }
         td.descri {
-            max-width: 135px;
+            max-width: 125px;
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap;
@@ -94,3 +97,39 @@ table.table-bordered {
     display: inline-block;
     margin: auto;
   }
+
+
+#search_container {
+    position: absolute;
+    top: 3px;
+    right: 10px;
+    width: auto;
+    z-index: 10;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 0.2rem 0.2rem 0.2rem rgba(46, 43, 55, 0.07);
+}  
+
+#search_container > * {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: auto;
+}
+
+#label-count-search {
+    border-right: 1px solid #a09f9f !important;
+    padding-right: 6px !important;
+    color: #a09f9f !important;
+}
+
+.btn-model-search {
+    border-style: none;
+    margin: 1px;
+    color: #000064;
+}
+
+.btn-model-search:disabled i {
+    color: rgba(42, 42, 42, 0.3) !important;
+}

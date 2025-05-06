@@ -70,6 +70,19 @@
   td[role="columnheader"] div.dx-datagrid-text-content{
     text-wrap: wrap;
   }
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 0px;
+  }
+  // obtener el parent del td con attr aria-label="Collapse"
+  tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
+    background-color: inherit; 
+  }
+}
+
+::ng-deep #GridPedidosPaisDetailByProduct2 {
+  td[role="columnheader"] div.dx-datagrid-text-content{
+    text-wrap: wrap;
+  }
 }
 
 ::ng-deep .cssModalStockBloqueado {
