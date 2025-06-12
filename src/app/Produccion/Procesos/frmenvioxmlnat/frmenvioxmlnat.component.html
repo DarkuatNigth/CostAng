@@ -5,31 +5,84 @@
 
     <div class="row">
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
-        <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
-        </dx-button>
+            <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
+            </dx-button>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Enviar" icon="save" type="success" (onClick)="onClickEnviar()">
+            </dx-button>
         </div>
     </div>
 
-    <!-- add constrol or controls to select 2 dates, fecha desde and fecha hasta --> 
-    <div class="row">
-        <div class="date-selection">
-            <label class="col-12 control-label">Fecha Desde:</label>
-            <div class="col-12 pb-1" style="display: flex">
-                <dx-date-box [(ngModel)]="fechaDesde" type="date" displayFormat="yyyy/MM/dd"
-                    adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaDesde"
-                    (onValueChanged)="onChangeFechaDesde($event)">
-                </dx-date-box>
+    <br>
+
+    <div class="card sng-card">
+        <div class="card-header"> {{title}} </div>
+        <div class="card-body">
+
+            <!-- add constrol or controls to select 2 dates, fecha desde and fecha hasta --> 
+            <!-- <div class="form-group row" id="row-fechas">
+                <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 date-selection mb-2">
+                    <label class="col-12 control-label">Fecha Desde:</label>
+                    <div class="col-12 pb-1" style="display: flex">
+                        <dx-date-box [(ngModel)]="fechaDesde" type="date" displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaDesde"
+                            (onValueChanged)="onChangeFechaDesde($event)">
+                        </dx-date-box>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 date-selection mb-2">
+                    <label class="col-12 control-label">Fecha Hasta:</label>
+                    <div class="col-12 pb-1" style="display: flex">
+                        <dx-date-box [(ngModel)]="fechaHasta" type="date" displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaHasta"
+                            (onValueChanged)="onChangeFechaHasta($event)">
+                        </dx-date-box>
+                    </div>
+                </div>
+            </div> -->
+
+            <div class="form-group row" id="row-fechas">
+                <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
+                    Fecha Desde:
+                </label>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display: flex">
+                  <dx-date-box
+                    [(ngModel)]="fechaDesde"
+                    type="date"
+                    displayFormat="yyyy/MM/dd"
+                    adaptivityEnabled="true"
+                    openOnFieldClick="true"
+                    width="100%"
+                    name="fechaDesde"
+                    (onValueChanged)="onChangeFechaDesde($event)"
+                  >
+                  </dx-date-box>
+                </div>
+
+                <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
+                    Fecha Hasta:
+                </label>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display: flex">
+                  <dx-date-box
+                    [(ngModel)]="fechaHasta"
+                    type="date"
+                    displayFormat="yyyy/MM/dd"
+                    adaptivityEnabled="true"
+                    openOnFieldClick="true"
+                    width="100%"
+                    name="fechaHasta"
+                    (onValueChanged)="onChangeFechaHasta($event)"
+                  >
+                  </dx-date-box>
+                </div>
             </div>
 
-            <label class="col-12 control-label">Fecha Hasta:</label>
-            <div class="col-12 pb-1" style="display: flex">
-                <dx-date-box [(ngModel)]="fechaHasta" type="date" displayFormat="yyyy/MM/dd"
-                    adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaHasta"
-                    (onValueChanged)="onChangeFechaHasta($event)">
-                </dx-date-box>
-            </div>
+
+
         </div>
-    </div>   
+    </div>
 
 
     <!-- add a grid control with columns lote, fecha, proveedor, piscina. the data will load from data in database -->
@@ -45,18 +98,19 @@
             [columnHidingEnabled]="false" 
             [columnAutoWidth]="true"
             (onInitialized)="onInitializedGridLotes(gridLotes)"
-
-            
-                                    >
+            [columnFixing]="{ enabled: true }"
+        >
             
             <!-- Enable row selection with checkboxes -->
             <dxo-selection mode="multiple" showCheckBoxesMode="always"></dxo-selection>
-            <dxo-column-chooser [enabled]="true" width="35"></dxo-column-chooser>       
+            <!-- <dxo-column-chooser [enabled]="true" width="35"></dxo-column-chooser> -->
+            <dxo-filter-row [visible]="true" [applyFilter]="true"></dxo-filter-row>
+            <!-- <dxo-header-filter [visible]="true"></dxo-header-filter> -->
             
-            <dxi-column dataField="rlo_numero" caption="Lote" width="100"></dxi-column>
-            <dxi-column dataField="rlo_fecha" caption="Fecha" dataType="date" format="yyyy/MM/dd" width="150"></dxi-column>
-            <dxi-column dataField="clp_nomcom" caption="Proveedor" width="150"></dxi-column>
-            <dxi-column dataField="gtr_piscin" caption="Piscina" width="100"></dxi-column>
+            <dxi-column dataField="rlo_numero" caption="Lote" width="70" selectedFilterOperation="contains" [fixed]="true" [fixedPosition]="'left'"></dxi-column>
+            <dxi-column dataField="clp_nomcom" caption="Proveedor" width="50%"  selectedFilterOperation="contains"></dxi-column>
+            <dxi-column dataField="gtr_piscin" caption="Piscina" width="10%"   selectedFilterOperation="contains"></dxi-column>
+            <dxi-column dataField="rlo_fecha" caption="Fecha" dataType="date" format="yyyy/MM/dd" width="10%"></dxi-column>
         </dx-data-grid>
     </div>
 

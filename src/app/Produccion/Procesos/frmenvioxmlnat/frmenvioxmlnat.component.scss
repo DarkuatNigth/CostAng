@@ -1,0 +1,13 @@
+
+/* Add this style to your global styles.css or in the component's styles */
+:host ::ng-deep .dx-datagrid .dx-command-select {
+    
+    // width: 30px !important;
+    // min-width: 30px !important;
+    // max-width: 30px !important;
+    // box-sizing: border-box;
+
+    width: 1.2rem;
+    height: 1.2rem;
+    top: 0.5rem;
+}

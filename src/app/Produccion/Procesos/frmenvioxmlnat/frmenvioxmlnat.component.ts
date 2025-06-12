@@ -4,6 +4,9 @@ import { DxDataGridComponent, DxDataGridTypes } from 'devextreme-angular/ui/data
 import { NotificationService } from 'src/app/shared/notify.service';
 import { FrmenvioxmlnatService } from './frmenvioxmlnat.service';
 import { formatDate } from '@angular/common';
+import Swal from 'sweetalert2/src/sweetalert2.js';
+import { firstValueFrom } from 'rxjs';
+import { int } from '@zxing/library/esm/customTypings';
 
 
 @Component({
@@ -17,13 +20,12 @@ export class FrmenvioxmlnatComponent implements OnInit {
   listaLotes: any[] = [];
   fechaDesde: Date = new Date();
   fechaHasta: Date = new Date();
-
   fechaDesdeStr: string = '';
   fechaHastaStr: string = '';
+  title = 'Buscar Lotes Naturisa';
+  public isMobile = window.innerWidth < 576;
 
   @ViewChild('gridLotes', { static: false }) gridLotes: DxDataGridComponent;
-
-
 
   async ngOnInit() {
   }
@@ -38,10 +40,20 @@ export class FrmenvioxmlnatComponent implements OnInit {
     //declare local string variable to hold formatted date
     this.fechaDesdeStr = formatDate(this.fechaDesde, 'yyyy/MM/dd', 'en-US');
     this.fechaHastaStr = formatDate(this.fechaHasta, 'yyyy/MM/dd', 'en-US');
-    this._service.getLotesEnvioNaturisaByFecha(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
-      console.log(this.fechaDesdeStr);
-      this.listaLotes = data.Dt.Table;
-    });
+    
+    try {
+        this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
+          if (data.Codigo){
+            this.listaLotes = data.Dt.Table;
+          }
+          else {
+            throw new Error(data.Description);
+          }
+        });
+    }
+    catch (error) {
+      console.error('Error al consultar lotes:', error);
+    }
   } 
 
 
@@ -56,11 +68,92 @@ export class FrmenvioxmlnatComponent implements OnInit {
 
     this.fechaDesdeStr = formatDate(this.fechaDesde, 'yyyy/MM/dd', 'en-US');
     this.fechaHastaStr = formatDate(this.fechaHasta, 'yyyy/MM/dd', 'en-US');
-    this._service.getLotesEnvioNaturisaByFecha(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
-      console.log(this.fechaDesdeStr);
-      this.listaLotes = data.Dt.Table;
-    });
+    
+    try {
+        this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
+          if (data.Codigo){
+            this.listaLotes = data.Dt.Table;
+          }
+          else {
+            throw new Error(data.Description);
+          }
+        });
+    }
+    catch (error) {
+      console.error('Error al consultar lotes:', error);
+    }
+  };
 
+  async onClickEnviar() {
+    const selectedRows = this.gridLotes.instance.getSelectedRowsData();
+    console.log('Filas seleccionadas:', selectedRows);
+
+    if (selectedRows.length === 0) {
+      // this._notificationService.error('Debe seleccionar al menos un lote para enviar.');
+      this.showAlert('','Debe seleccionar al menos un lote para enviar.','warning');
+      return;
+    }
+    const selectedLotes = selectedRows.map(row => row.rlo_numero);
+    console.log('Lotes seleccionados para enviar:', selectedLotes);
+
+    let ejecutarJob: int = 0;
+    let lotesOk = 0;
+
+    // Ejecutar el servicio para cada lote
+    for (const lote of selectedLotes) {
+      try {
+        //Identificar si es el ultimo lote de la cola
+        if (lote === selectedLotes[selectedLotes.length - 1]){
+          ejecutarJob = 1;
+        }
+        const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.rlo_numero, ejecutarJob));
+        if (response.Codigo){
+          lotesOk++;
+          console.log(`Lote ${lote} enviado correctamente.`);
+        }
+        else {
+          throw new Error(response.Description);
+        }
+      } catch (error) {
+        console.error(`Error al enviar el lote ${lote}:`, error);
+        this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
+      }
+    }
+
+    //call service this._service.enviarLotesNaturisa one time with parameter ejecutarJob = 1
+    if (lotesOk > 0) {
+      try {
+        ejecutarJob = 1;
+        await firstValueFrom(this._service.loteNaturisaEnviarXml(null, ejecutarJob));
+        console.log('Job Sql enviado');
+        this.gridLotes.instance.clearSelection();
+        this.showAlert('','Lotes procesados correctamente.','success');
+      } catch (error) {
+        console.error('Error al ejecutar job Sql:', error);
+        this._notificationService.error('Error al ejecuar job Sql: ${error.message}');
+      }
+    }
+
+
+
+
+    // this._service.enviarLotesNaturisa(selectedLotes).subscribe({
+    //   next: (response) => {
+    //     console.log('Respuesta del servidor:', response);
+    //     if (response.Codigo) {
+    //       this.showAlert('','Lotes enviados correctamente.','success');
+    //       // Refresh the grid data after sending
+    //       this.gridLotes.instance.refresh();
+    //     }
+    //     else {
+    //       this._notificationService.error('Error al enviar los lotes: ' + response.Codigo);
+    //     }
+    //   },
+    //   error: (error) => {
+    //     console.error('Error al enviar los lotes:', error);
+    //     this._notificationService.error('Error al enviar los lotes: ' + error.message);
+    //   }
+    // });
   };
 
   async onChangeFechaDesde(event: any) {
@@ -71,6 +164,27 @@ export class FrmenvioxmlnatComponent implements OnInit {
   async onChangeFechaHasta(event: any) {
     this.fechaHasta = event.value;
     console.log('Fecha Hasta:', this.fechaHasta.toDateString());
+  };
+
+  async showAlert(title, mensaje, tipo, event = null) {
+    //this.loadingVisible = false;
+
+    return new Promise(async (resolve) => {
+      await Swal.fire({
+        title: title,
+        html: "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" + mensaje.replaceAll('\n','<br>').replaceAll('\\n','<br>') + "</div>",
+        icon: tipo,
+        showCancelButton: false,
+        confirmButtonColor: (tipo === 'error' ? '#d33' : tipo === 'warning' ? '#ff9800' :
+          tipo === 'success' ? '#4CAF50' : tipo === 'info' ? '#2196F3' : ''),
+        confirmButtonText: 'Aceptar'
+      }).then((result) => {
+          if(event !== null){
+            eval(event);
+          }
+          return resolve(true);
+      });
+    });
   };
 
 }
