@@ -23,7 +23,7 @@ export class FrmenvioxmlnatComponent implements OnInit {
   fechaDesdeStr: string = '';
   fechaHastaStr: string = '';
   title = 'Buscar Lotes Naturisa';
-  public isMobile = window.innerWidth < 576;
+  loadingVisible: boolean = false;
 
   @ViewChild('gridLotes', { static: false }) gridLotes: DxDataGridComponent;
 
@@ -85,11 +85,12 @@ export class FrmenvioxmlnatComponent implements OnInit {
   };
 
   async onClickEnviar() {
+    
+    this.loadingVisible = true;
+
     const selectedRows = this.gridLotes.instance.getSelectedRowsData();
-    console.log('Filas seleccionadas:', selectedRows);
 
     if (selectedRows.length === 0) {
-      // this._notificationService.error('Debe seleccionar al menos un lote para enviar.');
       this.showAlert('','Debe seleccionar al menos un lote para enviar.','warning');
       return;
     }
@@ -101,12 +102,47 @@ export class FrmenvioxmlnatComponent implements OnInit {
 
     // Ejecutar el servicio para cada lote
     for (const lote of selectedLotes) {
+
       try {
         //Identificar si es el ultimo lote de la cola
         if (lote === selectedLotes[selectedLotes.length - 1]){
           ejecutarJob = 1;
         }
-        const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.rlo_numero, ejecutarJob));
+
+        // forma 2
+        // this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob).subscribe((data) => {
+        //   if (data.Codigo){
+        //     lotesOk++;
+        //     console.log(`Lote ${lote} enviado correctamente.`);
+        //   }
+        //   else {
+        //     throw new Error(data.Description);
+        //   }
+        // });
+
+
+        // forma 1
+        // this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob).subscribe({
+        //   next: (response) => {
+        //     console.log('Respuesta del servidor:', response);
+        //     if (response.Codigo) {
+        //       lotesOk++;
+        //       console.log(`Lote ${lote} enviado correctamente.`);
+        //     }
+        //     else {
+        //       throw new Error(response.Description);
+        //     }
+        //   },
+        //   error: (error) => {
+        //     console.error(`Error al enviar el lote ${lote}:`, error);
+        //     this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
+        //   },
+        //   complete: () => {
+        //     console.log(`Proceso de envío del lote ${lote} completado.`);
+        //   }
+        // });
+
+        const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob));
         if (response.Codigo){
           lotesOk++;
           console.log(`Lote ${lote} enviado correctamente.`);
@@ -115,59 +151,37 @@ export class FrmenvioxmlnatComponent implements OnInit {
           throw new Error(response.Description);
         }
       } catch (error) {
-        console.error(`Error al enviar el lote ${lote}:`, error);
         this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
       }
-    }
+    } // End of for loop
 
-    //call service this._service.enviarLotesNaturisa one time with parameter ejecutarJob = 1
+    //Si se enviaron lotes correctamente, ejecutar el job Sql
     if (lotesOk > 0) {
       try {
         ejecutarJob = 1;
         await firstValueFrom(this._service.loteNaturisaEnviarXml(null, ejecutarJob));
-        console.log('Job Sql enviado');
         this.gridLotes.instance.clearSelection();
         this.showAlert('','Lotes procesados correctamente.','success');
       } catch (error) {
-        console.error('Error al ejecutar job Sql:', error);
-        this._notificationService.error('Error al ejecuar job Sql: ${error.message}');
+        this.showAlert('','Error al enviar el lote : ' + error.message,'error');
       }
     }
 
+    this.loadingVisible = false;
 
-
-
-    // this._service.enviarLotesNaturisa(selectedLotes).subscribe({
-    //   next: (response) => {
-    //     console.log('Respuesta del servidor:', response);
-    //     if (response.Codigo) {
-    //       this.showAlert('','Lotes enviados correctamente.','success');
-    //       // Refresh the grid data after sending
-    //       this.gridLotes.instance.refresh();
-    //     }
-    //     else {
-    //       this._notificationService.error('Error al enviar los lotes: ' + response.Codigo);
-    //     }
-    //   },
-    //   error: (error) => {
-    //     console.error('Error al enviar los lotes:', error);
-    //     this._notificationService.error('Error al enviar los lotes: ' + error.message);
-    //   }
-    // });
   };
 
   async onChangeFechaDesde(event: any) {
     this.fechaDesde = event.value;
-    console.log('Fecha Desde:', this.fechaDesde.toDateString());
   };
 
   async onChangeFechaHasta(event: any) {
     this.fechaHasta = event.value;
-    console.log('Fecha Hasta:', this.fechaHasta.toDateString());
   };
 
   async showAlert(title, mensaje, tipo, event = null) {
-    //this.loadingVisible = false;
+    
+    this.loadingVisible = false;
 
     return new Promise(async (resolve) => {
       await Swal.fire({
