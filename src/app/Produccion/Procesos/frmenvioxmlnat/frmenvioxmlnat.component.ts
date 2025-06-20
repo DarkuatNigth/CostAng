@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { DxDataGridComponent, DxDataGridTypes } from 'devextreme-angular/ui/data-grid';
 import { NotificationService } from 'src/app/shared/notify.service';
 import { FrmenvioxmlnatService } from './frmenvioxmlnat.service';
@@ -7,7 +6,7 @@ import { formatDate } from '@angular/common';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { firstValueFrom } from 'rxjs';
 import { int } from '@zxing/library/esm/customTypings';
-
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-frmenvioxmlnat',
@@ -35,11 +34,9 @@ export class FrmenvioxmlnatComponent implements OnInit {
     private _notificationService: NotificationService,
   ) {
     // Initialization logic can go here if needed
-    // format this.fechaDesde as yyyy/MM/dd as string
-    
-    //declare local string variable to hold formatted date
-    this.fechaDesdeStr = formatDate(this.fechaDesde, 'yyyy/MM/dd', 'en-US');
-    this.fechaHastaStr = formatDate(this.fechaHasta, 'yyyy/MM/dd', 'en-US');
+
+    this.fechaDesdeStr = moment(this.fechaDesde).format('YYYY/MM/DD');
+    this.fechaHastaStr = moment(this.fechaHasta).format('YYYY/MM/DD');
     
     try {
         this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
@@ -47,12 +44,12 @@ export class FrmenvioxmlnatComponent implements OnInit {
             this.listaLotes = data.Dt.Table;
           }
           else {
-            throw new Error(data.Description);
+            this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
           }
         });
     }
     catch (error) {
-      console.error('Error al consultar lotes:', error);
+      this.showAlert('','Error al consultar lotes: ' + error.message,'error');
     }
   } 
 
@@ -75,12 +72,12 @@ export class FrmenvioxmlnatComponent implements OnInit {
             this.listaLotes = data.Dt.Table;
           }
           else {
-            throw new Error(data.Description);
+            this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
           }
         });
     }
     catch (error) {
-      console.error('Error al consultar lotes:', error);
+      this.showAlert('','Error al consultar lotes: ' + error.message,'error');
     }
   };
 
@@ -109,46 +106,13 @@ export class FrmenvioxmlnatComponent implements OnInit {
           ejecutarJob = 1;
         }
 
-        // forma 2
-        // this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob).subscribe((data) => {
-        //   if (data.Codigo){
-        //     lotesOk++;
-        //     console.log(`Lote ${lote} enviado correctamente.`);
-        //   }
-        //   else {
-        //     throw new Error(data.Description);
-        //   }
-        // });
-
-
-        // forma 1
-        // this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob).subscribe({
-        //   next: (response) => {
-        //     console.log('Respuesta del servidor:', response);
-        //     if (response.Codigo) {
-        //       lotesOk++;
-        //       console.log(`Lote ${lote} enviado correctamente.`);
-        //     }
-        //     else {
-        //       throw new Error(response.Description);
-        //     }
-        //   },
-        //   error: (error) => {
-        //     console.error(`Error al enviar el lote ${lote}:`, error);
-        //     this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
-        //   },
-        //   complete: () => {
-        //     console.log(`Proceso de envío del lote ${lote} completado.`);
-        //   }
-        // });
-
         const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob));
         if (response.Codigo){
           lotesOk++;
           console.log(`Lote ${lote} enviado correctamente.`);
         }
         else {
-          throw new Error(response.Description);
+          this.showAlert('','Error al enviar el lote ' + lote + ': ' + response.Description,'error');
         }
       } catch (error) {
         this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
