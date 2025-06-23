@@ -35,22 +35,22 @@ export class FrmenvioxmlnatComponent implements OnInit {
   ) {
     // Initialization logic can go here if needed
 
-    this.fechaDesdeStr = moment(this.fechaDesde).format('YYYY/MM/DD');
-    this.fechaHastaStr = moment(this.fechaHasta).format('YYYY/MM/DD');
+    // this.fechaDesdeStr = moment(this.fechaDesde).format('YYYY/MM/DD');
+    // this.fechaHastaStr = moment(this.fechaHasta).format('YYYY/MM/DD');
     
-    try {
-        this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
-          if (data.Codigo){
-            this.listaLotes = data.Dt.Table;
-          }
-          else {
-            this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
-          }
-        });
-    }
-    catch (error) {
-      this.showAlert('','Error al consultar lotes: ' + error.message,'error');
-    }
+    // try {
+    //     this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
+    //       if (data.Codigo){
+    //         this.listaLotes = data.Dt.Table;
+    //       }
+    //       else {
+    //         await this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
+    //       }
+    //     });
+    // }
+    // catch (error) {
+    //   this.showAlert('','Error al consultar lotes: ' + error.message,'error');
+    // }
   } 
 
 
@@ -60,25 +60,32 @@ export class FrmenvioxmlnatComponent implements OnInit {
 
   async onClickConsultar() {    
 
+    this.loadingVisible = true;
+
     //unchecked all rows in the grid
     this.gridLotes.instance.clearSelection();
 
-    this.fechaDesdeStr = formatDate(this.fechaDesde, 'yyyy/MM/dd', 'en-US');
-    this.fechaHastaStr = formatDate(this.fechaHasta, 'yyyy/MM/dd', 'en-US');
+    this.fechaDesdeStr = moment(this.fechaDesde).format('YYYY/MM/DD');
+    this.fechaHastaStr = moment(this.fechaHasta).format('YYYY/MM/DD');
     
     try {
-        this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe((data) => {
+        const valor = await new Promise(async (resolve) => {
+          await this._service.loteNaturisaParaEnvioConsultar(this.fechaDesdeStr, this.fechaHastaStr).subscribe(async(data) => {
           if (data.Codigo){
             this.listaLotes = data.Dt.Table;
+            return resolve(true);
           }
           else {
-            this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
+            await this.showAlert('','Error al consultar lotes: ' + data.Description,'error');
+            return resolve(false);
           }
-        });
+        })});
     }
     catch (error) {
-      this.showAlert('','Error al consultar lotes: ' + error.message,'error');
+      await this.showAlert('','Error al consultar lotes: ' + error.message,'error');
     }
+
+    this.loadingVisible = false;
   };
 
   async onClickEnviar() {
@@ -92,7 +99,6 @@ export class FrmenvioxmlnatComponent implements OnInit {
       return;
     }
     const selectedLotes = selectedRows.map(row => row.rlo_numero);
-    console.log('Lotes seleccionados para enviar:', selectedLotes);
 
     let ejecutarJob: int = 0;
     let lotesOk = 0;
@@ -101,33 +107,58 @@ export class FrmenvioxmlnatComponent implements OnInit {
     for (const lote of selectedLotes) {
 
       try {
-        //Identificar si es el ultimo lote de la cola
-        if (lote === selectedLotes[selectedLotes.length - 1]){
-          ejecutarJob = 1;
-        }
+        const valor = await new Promise(async (resolve) => {
+          await this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob).subscribe(async(response) => {
+          if (response.Codigo) {
+            lotesOk++;
+            return resolve(true);
+          }
+          else {
+            await this.showAlert('','Error al enviar el lote ' + lote + ': ' + response.Description,'error');
+            return resolve(false);
+          }
+        })});
 
-        const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob));
-        if (response.Codigo){
-          lotesOk++;
-          console.log(`Lote ${lote} enviado correctamente.`);
-        }
-        else {
-          this.showAlert('','Error al enviar el lote ' + lote + ': ' + response.Description,'error');
-        }
+        // const response = await firstValueFrom(this._service.loteNaturisaEnviarXml(lote.toString(), ejecutarJob));
+        // if (response.Codigo){
+        //   lotesOk++;
+        //   console.log(`Lote ${lote} enviado correctamente.`);
+        // }
+        // else {
+        //   this.showAlert('','Error al enviar el lote ' + lote + ': ' + response.Description,'error');
+        // }
+
       } catch (error) {
         this.showAlert('','Error al enviar el lote ' + lote + ': ' + error.message,'error');
       }
     } // End of for loop
 
+        //         //Identificar si es el ultimo lote de la cola
+        // if (lote === selectedLotes[selectedLotes.length - 1]){
+        //   ejecutarJob = 1;
+        // }
+
     //Si se enviaron lotes correctamente, ejecutar el job Sql
     if (lotesOk > 0) {
       try {
         ejecutarJob = 1;
-        await firstValueFrom(this._service.loteNaturisaEnviarXml(null, ejecutarJob));
-        this.gridLotes.instance.clearSelection();
-        this.showAlert('','Lotes procesados correctamente.','success');
+        
+        // await firstValueFrom(this._service.loteNaturisaEnviarXml(null, ejecutarJob));
+
+        const valor = await new Promise(async (resolve) => {
+          await this._service.loteNaturisaEnviarXml(null, ejecutarJob).subscribe(async(response) => {
+          if (response.Codigo) {
+            this.gridLotes.instance.clearSelection();
+            await this.showAlert('','Lotes procesados correctamente.','success');
+            return resolve(true);
+          }
+          else {
+            await this.showAlert('','Se ha generado un error al ejecutar tarea de envío de xml: ' + response.Description,'error');
+            return resolve(false);
+          }
+        })});
       } catch (error) {
-        this.showAlert('','Error al enviar el lote : ' + error.message,'error');
+        this.showAlert('','Se ha generado un error al ejecutar tarea de envío de xml: ' + error.message,'error');
       }
     }
 

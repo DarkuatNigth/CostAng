@@ -29,7 +29,6 @@ export class FrmenvioxmlnatService {
       { "Name": "lote", "Type": "varchar", "Value": lote },
       { "Name": "ejecutarJob", "Type": "varchar", "Value": ejectarJob.toString() }
     ];
-    console.log('Parametros para enviar XML:', ListParam);
     const base = {
       sp: 'produccion.spr_loteNaturisaEnviarXml',
       param: ListParam,
