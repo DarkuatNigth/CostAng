@@ -419,7 +419,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   }
   
 
-  exportExcel() {
+  /* exportExcel() {
     this._service.callApiReportePlanificacionEmbarque(moment(this.desde).format("yyyy/MM/DD"), moment(this.hasta).format("yyyy/MM/DD")).subscribe(async (rr) => {
       let resp = JSON.parse(JSON.parse(JSON.stringify(rr)));
       if (resp.Codigo) {
@@ -435,7 +435,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
         await this.showAlert('', resp.Description, 'error');
       }
     });
-  }
+  } */
 
 
   onClickGuardarReplanificacionEmbarque() {
