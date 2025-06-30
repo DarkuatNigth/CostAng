@@ -1,0 +1,198 @@
+
+.pedido {
+    border: #6f90b3 1.5px solid;
+    color: black;
+}
+.Planificado{
+    background-color: #ececec;
+}
+.PedCompleto{
+    background-color: #00CECE;
+}
+.PedPendiente{
+    background-color: #fff877;
+}
+.PedBreakdown{
+    background-color: #F5C68D;
+}
+
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(1) .dx-list-item-content .dx-icon {
+    color: #00CECE; /* Color para el primer item (Completo) */
+}
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(2) .dx-list-item-content .dx-icon {
+    color: #e3e3e3; 
+}
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(3) .dx-list-item-content .dx-icon {
+    color: #fff877;
+}
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(4) .dx-list-item-content .dx-icon {
+    color: #F5C68D;
+}
+
+
+// .Facturado{
+//     background-color: #F5C68D;
+//     color: black;
+// }
+// .FacturadoSD{
+//     background-color: #F5C68D;
+//     color: rgb(0, 0, 124);
+// }
+// .Embarcado{
+//     background-color: #F5C68D;
+//     color: black;
+// }
+
+table.table-bordered {
+    tr.header {
+        color: #366f00 !important;
+        font-size: 14px;
+        border-bottom: 2px solid #366f00;
+    }
+    thead th, tr.header td {
+        color: #366f00 !important;
+        width: 200px;
+    }
+    thead th, tr.header td, tr.dayOfWeek td {
+        background-color: #9ebcdb; 
+        // border: 1px solid #9ebcdb !important;
+        color: black; 
+        font-weight: 600; 
+        text-align: center; 
+        padding: 6px;
+        position: sticky;
+
+    }
+    thead tr.dayOfWeek, tr.header {
+        position: sticky; /* Fija el encabezado */
+        top: 0; /* Fija el encabezado en la parte superior */
+        z-index: 2; /* Asegura que el encabezado esté por encima del contenido */
+    }
+    tbody tr.dayOfWeek {
+        position: sticky; /* Hace que el elemento se fije en su contenedor */
+        top: 25px; /* Fija el elemento en la parte superior del contenedor */
+        z-index: 2; /* Asegura que esté por encima de otros elementos */
+    }
+    tbody tr.dayOfWeek td.dayDisabled {
+        opacity: 0.65;
+    }
+    td.pedido {
+        cursor: pointer;
+    }
+    td.dragging {
+        background-color: #385c7b; /* Azul claro durante el arrastre */
+    }
+    td.drop-target {
+        background-color: #f05907c1; /* Verde claro cuando es un objetivo válido */
+    }
+}
+
+.controlTemplate {
+    table {
+        font-size: 10.5px;
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        th, td {
+            text-overflow: ellipsis;
+            border: none;
+            padding: 1px;
+        }
+        th {
+            // text-align: justify;
+            white-space: wrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        th span.titulo, td.titulo {
+            font-weight: 600;            
+        }
+        th span.titulo {
+            color: red  ;
+        }
+        td.descri {
+            max-width: 125px;
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap;
+        }
+    }
+}
+
+.month-year-display {
+    font-size: 18px;
+    font-weight: bold;
+    display: inline-block;
+    margin: auto;
+  }
+
+
+#search_container {
+    position: absolute;
+    top: 3px;
+    right: 10px;
+    width: auto;
+    z-index: 10;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 0.2rem 0.2rem 0.2rem rgba(46, 43, 55, 0.07);
+}  
+
+#search_container > * {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: auto;
+}
+
+#label-count-search {
+    border-right: 1px solid #a09f9f !important;
+    padding-right: 6px !important;
+    color: #a09f9f !important;
+}
+
+.btn-model-search {
+    border-style: none;
+    margin: 1px;
+    color: #000064;
+}
+
+.btn-model-search:disabled i {
+    color: rgba(42, 42, 42, 0.3) !important;
+}
+
+
+::ng-deep .cssModalPlanificacionEmbarque {
+    .modal-dialog {
+        min-width: 550px;
+        max-width: 750px;
+        width: 70%;
+        z-index: unset;
+    }
+    .control-label {
+      font-weight: 600;
+    }
+  }
+
+
+  .progress-container {
+    width: 100%;
+    background-color: #e3e3e3;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: #4caf50; /* Color de la barra de progreso */
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    border-radius: 4px;
+  }  

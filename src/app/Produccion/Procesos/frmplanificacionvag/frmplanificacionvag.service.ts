@@ -47,6 +47,20 @@ export class FrmplanificacionvagService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
+  postPlanificacionEmbarque(data: any) {
+    const listParam = [
+      { "Name": "i_accion", "Type": "char", "Value": "I" },
+      { "Name": "pla_id", "Type": "int", "Value": data.planificacionId.toString() },
+      { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud },
+    ];
+    const base = {
+      sp: 'valoragregado.spr_planificaEmbarqueFromPlanificaVA',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
 
   getCatalogos() {
     const ListParam = [{ "Name": "i_tipoB", "Type": "varchar", "Value": "byCatalogo" }];

@@ -34,6 +34,7 @@ interface Pedidos {
   descriProducto: string;
   descriTalla: string;
   talCodigo: string;
+  tallaVenta: string;
   proClase: string;	
   proModali: number;
   proCongela: number; 
@@ -202,6 +203,7 @@ export class FrmplanificacionvagComponent implements OnInit {
             prodCodcor: item.prodCodcor,
             descriProducto: item.descriProducto,
             talCodigo: item.talCodigo,
+            tallaVenta: item.tallaVenta,
             descriTalla: item.descriTalla,
             proClase: item.proClase,
             proModali: item.proModali,
@@ -325,9 +327,21 @@ export class FrmplanificacionvagComponent implements OnInit {
       const {id} = rowData;
       let index = this.facturas.findIndex((item) => item.id === id);
       this.facturas[index].prioridad = prioridad;
-      // la agrego a la lista de facturas seleccionadas, y ordeno por prioridad ascendente, fecha estimada de embarque ascendente y id || a.fechaEstimadaEmbarque.getTime() - b.fechaEstimadaEmbarque.getTime() 
       this.facturasSelected.push(this.facturas[index]);
-      this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad && ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) && a.id.localeCompare(b.id) ); //|| (a.id < b.id ? -1 : 1)
+      // la agrego a la lista de facturas seleccionadas, y ordeno por: 1. prioridad ascendente 2. fecha estimada de embarque ascendente 3. id ascendente      
+      // this.facturasSelected = this.facturasSelected.sort((a, b) => a.prioridad - b.prioridad && ((moment(a.fechaEstimadaEmbarque) < moment(b.fechaEstimadaEmbarque)) ? 0 : 1) && a.id.localeCompare(b.id) ); //|| (a.id < b.id ? -1 : 1)
+      this.facturasSelected.sort((a, b) => {
+        if (a.prioridad !== b.prioridad) {
+          return a.prioridad - b.prioridad;
+        }
+        if (new Date(a.fechaEstimadaEmbarque) < new Date(b.fechaEstimadaEmbarque)) {
+          return -1;
+        }
+        if (new Date(a.fechaEstimadaEmbarque) > new Date(b.fechaEstimadaEmbarque)) {
+          return 1;
+        }
+        return a.id.localeCompare(b.id);
+      });
       this.updateFacturasSelected();      
       let selected = true;
       let saldoPedido = this.facturas[index].saldoPedido;
@@ -506,6 +520,7 @@ export class FrmplanificacionvagComponent implements OnInit {
           prodCodcor: item.prodCodcor,
           descriProducto: item.descriProducto,
           talCodigo: item.talCodigo,
+          tallaVenta: item.tallaVenta,
           descriTalla: item.descriTalla,
           proClase: item.proClase,
           proModali: item.proModali,
@@ -567,15 +582,36 @@ export class FrmplanificacionvagComponent implements OnInit {
       equipoAud: '127.0.0.1'
     };
 
-    await this._service.postPlanificacionVag(data).subscribe((data) => {
-      this.loadingVisible = false;
-      if (data.Codigo) {
-        this.showAlert('','Registro guardado correctamente.','success');
-        setTimeout(() => {
-          this.router.navigate(['/ext-consultaPlanificacionVA']);
-        }, 1000);
-      } else {
-        this.showAlert('','Error al guardar el registro:' + data.Description ,'error');
+    await this._service.postPlanificacionVag(data).subscribe({
+      next: (data) => {
+        if (data.Codigo) {
+          if (data.Dt.Table.length > 0) {
+            let response: any = data.Dt.Table;
+            this.idPlanificacion = response[0].codigoId;
+            this._service.postPlanificacionEmbarque({
+              planificacionId: this.idPlanificacion,
+              userAud: localStorage.getItem(varUser)
+            }).subscribe(data => {
+              if (data.Codigo) {
+                console.log('Embarque generado correctamente.');
+              } else {
+                console.log('Error al generar el embarque: ' + data.Description);
+              }
+            });
+          }
+          this.showAlert('','Registro guardado correctamente.','success');
+          setTimeout(() => {
+            this.router.navigate(['/ext-consultaPlanificacionVA']);
+          }, 1000);
+        } else {
+          throw new Error(data.Description || 'Error al guardar el registro');
+        }
+      },
+      error: (error) => {
+        this.showAlert('','Error al guardar el registro:' + error.message ,'error');
+      },
+      complete: () => {
+        this.loadingVisible = false;
       }
     });
   }
@@ -877,6 +913,7 @@ export class FrmplanificacionvagComponent implements OnInit {
       prodCodcor: item.prodCodcor,
       talCodigo: item.talCodigo,
       descriTalla: item.descriTalla,
+      tallaVenta: item.tallaVenta,
       proClase: item.proClase,
       proModali: item.proModali,
       proCongela: item.proCongela,

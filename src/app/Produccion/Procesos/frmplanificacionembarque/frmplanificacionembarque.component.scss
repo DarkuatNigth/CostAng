@@ -1,0 +1,197 @@
+
+  
+
+
+
+
+.small-button {
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  color: #d43f3a;
+}
+.small-button:hover {
+  background-color: rgba(212,63,58,.1);
+  border-color: transparent;
+}
+
+
+
+::ng-deep #GridPedidosPorPais {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  td.cell-temp-valor[role="gridcell"] {
+      padding: 2px;
+  }
+  .dx-datagrid-checkbox-size .dx-checkbox-icon {
+    height: 20px;
+    width: 20px;
+  }
+  .dx-datagrid-filter-row .dx-editor-cell .dx-editor-with-menu .dx-texteditor-input {
+    padding-left: 16px;
+  }
+  .dx-datagrid-headers .dx-texteditor-input {
+      padding: 4px;
+      min-height: 25px;
+  }
+  .dx-menu-base .dx-menu-item-content {
+    padding: 3px;
+    margin: 1px;
+  }
+  .dx-datagrid.dx-filter-menu .dx-menu-item-content .dx-icon {
+    font-size: 10px;
+    line-height: 10px;
+  }
+
+  // .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+  //   width: 10px;
+  //   min-width: 10px;
+  //   max-width: 10px;
+  //   -webkit-user-select: none;
+  //   user-select: none;
+  //   -webkit-touch-callout: none;
+  // }
+
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 15px 5px 10px 5px;
+  }
+
+  // obtener el parent del td con attr aria-label="Collapse"
+  tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
+    background-color: #d43f3a; //414580
+  }
+  
+  td.cell-temp-valor-2[role="gridcell"] {
+    padding: 2px;
+  }
+}
+
+::ng-deep #GridPedidosPaisDetail {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  td[role="columnheader"] div.dx-datagrid-text-content{
+    text-wrap: wrap;
+  }
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 0px;
+  }
+  // obtener el parent del td con attr aria-label="Collapse"
+  tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
+    background-color: inherit; 
+  }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
+  }
+}
+
+::ng-deep #GridPedidosPaisDetailByProduct {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
+  }
+}
+
+::ng-deep #GridPedidosPaisDetailByProduct2 {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  td[role="columnheader"] div.dx-datagrid-text-content{
+    text-wrap: wrap;
+  }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
+  }
+}
+
+::ng-deep .cssModalStockBloqueado {
+  .modal-dialog {
+      max-width: 75%;
+      width: 75%;
+      z-index: unset;
+  }
+}
+
+::ng-deep .cssModalPlanificarEmbarque {
+  .modal-dialog {
+      min-width: 650px;
+      max-width: 1100px;
+      width: 90%;
+      z-index: unset;
+  }
+  .control-label {
+    font-weight: 600;
+  }
+}
+
+.form-control.sng-template {
+  height: auto;
+  padding: 5px;
+  border: 0px;
+}
+
+
+.progress-container {
+  width: 100%;
+  background-color: #e3e3e3;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 20px;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50; /* Color de la barra de progreso */
+  text-align: center;
+  line-height: 20px;
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 4px;
+}

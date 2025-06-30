@@ -1,0 +1,139 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()">
+            </dx-button>
+        </div>
+        
+    </div>
+
+    <div class="row">
+        <div class="card sng-card" style="width: 100%;">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row">
+                        <label class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Parametrizar por:</label>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbTipoParametro" appendTo="body" [searchable]="true" [clearable]="false"
+                                (change)="onChangeTipoParametro($event)">
+                                <ng-option *ngFor="let data of TiposParametrizacion" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                        <label *ngIf="cmbTipoParametro == 'GR'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Grupo:</label>
+                        <div *ngIf="cmbTipoParametro == 'GR'" class="col-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbGrupo" appendTo="body" [searchable]="false" [clearable]="true" placeholder="Seleccione"
+                                (change)="onChangeGrupo($event)">
+                                <ng-option *ngFor="let data of Grupos" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                        <label *ngIf="cmbTipoParametro == 'PA'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Paises:</label>
+                        <div *ngIf="cmbTipoParametro == 'PA'" class="col-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbPais" appendTo="body" [searchable]="true" [clearable]="true" placeholder="Seleccione"
+                                (change)="onChangePais($event)">
+                                <ng-option *ngFor="let data of Paises" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                        <label *ngIf="cmbTipoParametro == 'CL' || cmbTipoParametro == 'DE'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Clientes:</label>
+                        <div *ngIf="cmbTipoParametro == 'CL' || cmbTipoParametro == 'DE'" class="col-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbCliente" appendTo="body" [searchable]="true" [clearable]="true" placeholder="Seleccione"
+                                (change)="onChangeCliente($event)">
+                                <ng-option *ngFor="let data of Clientes" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                        <label *ngIf="cmbTipoParametro == 'DE'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Destinos:</label>
+                        <div *ngIf="cmbTipoParametro == 'DE'" class="col-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbDestino" appendTo="body" [searchable]="true" [clearable]="true" placeholder="Seleccione"
+                                (change)="onChangeDestino($event)">
+                                <ng-option *ngFor="let data of Destinos" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <label class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Pallets con Sulfito:</label>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-2 pb-1">
+                            <input type="number" class="form-control" [(ngModel)]="txtPaletsSulfito" placeholder="">
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                        <label class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Pallets con Ausencia Vb:</label>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-2 pb-1">
+                            <input type="number" class="form-control" [(ngModel)]="txtPaletsAusenciaVibrios" placeholder="">
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                        <label *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Mix Permanente:</label>
+                        <div *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1">
+                            <input type="checkbox" class="form-control" [(ngModel)]="chkMixPermanente" placeholder="">
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                        <label *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Mix Temporal:</label>
+                        <div *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1">
+                            <input type="checkbox" class="form-control" [(ngModel)]="chkMixTemporal" placeholder="">
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
