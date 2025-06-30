@@ -166,14 +166,6 @@ export class FrmenvioxmlnatComponent implements OnInit {
 
   };
 
-  async onChangeFechaDesde(event: any) {
-    this.fechaDesde = event.value;
-  };
-
-  async onChangeFechaHasta(event: any) {
-    this.fechaHasta = event.value;
-  };
-
   async showAlert(title, mensaje, tipo, event = null) {
     
     this.loadingVisible = false;
