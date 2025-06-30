@@ -77,39 +77,4 @@ export class FrmplanificacionhorarioService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
-  
-  callApiReportePlanificacionEmbarque(fechaDesde: string, fechaHasta: string) {
-    let data = {
-      "sp": "Embarque.spr_PedidosPlanificacionEmbarqueConsultar",
-      "param": [
-        {
-          "Name": "i_tipoB",
-          "Type": "VarChar",
-          "Value": "byCalendarioExcel"
-        },
-        {
-          "Name": "Desde",
-          "Type": "VarChar",
-          "Value": fechaDesde
-        },
-        {
-          "Name": "Hasta",
-          "Type": "VarChar",
-          "Value": fechaHasta
-        }
-      ],
-      "conexion": "ConexionProdSNG"
-    }
-    const httpOptions = {
-      headers: new HttpHeaders(
-        {
-          'Content-Type': 'application/json'
-        }
-      )
-    }
-    // TODO: Cambiar URL al servidor de producción
-    var param = JSON.stringify(data);
-    return this.http.post<ResultReportes>("http://localhost:57357/Api/PlanificacionEmbarque", param, httpOptions);
-  }
-
 }
