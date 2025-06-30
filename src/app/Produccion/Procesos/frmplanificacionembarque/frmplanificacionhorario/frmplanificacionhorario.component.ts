@@ -1,26 +1,19 @@
-import { AfterViewInit, Component, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { FrmplanificacionhorarioService } from './frmplanificacionhorario.service';
+import { AfterViewInit, Component, EventEmitter, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
+import { FrmplanificacionhorarioService, IUpdatePlanificacionEmbarque } from './frmplanificacionhorario.service';
 import * as moment from 'moment';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { ClickEvent } from 'devextreme/ui/button';
+import { PedidosPaisDetail } from '../frmplanificacionembarque.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { varUser } from 'src/app/config/url.servicios';
+import { FrmplanificacionembarqueService } from '../frmplanificacionembarque.service';
+import { DxDataGridComponent } from 'devextreme-angular';
+import { state } from '@angular/animations';
+import { saveAs } from 'file-saver';
 
 
 declare var window;
 declare var $: any;
-
-
-declare interface dataDayPlanificacion {
-  data: string;
-  ISF: string;
-  FLETEFIN: string;
-  Estado: string;
-  Factura: string;
-  numero: string;
-  Fecha: string;
-  emb_Documentacion: string;
-  emb_DocCaducado: string;
-  emb_observaprogemb: string;
-}
 
 
 @Component({
@@ -41,8 +34,20 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
 
   currentDate: moment.Moment = moment(); // Fecha actual
   selectedDate: moment.Moment = moment(); // Fecha seleccionada
-  selectedMonthYear: string = ''; 
+  selectedMonth: string = ''; 
+  desde: string = '';
+  hasta: string = '';
   txtSearch:string = "";
+
+  listFilterState: any[] = [
+    { text: 'Completo', icon: 'square', state: 'PC' },
+    { text: 'Planificado', icon: 'square', state: 'PL' },
+    { text: 'Valor Agregado', icon: 'square', state: 'VAG' },
+    { text: 'BreakDown', icon: 'square', state: 'BD' },
+    { text: 'Todos', icon: 'square', state: '' },
+    // { text: 'Exportar Excel', icon: 'exportxlsx', state: 'EXCEL' },
+  ];
+
 
   isPrevMonthEnabled: boolean = true;
   isNextMonthEnabled: boolean = true;
@@ -53,26 +58,60 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   disabledNextSearch = true; 
   disabledPrevSearch = true;
 
+  plantasEmbarque: any[] = [];
+  planificacionEmbViewDetail: any = {
+    cab: null, 
+    det: [],
+  };
+  planificacionEmbSelected: any = null;
+  minFechaPlanificacion: Date = new Date(); 
+  maxFechaPlanificacion: Date = moment().add(3, 'month').endOf('month').toDate();
+  mensajePlanificacionNoCumplidas: boolean = false; //true;
+
+  modalReferenceItem: any;
   draggedItem: any = null; // Elemento que se está arrastrando
 
   @ViewChild('contextMenu') contextMenu;
   @ViewChild('content') content;
+  @ViewChild('modalReplanificarEmbarque') modalReplanificarEmbarque: any;
+  @ViewChild('modalPlanificacionEmbarque') modalPlanificacionEmbarque: any;
+  @ViewChild('GridPlanificacionEmbarqueDetail', { static: false }) GridPlanificacionEmbarqueDetail: DxDataGridComponent;
 
+  // para emitir el evento de actualización de la planificación al componente padre
+  @Output() planificacionActualizada: EventEmitter<void> = new EventEmitter<void>();
 
   constructor(
     private _service: FrmplanificacionhorarioService,
+    private _planificacionembarqueService: FrmplanificacionembarqueService,
+    private modalService: NgbModal,
     // private renderer: Renderer2,
   ) { 
   }
 
 
+
   ngOnInit(): void {
     this.loadingVisible2 = true;
     this.itemsMenuContext = this._service.getItemsMenuContext();
-    this.updateSelectedMonthYear();
+    this.updateSelectedMonth();
+    this._planificacionembarqueService.getCatalogosPlanificacionEmbarque().subscribe((data) => {
+      if (data.Codigo && data.Dt.Table.length > 0) {
+        this.plantasEmbarque = data.Dt.Table.map((item: any) => {
+          return {
+            codigo: item.codigo,
+            descripcion: item.descripcion,
+          };
+        });
+      }
+    });
     this.loadingVisible2 = false;
+
+    // como recargar los estilos css
+
   }
 
+
+  
   // fijar los encabezados de los días de la semana mientras se desplaza
   ngAfterViewInit() {
     const container = this.content.nativeElement;
@@ -102,10 +141,89 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     });
   }
   
+
+  async onRightClick(event: MouseEvent, item) { 
+    if (item == undefined) { // this.openModalDiv !== "" || !this.habilitaOpcionUser || 
+      this.planificacionEmbSelected = null;
+      this.contextMenu.visible = false;
+      event.stopPropagation();
+      return false;
+    }
+    this.Marcar(event);
+    this.itemsMenuContext.forEach((item) => {
+      item.disabled = false;
+      if (item.action === 'confirmVA' || item.action === 'breakDown') {
+        item.disabled = true;
+      }
+    });
+    // si la fecha de embarque es menor a la fecha actual desactivar la opción de quitar de planificación
+    if (moment(item.Fecha).isBefore(moment(), 'day')) {
+      this.itemsMenuContext[0].disabled = true; 
+    }
+    // si la fecha de embarque es menor a la fecha actual - 1 día desactivar la opción de replanificar
+    if (moment(item.Fecha).isBefore(moment().subtract(1, 'day'), 'day')) {
+      this.itemsMenuContext[1].disabled = true; 
+    }
+    // si origen es VAG y confirmacionVA es false activar la opción de confirmación de valor agregado
+    if (item.origen === 'VAG' && !item.confirmacionVA) {
+      this.itemsMenuContext[3].disabled = false; 
+    }
+    if (item.EstadoVisualizacion === 'PC' || item.EstadoVisualizacion === 'PL') {
+      this.itemsMenuContext[4].disabled = false; // Activar la opción de BreakDown
+    }
+
+    this.planificacionEmbSelected = item;
+    this.contextMenu.visible = true;
+    event.preventDefault(); 
+    return true;
+  } 
+
+
   async itemMenuClick(e) {
-    if(e.itemData.text === "Quitar de Planificación"){
+    const selectedAction = e.itemData.action; // e.itemData.text
+    switch (selectedAction) {
+      case 'edit':
+        this.modalReferenceItem = await this.modalService.open(this.modalReplanificarEmbarque, {
+          ariaLabelledBy: 'modal-basic-title',
+          windowClass: 'cssModalReplanificarEmbarque',
+        });
+        break;
+      case 'delete':
+        let resp = await this.showAlertConfirm('Eliminar', '¿Está seguro de eliminar la planificación de embarque?', 'warning');
+        if (resp) {
+          let dataUpdate: IUpdatePlanificacionEmbarque = {
+            numeroEmbarque: this.planificacionEmbSelected.numeroEmbarque,
+            tipoUpdate: 'anular',
+            userAud: localStorage.getItem(varUser),
+          };
+          this.updatePlanificacionEmbarque(dataUpdate);
+        }
+        break;
+      case 'details':
+        this.getDetallePlanificacionEmbarque(this.planificacionEmbSelected.numeroEmbarque);
+        break;
+      case 'confirmVA':
+        let resp2 = await this.showAlertConfirm('Confirmar Planificación', '¿Está seguro de confirmar la planificación que se generó automaticamente en VAG?', 'info');
+        if (resp2) {
+          let dataUpdate: IUpdatePlanificacionEmbarque = {
+            numeroEmbarque: this.planificacionEmbSelected.numeroEmbarque,
+            tipoUpdate: 'confirmVA',
+            userAud: localStorage.getItem(varUser),
+          };
+          this.updatePlanificacionEmbarque(dataUpdate);
+        }
+        break;
+      case 'breakDown':
+        let resp3 = await this.showAlertConfirm('BreakDown', `¿Está seguro de generar breakDown de la referencia: ${this.planificacionEmbSelected.Referencia} ?`, 'warning');
+        if (resp3) {
+          this.onClickGuardarBreakDown();
+        }
+        break;
+      default:
+        break;
     }
   }
+
 
   // Evento que se dispara al iniciar el arrastre
   onDragStart(event: DragEvent, item: any): void {
@@ -113,6 +231,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     // event.dataTransfer?.setData('text/plain', JSON.stringify(item)); // Opcional: guarda datos en el evento
   }
 
+  
   // Evento que permite que el elemento sea soltado
   onDragOver(event: DragEvent): void {
     event.preventDefault(); // Necesario para permitir el drop
@@ -126,29 +245,40 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     const targetDay = target.getAttribute('data-day');
     if (this.draggedItem && targetDay) {
       const day = this.dayMap.get(targetDay);
-      if (day) {
-        this.moveItemToDay(this.draggedItem, day);
-        this.draggedItem = null;
+      // console.log('onDrop', this.draggedItem, targetDay, day);
+      if (moment(day.day).isBefore(moment(), 'day') || (day.day == this.draggedItem.Fecha || day.disabled)) {
+        console.log('El elemento no se puede mover a esta fecha');
+        return;
       }
-    }
+      // this.moveItemToDay(this.draggedItem, day);
+      let dataUpdate: IUpdatePlanificacionEmbarque = {
+        numeroEmbarque: this.draggedItem.numeroEmbarque,
+        fechaEmbarque: day.day,
+        tipoUpdate: 'replanificar',
+        userAud: localStorage.getItem(varUser),
+      };
+      this.updatePlanificacionEmbarque(dataUpdate, this.draggedItem.Referencia);
+      this.draggedItem = null; // Limpia el elemento arrastrado
+    } 
   }
 
-  // Lógica para mover el elemento al nuevo día
-  moveItemToDay(item: any, targetDay: any): void {
-    // Elimina el elemento del día original
-    this.dataByWeek.forEach((week) => {
-      week.forEach((day) => {
-        if (day.dataPedidos && day.day === item.Fecha) {
-          day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido.ped_numero !== item.ped_numero);
-          return;
-        }
-      });
-    });
-    // Agrega el elemento al nuevo día
-    targetDay.dataPedidos = targetDay.dataPedidos || [];
-    targetDay.dataPedidos.push(item);
-    console.log('Item moved:', item, 'to day:', targetDay);
-  }
+
+  // // Lógica para mover el elemento al nuevo día
+  // moveItemToDay(item: any, targetDay: any): void {
+  //   // Elimina el elemento del día original
+  //   this.dataByWeek.forEach((week) => {
+  //     week.forEach((day) => {
+  //       if (day.dataPedidos && day.day === item.Fecha) {
+  //         day.dataPedidos = day.dataPedidos.filter((pedido: any) => pedido.ped_numero !== item.ped_numero);
+  //         return;
+  //       }
+  //     });
+  //   });
+  //   // Agrega el elemento al nuevo día
+  //   targetDay.dataPedidos = targetDay.dataPedidos || [];
+  //   targetDay.dataPedidos.push(item);
+  //   console.log('Item moved:', item, 'to day:', targetDay);
+  // }
 
   
   // Reducir el Re-renderizado. Si Angular está re-renderizando toda la tabla después de cada cambio, esto puede causar demoras. Usa el atributo trackBy en *ngFor para optimizar el re-renderizado.
@@ -162,7 +292,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     const yearsAgo = moment().subtract(1, 'years').startOf('month');
     if (this.selectedDate.isAfter(yearsAgo)) {
       this.selectedDate.subtract(1, 'month');
-      this.updateSelectedMonthYear();
+      this.updateSelectedMonth();
     } 
     if (!this.selectedDate.isAfter(yearsAgo)) {
       this.isPrevMonthEnabled = false;
@@ -176,7 +306,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     const monthMax = moment().add(3, 'month').startOf('month');
     if (this.selectedDate.isBefore(monthMax)) {
       this.selectedDate.add(1, 'month');
-      this.updateSelectedMonthYear();
+      this.updateSelectedMonth();
     } 
     if (!this.selectedDate.isBefore(monthMax)) {
       this.isNextMonthEnabled = false;
@@ -198,11 +328,18 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     }
 
     this.dataSearch = this.dataPedidos.filter((item) => {
-      return item.Factura.toLowerCase().includes(value.toLowerCase()) || 
+      return item.Referencia.toLowerCase().includes(value.toLowerCase()) || 
              item.Cliente.toLowerCase().includes(value.toLowerCase()) || 
-             item.emb_observaprogemb.toLowerCase().includes(value.toLowerCase()) || 
-             item.pto_descripcion.toLowerCase().includes(value.toLowerCase());
-    }).map((item) => { return { Factura: item.Factura } });
+             item.observacion?.toLowerCase().includes(value.toLowerCase()) || 
+             item.puertoDescripcion.toLowerCase().includes(value.toLowerCase()) ||
+             item.referenciasMix?.toLowerCase().includes(value.toLowerCase());
+    }).map((item) => { return { Referencia: item.Referencia } });
+    // ordenar por fecha de embarque
+    this.dataSearch.sort((a, b) => {
+      const fechaA = this.dataPedidos.find(item => item.Referencia === a.Referencia)?.fechaEmbarque;
+      const fechaB = this.dataPedidos.find(item => item.Referencia === b.Referencia)?.fechaEmbarque;
+      return moment(fechaA).diff(moment(fechaB));
+    });
 
     if(this.dataSearch.length > 0){
       this.numCoincidenciasSearch = this.dataSearch.length;
@@ -210,7 +347,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       this.disabledNextSearch = false;
       if (this.dataSearch.length == 1) {
         this.numIndiceSearch = 1;
-        this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+        this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Referencia);
         this.disabledNextSearch = true;
         this.disabledPrevSearch = true;
       }
@@ -226,7 +363,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     if(this.numIndiceSearch > this.numCoincidenciasSearch){
       this.numIndiceSearch = 1;
     }
-    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Referencia);
     this.disabledNextSearch = this.numIndiceSearch === this.numCoincidenciasSearch;
     this.disabledPrevSearch = this.numIndiceSearch === 1;
   }
@@ -237,9 +374,260 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     if(this.numIndiceSearch < 1){
       this.numIndiceSearch = this.numCoincidenciasSearch;
     }
-    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Factura);
+    this.scrollToElement(this.dataSearch[this.numIndiceSearch - 1].Referencia);
     this.disabledNextSearch = this.numIndiceSearch === this.numCoincidenciasSearch;
     this.disabledPrevSearch = this.numIndiceSearch === 1;
+  }
+
+
+  async onItemClickFiltrar(e){
+    let estado = e.itemData.state;
+    let pedidosBck = this.dataPedidos.slice(); // Copia de seguridad de los pedidos originales
+    switch (estado) {
+      case 'PC':
+        e.itemData.icon = 'check';
+        pedidosBck = pedidosBck.filter((item) => item.EstadoVisualizacion === estado);
+        break;
+      case 'PL':
+        e.itemData.icon = 'check';
+        pedidosBck = pedidosBck.filter((item) => item.EstadoVisualizacion === estado);
+        break;
+      case 'VAG':
+        e.itemData.icon = 'check';
+        pedidosBck = pedidosBck.filter((item) => item.EstadoVisualizacion === estado);
+        break;
+      case 'BD':
+        e.itemData.icon = 'check';
+        pedidosBck = pedidosBck.filter((item) => item.EstadoVisualizacion === estado);
+        break;
+      default:
+        // e.itemData.icon = 'check';
+        break;
+    }
+    if (estado === 'EXCEL') {
+      // this.exportExcel();
+      return;
+    } else {
+      this.armarCalendario(pedidosBck, this.desde, this.hasta, this.selectedDate.format("MM"));
+      this.listFilterState.forEach((item) => {
+        if (item.state !== estado && item.icon !== 'exportxlsx') {
+          item.icon = 'square';
+        }
+      });
+    }
+
+  }
+  
+
+  exportExcel() {
+    this._service.callApiReportePlanificacionEmbarque(moment(this.desde).format("yyyy/MM/DD"), moment(this.hasta).format("yyyy/MM/DD")).subscribe(async (rr) => {
+      let resp = JSON.parse(JSON.parse(JSON.stringify(rr)));
+      if (resp.Codigo) {
+          var byteCharacters = atob(resp.doc);
+          var byteNumbers = new Array(byteCharacters.length);
+          for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          var byteArray = new Uint8Array(byteNumbers);
+          saveAs(new Blob([byteArray], { type: 'application/octet-stream' }), 'PlanificacionEmb.xlsx');
+          this.loadingVisible2 = false;
+      } else {
+        await this.showAlert('', resp.Description, 'error');
+      }
+    });
+  }
+
+
+  onClickGuardarReplanificacionEmbarque() {
+    if (!this.planificacionEmbSelected) {
+      this.showAlert('', 'No se ha seleccionado ninguna planificación', 'warning');
+      return;
+    }
+    let dataUpdate: IUpdatePlanificacionEmbarque = {
+      numeroEmbarque: this.planificacionEmbSelected.numeroEmbarque,
+      fechaEmbarque: this.planificacionEmbSelected.fechaEmbarque,
+      tipoUpdate: 'replanificar',
+      userAud: localStorage.getItem(varUser),
+    };
+    
+    this.updatePlanificacionEmbarque(dataUpdate, this.planificacionEmbSelected.Referencia );
+  }
+  
+
+  updatePlanificacionEmbarque(dataUpdate: IUpdatePlanificacionEmbarque, referencia = null) {
+    this.loadingVisible2 = true;
+    this._service.updatePlanificacionEmbarque(dataUpdate).subscribe({
+      next: (resp) => {
+        if (resp.Codigo) {
+          this.showAlert('', 
+            dataUpdate.tipoUpdate == 'replanificar' ? 'Se replanificó correctamente' : 
+            dataUpdate.tipoUpdate == 'anular' ? 'Se eliminó correctamente' :
+            'Se actualizó correctamente', 
+            'success'
+          );
+          this.updateSelectedMonth();
+          if (dataUpdate.tipoUpdate == 'anular') {
+            // Emitir el evento al componente padre
+            this.planificacionActualizada.emit();
+          }
+          if (referencia) {
+            setTimeout(() => { this.scrollToElement(referencia); }, 1000);
+          }
+          if (this.modalReferenceItem) {
+            this.modalReferenceItem.close();
+          }          
+        } else {
+          throw new Error(resp.Description);
+        }
+      },
+      error: (error) => {
+        this.showAlert('', 'Error al guardar la replanificación: ' + error, 'error');
+      },
+      complete: () => {
+        this.loadingVisible2 = false;
+      }
+    });
+  }
+
+  // TODO: Implementar lógica para generar BreakDown
+  async onClickGuardarBreakDown(){
+    if (!this.planificacionEmbSelected) {
+      await this.showAlert('', 'No se ha seleccionado ningún pedido para generar BreakDown', 'warning');
+      return;
+    }
+    let fechaActual: Date = new Date();
+    let fechaEmbarque: Date = new Date(this.planificacionEmbSelected.fechaEmbarque);
+    if ((new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate())).getTime() 
+        > (new Date(fechaEmbarque.getFullYear(), fechaEmbarque.getMonth(), fechaEmbarque.getDate())).getTime()
+      ) {
+      await this.showAlert('', 'La fecha de embarque es menor a la fecha actual. Por favor verifique.', 'error');
+      return;
+    }
+
+
+    // if(!this.planificacionEmbSelected.pto_descripcion){
+    //   await this.showAlert('', 'El pedido no tiene puerto asignado. Por favor verifique.', 'error');
+    //   return;
+    // }
+    // if(!this.planificacionEmbSelected.naviera){
+    //   await this.showAlert('', 'El pedido no tiene naviera asignada. Por favor verifique.', 'error');
+    //   return;
+    // }
+    // if (!this.planificacionEmbSelected.nave){
+    //   await this.showAlert('', 'El pedido no tiene nave asignada. Por favor verifique.', 'error');
+    //   return;
+    // }
+    // if (this.planificacionEmbSelected.Estado === 'Parcial Embarcado'){
+    //   await this.showAlert('', 'El pedido se encuentra parcialmente embarcado. Imposible continuar.', 'error');
+    //   return;
+    // }
+    // if (this.planificacionEmbSelected.ModiBCE === '1' && (this.planificacionEmbSelected.SerieBCE === '' || this.planificacionEmbSelected.FacturaBCE === '')) {
+    //   await this.showAlert('', 'El pedido no tiene un número de factura o serie BCE. Imposible continuar.', 'error');
+    //   return;
+    // }
+    // if (this.planificacionEmbSelected.ModiBCE === '1' && !this.planificacionEmbSelected.SerieBCE.match(/^\d{3}-\d{3}$/)) {
+    //   await this.showAlert('', 'El pedido no tiene un número de serie BCE válido. Imposible continuar.', 'error');
+    //   return;
+    // }
+    // if (this.planificacionEmbSelected.ModiBCE === '1' && !this.planificacionEmbSelected.FacturaBCE.match(/^\d{9}$/)) {
+    //   await this.showAlert('', 'El pedido no tiene un número de factura BCE válido. Imposible continuar.', 'error');
+    //   return;
+    // }
+
+    this.loadingVisible2 = true;
+
+    await this._service.getPlanificacionById(this.planificacionEmbSelected.numeroEmbarque).subscribe({
+      next: (resp) => {
+        if (resp.Codigo) {
+          let cab: any = resp.Dt.Table || [];
+          let det: any = resp.Dt.Table1 || [];
+          if (cab && cab.length > 0) {
+            this.planificacionEmbViewDetail.cab = cab[0];
+            this.planificacionEmbViewDetail.det = det;
+
+            console.log('planificacionEmbViewDetail', this.planificacionEmbViewDetail);
+
+            let dataSync = {
+              pedido: this.planificacionEmbSelected.pedNumero,
+              observBreakDown: this.planificacionEmbSelected.observacion,
+              plantaEmb: this.planificacionEmbSelected.plantaEmbarque,
+              dataJson: this.planificacionEmbViewDetail.det.map((item: any) => {
+                return {
+                  dpe_pedido: item.dpe_pedido,
+                  dpe_sectab: item.dpe_sectab,
+                  dpe_codprod: item.pdet_codprod,
+                  dpe_talla: item.pdet_codtalla,
+                  dpe_masters: item.pdet_mpedido,
+                };
+              })
+            }
+            this._planificacionembarqueService.postSincronizarPlanificacionBreakDown(dataSync, localStorage.getItem(varUser)).subscribe(data => {
+              if (data.Codigo) {
+                this.showAlert('', 'Generacion de BreakDown exitosa.', 'success');
+                // Emitir el evento al componente padre
+                this.planificacionActualizada.emit();
+                this.updateSelectedMonth();
+              } else {
+                throw new Error(`Existió un error al generar el BreakDown de la referencia ${this.planificacionEmbSelected.Referencia} \n` + data.Description);
+              }
+            });
+            
+          }
+        } else {
+          throw new Error(resp.Description);
+        }
+      },
+      error: (error) => {
+        this.showAlert('', 'Error al obtener los datos: ' + error, 'error');
+      },
+      complete: () => {
+        this.loadingVisible2 = false;
+      }
+    });
+
+    //TODO envio correo breakdown
+    // if(this.permiteSendBreakDown){
+    //   let msgErrorMail = await this.SendBreakDown();
+    //   errores = errores + (msgErrorMail !== "" ? "Error al enviar mail BreakDown <br>" + msgErrorMail : "");
+    // }
+    
+  }
+
+
+  getDetallePlanificacionEmbarque(numeroEmbarque) {
+
+    this._service.getPlanificacionById(numeroEmbarque).subscribe({
+      next: (resp) => {
+        if (resp.Codigo) {
+          let cab: any = resp.Dt.Table || [];
+          let det: any = resp.Dt.Table1 || [];
+          if (cab && cab.length > 0) {
+            this.planificacionEmbViewDetail.cab = cab[0];
+            this.planificacionEmbViewDetail.det = det;
+            this.modalReferenceItem = this.modalService.open(this.modalPlanificacionEmbarque, {
+              ariaLabelledBy: 'modal-basic-title',
+              windowClass: 'cssModalPlanificacionEmbarque',
+            });
+            // this.modalReferenceItem.componentInstance.data = this.planificacionEmbViewDetail;
+          }
+        } else {
+          throw new Error(resp.Description);
+        }
+      },
+      error: (error) => {
+        this.showAlert('', 'Error al obtener los datos: ' + error, 'error');
+      }, 
+      complete: () => {
+        this.loadingVisible2 = false;
+      }
+    });
+
+    
+  }
+
+
+  onInitializedPlanificacionEmbarqueDetail(grid: any) {
+    this.GridPlanificacionEmbarqueDetail = grid;
   }
 
 
@@ -261,41 +649,45 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   }
 
 
-  async updateSelectedMonthYear() {
-    this.selectedMonthYear = this.selectedDate.format('MMMM YYYY'); // Ejemplo: "Abril 2025"
-    var desde = this.selectedDate.clone().startOf('month').format("yyyy/MM/DD");
-    var hasta = this.selectedDate.clone().endOf('month').format("yyyy/MM/DD");
-    this.getDataxMes(desde, hasta, this.selectedDate.format("MM"));
+  async updateSelectedMonth() {
+    this.selectedMonth = this.selectedDate.format('MMMM YYYY'); // Ejemplo: "Abril 2025"
+    this.desde = this.selectedDate.clone().startOf('month').format("yyyy/MM/DD");
+    this.hasta = this.selectedDate.clone().endOf('month').format("yyyy/MM/DD");
+    this.getDataxMes();
   }
 
 
-  async getDataxMes(Desde, Hasta, mes) {
+  async getDataxMes() {
     this.loadingVisible2 = true;
     this.dataPedidos = [];
     this.dataByWeek = [];
     this.limpiarSearch();
     return new Promise(async (resolve) => {
       let data = {
-        fecIni: Desde,
-        fecFin: Hasta,
-        estado: "('F','A','P','C','E')",
-        cliente: "T",
-        pedidos: "S",
-        pais: "T",
-        continente: "T"
+        fecIni: this.desde,
+        fecFin: this.hasta
       }
-
       this._service.getDataByMes(data).subscribe({
         next: (resp) => {
           if (resp.Codigo) {
             if (Object.keys(resp.Dt).length > 0) {
               this.dataPedidos = resp.Dt.Table || [];
-              this.armarCalendario(this.dataPedidos, Desde, Hasta, mes);
+              // si hay seleccionado un filtro de estado, aplicar el filtro
+              let estadoSeleccionado = this.listFilterState.find(item => item.icon === 'check');
+              if (estadoSeleccionado) {
+                this.onItemClickFiltrar({ itemData: estadoSeleccionado });
+              } else {
+                this.armarCalendario(this.dataPedidos, this.desde, this.hasta, this.selectedDate.format("MM"));
+              }
+              let planificacionesNoCumplidas = resp.Dt.Table1 || [];
+              if (planificacionesNoCumplidas.length > 0 && this.mensajePlanificacionNoCumplidas) {
+                this.mensajePlanificacionNoCumplidas = false;
+                this.showAlert('Planificaciones No Cumplidas', 'Existen planificaciones que no se han cumplido, por favor verificar', 'warning');
+              }
             }
             return resolve(true);
           } else {
-            this.showAlert('', resp.Description, 'error');
-            return resolve(false);
+            throw new Error(resp.Description);
           }
         },
         error: (error) => {
@@ -357,7 +749,6 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     }
     return max;
   }
-
   
 
   MarcarCursor(e){
@@ -446,40 +837,35 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
 
 
   controlAnterior;
-  Marcar(v, idDetalle) {
+  Marcar(v) {
     if (this.controlAnterior === undefined) {
       this.controlAnterior = v.currentTarget;
     } else {
       this.controlAnterior.style.borderColor = "";
       this.controlAnterior.style.borderWidth = "";
+      // this.controlAnterior.id = "";
       this.controlAnterior = v.currentTarget;
     }
     v.currentTarget.style.borderColor = "black";
-    v.currentTarget.style.borderWidth = "1.5px";
+    v.currentTarget.style.borderWidth = "2px";
+    // v.currentTarget.id = "idDetalle";
   }
 
 
-  getClassEstado(estado, documentacion, DocCaducado) {
+  getClassEstado(data) {
     var clase = "";
-    switch (estado) {
-      case "(PED COMP)":
+    switch (data.EstadoVisualizacion) {
+      case "PC":
         clase = "pedido PedCompleto";
         break;
-      case "(PED)":
-        clase = "pedido PedPendiente";
-        break;
-      case "(FACT)":
-        if ((documentacion === "N" || documentacion === "") && DocCaducado === "S") {
-          clase = "pedido FacturadoSD";
-        } else {
-          clase = "pedido Facturado";
-        }
-        break;
-      case "(PLNF)":
+      case "PL":
         clase = "pedido Planificado";
         break;
-      case "(EMB)":
-        clase = "pedido Embarcado";
+      case "VAG":
+        clase = "pedido PedPendiente";
+        break;
+      case "BD":
+        clase = "pedido PedBreakdown";
         break;
     }
     return clase;
@@ -490,84 +876,6 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     let hgDiv = window.innerHeight - 50 + "px";
     return hgDiv;
   }
-
-
-
-  // async onRightClick(event: MouseEvent, item) { 
-
-  //   if(this.openModalDiv !== ""){
-      
-  //     this.contextMenu.visible = false;
-  //     event.stopPropagation(); 
-      
-  //     return false;
-  //   }
-
-  //   this.Marcar(event);
-    
-  //   this.lblRef = item.factura;
-  //   this.lblnumero = item.numero;
-  //   this.lblfecha = item.fecha;
-
-  //   if(!this.habilitaOpcionUser){
-      
-  //     this.contextMenu.visible = false;
-  //     event.stopPropagation(); 
-      
-  //     return false;
-  //   }
-
-  //   this.items[0].disabled = true; //Quitar de Planificación
-  //   this.items[1].disabled = false; //Actualizar Fecha
-  //   this.items[2].disabled = false; //Agregar Fecha Límite
-  //   this.items[3].disabled = false; //Agregar Fecha Zarpe
-  //   this.items[4].disabled = false; //Observación
-  //   this.items[5].disabled = false; //Naviera/Nave
-  //   this.items[6].disabled = false; //Pedido/Embarque
-  //   this.items[7].disabled = false; //Masivo
-  //   this.items[8].disabled = false; //Actualizar Fechas Zarpe por Nave
-  //   this.items[9].disabled = false; //Actualizar Fechas Límite por Naviera/Nave
-  //   this.items[10].disabled = false; //Aprobar Flete
-
-  //   if(item.estado === "(EMB)"){
-  //     this.items[0].disabled = true; //Quitar de Planificación
-  //     this.items[1].disabled = true; //Actualizar Fecha
-  //     this.items[2].disabled = false; //Agregar Fecha Límite
-  //     this.items[3].disabled = false; //Agregar Fecha Zarpe
-  //     this.items[4].disabled = false; //Observación
-  //     this.items[5].disabled = false; //Naviera/Nave
-  //     this.items[6].disabled = true; //Pedido/Embarque
-  //     this.items[7].disabled = false; //Masivo
-  //     this.items[8].disabled = false; //Actualizar Fechas Zarpe por Nave
-  //     this.items[9].disabled = false; //Actualizar Fechas Límite por Naviera/Nave
-  //     this.items[10].disabled = false; //Aprobar Flete
-  //   }
-
-  //   if(item.estado === "(FACT)"){
-  //       this.items[0].disabled = true; //Quitar de Planificación
-  //       this.items[1].disabled = true; //Actualizar Fecha
-  //       this.items[2].disabled = true; //Agregar Fecha Límite
-  //       this.items[3].disabled = true; //Agregar Fecha Zarpe
-  //       this.items[4].disabled = false; //Observación
-  //       this.items[5].disabled = true; //Naviera/Nave
-  //       this.items[6].disabled = true; //Pedido/Embarque
-  //       this.items[7].disabled = false; //Masivo
-  //       this.items[8].disabled = true; //Actualizar Fechas Zarpe por Nave
-  //       this.items[9].disabled = true; //Actualizar Fechas Límite por Naviera/Nave
-  //       this.items[10].disabled = true; //Aprobar Flete
-  //   }
-
-  //   if(item.estado === "(PED COMP)" || item.estado === "(PED)"){
-  //     this.items[0].disabled = false; //Quitar de Planificación
-  //     this.items[10].disabled = true; //Aprobar Flete
-  //   }
-      
-  //   this.contextMenu.visible = true;
-  //   event.preventDefault(); 
-  //   return true;
-    
-  // } 
-
 
 
   async showAlert(title, mensaje, tipo, event = null) {
@@ -590,6 +898,29 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     });
   }
 
+
+  async showAlertConfirm(title, mensaje, tipo) {
+    this.loadingVisible2 = false;
+
+    return new Promise(async (resolve) => {
+      const confirm = await
+        Swal.fire({
+          title: title,
+          //text: mensaje,
+          html: "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" + mensaje.replaceAll('\n','<br>').replaceAll('\\n','<br>') + "</div>",
+          icon: tipo,
+          showCancelButton: true,
+          confirmButtonColor: '#2196F3',
+          confirmButtonText: 'Aceptar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            return resolve(true);
+          } else {
+            return resolve(false);
+          }
+        });
+    });
+  }
 
 
 

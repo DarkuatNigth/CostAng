@@ -445,8 +445,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
       descriProducto: this.itemSelectedForReq[0].descriProducto,
       ConLote: 'N', //this.itemSelectedForReq[0].numLote > 0 ? 'S' : 'N',
       factura: this.itemSelectedForReq[0].pedNumero,
-      talPed: this.itemSelectedForReq[0].talCodigo,
-      descriTalla: this.itemSelectedForReq[0].descriTalla,
+      // talPed: this.itemSelectedForReq[0].talCodigo,
+      talPed: this.itemSelectedForReq[0].tallaVenta,
+      descriTalla: this.itemSelectedForReq[0].descriTallaVenta,
       MastPed: MastPed,
       LibPed: this.librasPlanificadasTotal,
       MaxLibPed: 0,
@@ -492,6 +493,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     let codprod = '';
     let desProd = '';
     let codtal = null;
+    let descriTalla = this.itemSelectedForReq[0].descriTalla;
     if (this.RequerimientoProFresco.length > 0) {
       if (this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].codpro === '' ||
           this.RequerimientoProFresco[this.RequerimientoProFresco.length - 1].numcaj === 0 ||
@@ -504,7 +506,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     } else {
       codprod = this.itemSelectedForReq[0].proClase === 'A' ? '320' : '321';
       desProd = this.itemSelectedForReq[0].proClase === 'A' ? 'SHELLON FRESCO' : 'SHELLON FRESCO B';
-      codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
+      codtal = await this.SSLlenaTallas(codprod.toString(), descriTalla);
     }
     let reqFr = {
       numdet: this.RequerimientoProFresco.length + 1,
@@ -543,6 +545,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     let codprod = '';
     let desProd = '';
     let codtal = null;
+    let descriTalla = this.itemSelectedForReq[0].descriTalla;
     if (this.RequerimientoProTerminado.length > 0) {
       if (this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].codpro === '' ||
           this.RequerimientoProTerminado[this.RequerimientoProTerminado.length - 1].numcaj === 0 ||
@@ -554,7 +557,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
     } else {
       codprod = this.itemSelectedForReq[0].proClase === 'A' ? '5010' : '5011';
       desProd = this.itemSelectedForReq[0].proClase === 'A' ? 'CHAMPMAR 6x1800g' : 'MARCOL 6x1800g B';
-      codtal = await this.SSLlenaTallas(codprod.toString(), this.cabeceraReq.descriTalla);
+      codtal = await this.SSLlenaTallas(codprod.toString(), descriTalla);
     }
     let reqTe = {
       numdet: this.RequerimientoProTerminado.length + 1,
@@ -618,7 +621,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             ConLote: datosCab[0].rpc_ConLote, 
             factura: datosCab[0].rpc_factura,
             talPed: datosCab[0].rpc_talPed,
-            descriTalla: rowData.descriTalla,
+            descriTalla: rowData.descriTallaVenta,
             MastPed: datosCab[0].rpc_MastPed,
             LibPed: datosCab[0].rpc_libPed,
             MaxLibPed: 0,
@@ -704,7 +707,7 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
             ConLote: datosCab[0].rpc_ConLote, 
             factura: datosCab[0].rpc_factura,
             talPed: datosCab[0].rpc_talPed,
-            descriTalla: rowData.descriTalla,
+            descriTalla: rowData.descriTallaVenta,
             MastPed: datosCab[0].rpc_MastPed,
             LibPed: datosCab[0].rpc_libPed,
             MaxLibPed: 0,
@@ -923,7 +926,9 @@ export class FrmplanificacionvagconsultaComponent implements OnInit {
         descriCliente: item.descriCliente,
         prodCodcor: item.prodCodcor,
         talCodigo: item.talCodigo,
+        tallaVenta: item.tallaVenta,
         descriTalla: item.descriTalla,
+        descriTallaVenta: item.descriTallaVenta,
         proClase: item.proClase,
         proModali: item.proModali,
         proCongela: item.proCongela,

@@ -1,29 +1,47 @@
-.PedPendiente{
-    background-color: white;
+
+.pedido {
+    border: #6f90b3 1.5px solid;
     color: black;
 }
-
+.Planificado{
+    background-color: #ececec;
+}
 .PedCompleto{
     background-color: #00CECE;
-    color: black;
+}
+.PedPendiente{
+    background-color: #fff877;
+}
+.PedBreakdown{
+    background-color: #F5C68D;
 }
 
-.Planificado{
-    background-color: #F5C68D;
-    color: black;
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(1) .dx-list-item-content .dx-icon {
+    color: #00CECE; /* Color para el primer item (Completo) */
 }
-.Facturado{
-    background-color: #F5C68D;
-    color: black;
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(2) .dx-list-item-content .dx-icon {
+    color: #e3e3e3; 
 }
-.FacturadoSD{
-    background-color: #F5C68D;
-    color: rgb(0, 0, 124);
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(3) .dx-list-item-content .dx-icon {
+    color: #fff877;
 }
-.Embarcado{
-    background-color: #F5C68D;
-    color: black;
+::ng-deep .dx-scrollview-content .dx-list-item:nth-of-type(4) .dx-list-item-content .dx-icon {
+    color: #F5C68D;
 }
+
+
+// .Facturado{
+//     background-color: #F5C68D;
+//     color: black;
+// }
+// .FacturadoSD{
+//     background-color: #F5C68D;
+//     color: rgb(0, 0, 124);
+// }
+// .Embarcado{
+//     background-color: #F5C68D;
+//     color: black;
+// }
 
 table.table-bordered {
     tr.header {
@@ -143,3 +161,38 @@ table.table-bordered {
 .btn-model-search:disabled i {
     color: rgba(42, 42, 42, 0.3) !important;
 }
+
+
+::ng-deep .cssModalPlanificacionEmbarque {
+    .modal-dialog {
+        min-width: 550px;
+        max-width: 750px;
+        width: 70%;
+        z-index: unset;
+    }
+    .control-label {
+      font-weight: 600;
+    }
+  }
+
+
+  .progress-container {
+    width: 100%;
+    background-color: #e3e3e3;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: #4caf50; /* Color de la barra de progreso */
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    border-radius: 4px;
+  }  

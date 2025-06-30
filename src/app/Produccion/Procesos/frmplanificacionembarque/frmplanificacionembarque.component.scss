@@ -20,6 +20,9 @@
 
 
 ::ng-deep #GridPedidosPorPais {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
   td.cell-temp-valor[role="gridcell"] {
       padding: 2px;
   }
@@ -67,6 +70,9 @@
 }
 
 ::ng-deep #GridPedidosPaisDetail {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
   td[role="columnheader"] div.dx-datagrid-text-content{
     text-wrap: wrap;
   }
@@ -77,11 +83,68 @@
   tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
     background-color: inherit; 
   }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
+  }
+}
+
+::ng-deep #GridPedidosPaisDetailByProduct {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
+  }
 }
 
 ::ng-deep #GridPedidosPaisDetailByProduct2 {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
   td[role="columnheader"] div.dx-datagrid-text-content{
     text-wrap: wrap;
+  }
+  .grupo1[role="columnheader"], .grupo1.tot {
+    background-color: #4caf50;
+    color: white;
+  }
+  .grupo2[role="columnheader"], .grupo2.tot {
+    background-color: #414580;
+    color: white;
+  }
+  .grupo3[role="columnheader"], .grupo3.tot {
+    background-color: #4f8a8b;
+    color: white;
+  }
+  .grupo4[role="columnheader"], .grupo4.tot {
+    background-color: #f0ad4e;
+    color: white;
   }
 }
 
@@ -95,9 +158,9 @@
 
 ::ng-deep .cssModalPlanificarEmbarque {
   .modal-dialog {
-      min-width: 550px;
-      max-width: 750px;
-      width: 60%;
+      min-width: 650px;
+      max-width: 1100px;
+      width: 90%;
       z-index: unset;
   }
   .control-label {

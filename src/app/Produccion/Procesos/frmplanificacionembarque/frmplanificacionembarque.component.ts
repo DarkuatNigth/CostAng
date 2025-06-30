@@ -27,13 +27,15 @@ interface PedidosPorPais {
   bloqueado: number;
 }
   
-interface PedidosPaisDetail {
+export interface PedidosPaisDetail {
   id: number;
   paisCodigo: number;
   pais: string;
   destino: string;
   cliente: string;
   codCliente: number;
+  codPuertoDestino: number;
+  pedNumero: number;
   pedido: string;
   // codProducto: string;
   // producto: string;
@@ -41,16 +43,13 @@ interface PedidosPaisDetail {
   // talla: string;
   fecPedido: Date;
   pedFechaEstimado: Date;
-  mastersOriginal: number;
   mastersPedido: number;
-  xEmbarcar: number;
+  saldoPedido: number;
   xFabricar: number;
-  libras: number;
-  saldoSonga: number;
-  saldoSonga2: number;
-  SaldoComin: number;
-  SaldoOtros: number;
-  StockEnProceso: number;
+  stockSonga: number;
+  stockComin: number;
+  stockOtrasBodegas: number;
+  stockCongelado: number;
   bloqueado: number;
   porcentaje: number;
   checkPlanificar?: boolean;
@@ -76,6 +75,7 @@ interface DetalleStockBloqueado {
   observa: string;
   ccuMotivo: string;
   descripcion: string;
+  disponiblePlanifica: string;
 }
 
 
@@ -87,15 +87,21 @@ interface DetalleStockBloqueado {
 export class FrmplanificacionembarqueComponent implements OnInit {
   title = 'Planificación de Embarque';
   loadingVisible: boolean = false;
+  disabledGenerarMix: boolean = true;
+  planificacionMix = false;
 
   pedidosPorPais: PedidosPorPais[] = [];
-  pedidosPaisDetail: PedidosPaisDetail[] = [];
+  pedidosPaisDetail: any[] = [];
   pedidosPaisDetailByProduct: any[] = [];
   plantasEmbarque: any[] = [];
 
-  pedidoSelectedForPlanificar: PedidosPaisDetail = null;
+  pedidoSelectedForPlanificar: any = null;
+  pedidoSelectedForPlanificarDetalle: any[] = [];
   minFechaPlanificacion: Date = new Date(); 
   maxFechaPlanificacion: Date = moment().add(3, 'month').endOf('month').toDate();
+  totalPedidoPlanificar: number = 0;
+  totalStockPlanificar: number = 0;
+  totalPalletsPlanificar: number = 0;
 
   totalMastersBloq: number = 0;  
   cabeceraStockBloqueado: {
@@ -117,7 +123,19 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   currentFilter2 = this.applyFilterTypes[0].key;
   modalReferenceItem: any;
 
-  
+  referenciaMix = '';
+  DataPedidosMix:any[] = [];
+
+  popupInfoVisible:boolean = false;
+  popupInfoRefVisible:boolean = false;
+
+  toggleInformacion(){
+    this.popupInfoVisible = !this.popupInfoVisible;
+  }
+  toggleInformacionRef(){
+    this.popupInfoRefVisible = !this.popupInfoRefVisible;
+  }
+
   @ViewChild('GridPedidosPorPais', { static: false }) GridPedidosPorPais: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetail', { static: false }) GridPedidosPaisDetail: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetailByProduct', { static: false }) GridPedidosPaisDetailByProduct: DxDataGridComponent;
@@ -146,22 +164,29 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
   
   async ngOnInit() {
+    this.limpiarNuevo();
     this.onClickNuevo();
   }
   
   
   async onClickNuevo() {
-    this.loadingVisible = true;
     this._service.getCatalogosPlanificacionEmbarque().subscribe((data) => {
       if (data.Codigo && data.Dt.Table.length > 0) {
         this.plantasEmbarque = data.Dt.Table.map((item: any) => {
           return {
             codigo: item.codigo,
-            descripcion: item.nombre,
+            descripcion: item.descripcion,
           };
         });
       }
     });
+    this.getPedidosPlanificacionEmbarque();
+  }
+
+
+
+  getPedidosPlanificacionEmbarque() {
+    this.loadingVisible = true;
     this._service.getPedidosPlanificacionEmbarque().subscribe({
       next: (data) => {
         if (!data.Codigo) {
@@ -181,29 +206,41 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         this.pedidosPaisDetail = data.Dt.Table1.map((item: any) => {
           return {
             id: idSec++,
-            paisCodigo: item.pai_codigo,
-            pais: item.pai_descri?.trim() || '',
-            destino: item.Destino?.trim() || '',
-            cliente: item.CLIENTE?.trim() || '',
-            codCliente: item.cli_codigo,
-            // codProducto: item.cod_produc,
-            // producto: item.PRODUCTO,
-            // codTalla: item.cod_talla,
-            // talla: item.TALLA?.trim() || '',
-            pedido: item.PEDIDO || '',
+            paisCodigo: item.paisCodigo,
+            pais: item.paisDescripcion?.trim() || '',
+            codPuertoDestino: item.puertoCodigo,
+            destino: item.destino?.trim() || '',
+            cliente: item.cliente?.trim() || '',
+            codCliente: item.cliCodigo,
+            pedNumero: item.pedNumero,
+            pedido: item.pedido,
             fecPedido: item.fecpedido,
             pedFechaEstimado: item.ped_fechaestimada,
-            mastersOriginal: item.MORIGINAL,
-            mastersPedido: item.MPEDIDO,
-            xEmbarcar: item.XEMBARCAR,
+            mastersPedido: item.mastersPedidoOriginal,
+            saldoPedido: item.saldoPedido,
             xFabricar: item.XFABRICAR,
-            libras: item.LIBRAS,
-            saldoSonga: item.SaldoSonga,
-            saldoSonga2: item.SaldoSonga2,
-            SaldoComin: item.SaldoComin,
-            SaldoOtros: item.SaldoOtros,
-            StockEnProceso: item.StockEnProceso,
-            bloqueado: item.Bloqueado,
+            stockSonga: item.stockS1 + item.stockS2,
+            stockSonga2: item.stockS2,
+            stockComin: item.stockComin,
+            stockOtrasBodegas: item.stockOtrasBodegas,
+            stockCongelado: item.stockCongelado,
+            bloqueado: item.cuarentenaBloqueado,
+
+            etiquetadoChina: item.etiquetadoChina,
+            mastersProgramados: item.mastersProgramados,
+            cuarentenaSulfito: item.cuarentenaSulfito,
+            cuarentena: item.cuarentena,
+            cuarentenaBloqueado: item.cuarentenaBloqueado,
+            libPositiva: item.libPositiva,
+            analisisVB: item.analisisVB,
+            esperaResult: item.esperaResult,
+            bloqueadoUV: item.bloqueadoUV,
+            reetiquetadoChina: item.reetiquetadoChina,
+            reprocesoDescab: item.reprocesoDescab,
+            bloqueadoLT: item.bloqueadoLT,
+            stockTotal: item.stockTotal,
+            saldo: item.saldo,
+
             porcentaje: parseFloat(item.Porcentaje),
             agrupacionCodigo: item.OrdenAgrupacion,
             agrupacionDescri: item.Agrupacion,
@@ -214,37 +251,74 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         this.pedidosPaisDetailByProduct = data.Dt.Table2.map((item: any) => {
           return {
             id: idSec2++,
-            paisCodigo: item.pai_codigo,
-            pais: item.pai_descri?.trim() || '',
-            destino: item.Destino?.trim() || '',
-            cliente: item.CLIENTE?.trim() || '',
-            codCliente: item.cli_codigo,
-            codProducto: item.cod_produc,
-            producto: item.PRODUCTO,
-            codTalla: item.cod_talla,
-            talla: item.TALLA?.trim() || '',
-            pedido: item.PEDIDO || '',
+            paisCodigo: item.paisCodigo,
+            pais: item.paisDescripcion?.trim() || '',
+            codPuertoDestino: item.puertoCodigo,
+            destino: item.destino?.trim() || '',
+            cliente: item.cliente?.trim() || '',
+            codCliente: item.cliCodigo,
+            pedNumero: item.pedNumero,
+            pedido: item.pedido,
+            dpe_sectab: item.dpe_sectab,
+            codProducto: item.codProd,
+            producto: item.producto,
+            codTalla: item.codTalla,
+            talla: item.talla?.trim() || '',
+            numPallet: item.numPallet,
+            pesoVta: item.pesoVta,
+            ctsXPallet: item.ctsXPallet,
             fecPedido: item.fecpedido,
             pedFechaEstimado: item.ped_fechaestimada,
-            mastersOriginal: item.MORIGINAL,
-            mastersPedido: item.MPEDIDO,
-            xEmbarcar: item.XEMBARCAR,
+            mastersPedido: item.mastersPedidoOriginal,
+            saldoPedido: item.saldoPedido,
             xFabricar: item.XFABRICAR,
-            libras: item.LIBRAS,
-            saldoSonga: item.SaldoSonga,
-            saldoSonga2: item.SaldoSonga2,
-            SaldoComin: item.SaldoComin,
-            SaldoOtros: item.SaldoOtros,
-            StockEnProceso: item.StockEnProceso,
-            bloqueado: item.Bloqueado,
+            stockSonga: item.stockS1 + item.stockS2,
+            stockSonga2: item.stockS2,
+            stockComin: item.stockComin,
+            stockOtrasBodegas: item.stockOtrasBodegas,
+            stockCongelado: item.stockCongelado,
+            bloqueado: item.cuarentenaBloqueado,
+            
+            etiquetadoChina: item.etiquetadoChina,
+            mastersProgramados: item.mastersProgramados,
+            cuarentenaSulfito: item.cuarentenaSulfito,
+            cuarentena: item.cuarentena,
+            cuarentenaBloqueado: item.cuarentenaBloqueado,
+            libPositiva: item.libPositiva,
+            analisisVB: item.analisisVB,
+            esperaResult: item.esperaResult,
+            bloqueadoUV: item.bloqueadoUV,
+            reetiquetadoChina: item.reetiquetadoChina,
+            reprocesoDescab: item.reprocesoDescab,
+            bloqueadoLT: item.bloqueadoLT,
+            stockTotal: item.stockTotal,
+            saldo: item.saldo,
+
+            palletsG1: item.palletsG1,
+            palletsG1tmp: item.palletsG1,
+            palletsG2: item.palletsG2,
+            palletsG2tmp: item.palletsG2,
+            palletsG3: item.palletsG3,
+            palletsG3tmp: item.palletsG3,
+            palletsG4: item.palletsG4,
+            palletsG4tmp: item.palletsG4,
+            palletsTotMix: item.palletsG1 + item.palletsG2 + item.palletsG3 + item.palletsG4,
+            // palletsTotMix: item.palletsCompletos,
+            palletsCompletos: item.palletsCompletos,
+            palletsParciales: item.palletsParciales,
             porcentaje: parseFloat(item.Porcentaje),
             agrupacionCodigo: item.OrdenAgrupacion,
             agrupacionDescri: item.Agrupacion,
+            paletsMaxSulfito: item.paletsMaxSulfito,
+            paletsMinAusenciaVibrios: item.paletsMinAusenciaVibrios,
+            pedObservOrd: item.pedObservOrd,
+            validaLoteRepresentativo: item.validaLoteRepresentativo,
+            loteRepresent: item.loteRepresent,
+            loteRepresentPallets: item.loteRepresentPallets,
+            checkPlanificar: false,
           };
         });
 
-        console.log(this.pedidosPaisDetail);
-        console.log(this.pedidosPaisDetailByProduct);
       }, 
       error: (error) => {
         this.showAlert('','Error al cargar los datos: ' + error, 'error');
@@ -253,32 +327,67 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         this.loadingVisible = false;
       }
     });
-
   }
+
+
 
   onInitializedPedidosPorPais(grid: any) {
     this.GridPedidosPorPais = grid;
   }
   
+
+  
   onInitializedPedidosPaisDetail(grid: any) {
     this.GridPedidosPaisDetail = grid;
   }
+
+
 
   onInitializedPedidosPaisDetailByProduct(grid: any) {
     this.GridPedidosPaisDetailByProduct = grid;
   }
 
+
+
   onInitializedPedidosPaisDetailByProduct2(grid: any) {
     this.GridPedidosPaisDetailByProduct2 = grid;
   }
+
+
 
   onInitializedStockBloqueado(grid: any) {
     this.GridStockBloqueado = grid;
   }
   
+
+
   dateFormatter(value: Date): string {
     return formatDate(value, 'yyyy/MM/dd', 'en-US');
   }
+
+
+
+  limpiarNuevo() {
+    this.pedidosPorPais = [];
+    this.pedidosPaisDetail = [];
+    this.pedidosPaisDetailByProduct = [];
+    // this.plantasEmbarque = [];
+    // this.limpiarPedidoSelected();
+    this.limpiarDetalleStockBloqueado();
+    if (this.GridPedidosPorPais) {
+      this.GridPedidosPorPais.instance.refresh();
+    }
+    if (this.GridPedidosPaisDetail) {
+      this.GridPedidosPaisDetail.instance.refresh();
+    }
+    if (this.GridPedidosPaisDetailByProduct) {
+      this.GridPedidosPaisDetailByProduct.instance.refresh();
+    }
+    if (this.GridPedidosPaisDetailByProduct2) {
+      this.GridPedidosPaisDetailByProduct2.instance.refresh();
+    }
+  }
+
 
 
   limpiarDetalleStockBloqueado () {
@@ -294,7 +403,12 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   }
 
 
-  async onClickBloqueado(rowData: any) {
+
+  tipoBloqueoModal = '';
+  tipoBloqueogroupIndex = '0';
+  async onClickBloqueado(rowData: any, tipoBloqueo: string) {
+    this.tipoBloqueoModal = tipoBloqueo;
+    this.tipoBloqueogroupIndex = tipoBloqueo === 'bloqueado' ? '0' : null;
     this.loadingVisible = true;
     this.limpiarDetalleStockBloqueado();
     this.modalReferenceItem = await this.modalService.open(this.modalStockBloqueado, {
@@ -302,11 +416,11 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       windowClass: 'cssModalStockBloqueado',
     });
     
-    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla).subscribe({
+    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla, tipoBloqueo).subscribe({
       next: (data) => {
         if (data.Codigo) {
-          let datosDet: any = data.Dt.Table;
-          if (datosDet.length > 0) {
+          if (data.Dt.Table && data.Dt.Table.length > 0) {
+            let datosDet: any = data.Dt.Table;
             this.cabeceraStockBloqueado = {
               producto: rowData.producto,
               talla: rowData.talla,
@@ -326,13 +440,14 @@ export class FrmplanificacionembarqueComponent implements OnInit {
                 secuencial: item.Secuencial,
                 observa: item.Observa,
                 ccuMotivo: item.ccu_motivo,
-                descripcion: item.Descripcion
+                descripcion: item.Descripcion,
+                disponiblePlanifica: item.disponiblePlanifica === 'D' || tipoBloqueo == 'analisisVB' ? 'Disponible' : 'No Disponible',
               };
             });
-            // obtener el total de masters bloqueados solo sumar si son de diferentes lotes 
+            // obtener el total de masters bloqueados solo sumar si son de diferentes lotes y disponiblePlanifica = 'Disponible'
             const uniqueLotes = new Set(this.detalleStockBloqueado.map(item => item.lote));
             this.totalMastersBloq = Array.from(uniqueLotes).reduce((acc, lote) => {
-              const totalLote = this.detalleStockBloqueado.find(item => item.lote === lote)?.master || 0;
+              const totalLote = this.detalleStockBloqueado.find(item => item.lote === lote && item.disponiblePlanifica == 'Disponible')?.master || 0;
               return acc + totalLote;
             }, 0);
             
@@ -340,6 +455,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               this.GridStockBloqueado.instance.refresh();
             }
 
+          } else {
+            throw new Error('No se encontraron datos para el producto y talla seleccionados.');
           }
         } 
         else {
@@ -357,47 +474,258 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   }
 
   
+
   limpiarPedidoSelected() {
     this.pedidoSelectedForPlanificar = null;
+    this.pedidoSelectedForPlanificarDetalle = [];
+    this.totalPedidoPlanificar = 0;
+    this.totalStockPlanificar = 0;
+    this.totalPalletsPlanificar = 0;
   }
 
+
+
   async onChangeGridCheckPlanificar(value: any, data: any) {
+    this.planificacionMix = false;
     this.pedidosPaisDetail.find((x) => x.id == data.data.id).checkPlanificar = value;
     if (value) {
       this.pedidosPaisDetail.forEach(async (item) => {
-        // se debe permitir chequear mas de un registro solo si coincide (pedido, producto, clase, talla, dia)
-        // if ((item.pedNumero !== data.data.pedNumero || item.prodCodcor !== data.data.prodCodcor || item.proClase !== data.data.proClase || item.talCodigo !== data.data.talCodigo || item.Dia !== data.data.Dia)
-        //   && (item.numeroReqTerminado === null && item.numeroReqFresco === null)) {
-        //   item.checkReqMp = false;
-        //   item.checkReqDes = false;
-        // }
         if (item.id !== data.data.id) {
           item.checkPlanificar = false;
         }
       });
       this.limpiarPedidoSelected();
       this.pedidoSelectedForPlanificar = data.data;
-      this.pedidoSelectedForPlanificar.checkPlanificar = true;
+      this.pedidoSelectedForPlanificar.tipoEmbarque = 'I';
       this.pedidoSelectedForPlanificar.fechaPlanificacion = this.minFechaPlanificacion;
-  
+      this.pedidoSelectedForPlanificar.plantaEmbarque = 1; // planta de embarque por defecto es 1 (Songa)
+      this.pedidoSelectedForPlanificarDetalle = this.pedidosPaisDetailByProduct.filter((x) => (x.pedido === this.pedidoSelectedForPlanificar.pedido));
+      this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+        this.totalPedidoPlanificar += item.saldoPedido;
+        this.totalStockPlanificar += item.stockTotal;
+        this.totalPalletsPlanificar += item.palletsCompletos;
+      })
+      this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios = this.pedidoSelectedForPlanificarDetalle[0].paletsMinAusenciaVibrios;
+      this.pedidoSelectedForPlanificar.paletsMaxSulfito = this.pedidoSelectedForPlanificarDetalle[0].paletsMaxSulfito;
+      this.pedidoSelectedForPlanificar.pedObservOrd = this.pedidoSelectedForPlanificarDetalle[0].pedObservOrd;
+      this.pedidoSelectedForPlanificar.numPallet = this.pedidoSelectedForPlanificarDetalle[0].numPallet;
+      this.pedidoSelectedForPlanificar.validaLoteRepresentativo = this.pedidoSelectedForPlanificarDetalle[0].validaLoteRepresentativo;
+      this.pedidoSelectedForPlanificar.loteRepresent = this.pedidoSelectedForPlanificarDetalle[0].loteRepresent;
+      this.pedidoSelectedForPlanificar.loteRepresentPallets = this.pedidoSelectedForPlanificarDetalle[0].loteRepresentPallets;
+
       this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
         ariaLabelledBy: 'modal-basic-title',
         windowClass: 'cssModalPlanificarEmbarque',
       });
-      console.log(this.pedidoSelectedForPlanificar);
     }
     this.GridPedidosPaisDetail.instance.refresh();
   }
   
 
+
+  async onChangeGridCheckPlanificarMix(value: any, data: any) {
+    this.pedidosPaisDetailByProduct.find((x) => x.id == data.data.id).checkPlanificar = value;
+    if (value) {
+      // verificar si existen otros pedidos seleccionados con el mismo cliente (codCliente)
+      this.pedidosPaisDetailByProduct.forEach(async (item) => {
+        if (item.id !== data.data.id && item.codCliente !== data.data.codCliente) {
+          item.checkPlanificar = false;
+        }
+      });      
+    }
+    this.disabledGenerarMix = !this.pedidosPaisDetailByProduct.some((item) => item.checkPlanificar);
+    this.GridPedidosPaisDetailByProduct.instance.refresh();
+  }
   
-  async validarDatos() {
+
+  
+  async onChangeGridCheckPlanificarMix2(value: any, data: any) {
+    this.pedidosPaisDetailByProduct.find((x) => x.id == data.data.id).checkPlanificar = value;
+    this.GridPedidosPaisDetailByProduct.instance.refresh();
+    const pedidosSeleccionadosMix: any[] = this.pedidosPaisDetailByProduct.filter((x) => x.checkPlanificar);
+    this.pedidoSelectedForPlanificarDetalle = [...pedidosSeleccionadosMix];
+    this.totalPalletsPlanificar = 0;
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      this.totalPalletsPlanificar += item.palletsTotMix;
+    });
+  }
+
+
+
+  OnChangecmbPedidosMix(e){
+    const selectedValue = e;
+    if (selectedValue) {
+      const pedidoMix = this.DataPedidosMix.find((item) => item.codigo === selectedValue);
+      this.referenciaMix = pedidoMix.descripcion;
+      if (pedidoMix) {
+        this.pedidoSelectedForPlanificar.pedObservOrd = pedidoMix.pedObservOrd;
+      }
+    } else {
+      this.referenciaMix = '';
+    }
+  }
+
+
+
+  async onClickGenerarMix() {
+    this.loadingVisible = true;
+    this.planificacionMix = true;
+    const pedidosSeleccionadosMix: any[] = this.pedidosPaisDetailByProduct.filter((x) => x.checkPlanificar);
+    if (pedidosSeleccionadosMix.length === 0) {
+      this.showAlert('','Seleccione al menos un pedido para generar el mix.','warning');
+      this.loadingVisible = false;
+      return;
+    }
+    this.limpiarPedidoSelected();
+    this.pedidoSelectedForPlanificarDetalle = pedidosSeleccionadosMix;
+    this.pedidoSelectedForPlanificar = this.pedidoSelectedForPlanificarDetalle[0];
+    this.pedidoSelectedForPlanificar.tipoEmbarque = 'M';
+    this.pedidoSelectedForPlanificar.fechaPlanificacion = this.minFechaPlanificacion;
+    this.pedidoSelectedForPlanificar.plantaEmbarque = 1; // planta de embarque por defecto es 1 (Songa)
+    this.pedidoSelectedForPlanificar.numPallet = 20; // brasmar 20
+    // si cliente es Gambastar
+    if (this.pedidoSelectedForPlanificar.codCliente == 104) {
+      const todosPeso1kg = this.pedidoSelectedForPlanificarDetalle.every((item) => item.pesoVta == 1);
+      const todosPeso2kg = this.pedidoSelectedForPlanificarDetalle.every((item) => item.pesoVta == 2);
+      if (todosPeso1kg) {
+        this.pedidoSelectedForPlanificar.numPallet = 23;
+      } else if (todosPeso2kg) {
+        this.pedidoSelectedForPlanificar.numPallet = 27;
+      } else {
+        this.pedidoSelectedForPlanificar.numPallet = 23;
+      }
+    }
+    // Obtener referencias únicas de los pedidos seleccionados
+    this.pedidoSelectedForPlanificar.referenciasMix = Array.from(
+      new Set(this.pedidoSelectedForPlanificarDetalle.map((item) => item.pedido))
+    ).join(';');
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      this.totalPedidoPlanificar += item.saldoPedido;
+      this.totalStockPlanificar += item.stockTotal;
+      this.totalPalletsPlanificar += item.palletsTotMix;
+    });
+    // para obtener la referencia del mix, debo de darle prioridad a la referencia con mayor saldoPedido.
+    let referenciasPrioridad: any[] = [];
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      if (referenciasPrioridad.length === 0) {
+        referenciasPrioridad.push({pedido: item.pedido, saldoPedido: (item.saldoPedido || item.mastersProgramados)});
+      } else {
+        const index = referenciasPrioridad.findIndex((x) => x.pedido === item.pedido);
+        if (index === -1) {
+          referenciasPrioridad.push({pedido: item.pedido, saldoPedido: (item.saldoPedido || item.mastersProgramados)});
+        } else {
+          referenciasPrioridad[index].saldoPedido += (item.saldoPedido || item.mastersProgramados);
+        }
+      }
+    });
+    referenciasPrioridad.sort((a, b) => b.saldoPedido - a.saldoPedido);
+    
+    // CONSULTAR EN LA BASE QUE REFERENCIA USAR PARA EL MIX
+    this._service.getReferenciaMix(referenciasPrioridad, this.pedidoSelectedForPlanificar.codCliente).subscribe({
+      next: (data) => {
+        if (!data.Codigo) {
+          throw new Error(data.Description);
+        }
+        if (data.Dt.Table.length > 0) {
+          let dt: any = data.Dt.Table;
+          this.DataPedidosMix = data.Dt.Table1;
+          this.referenciaMix = dt[0].referencia;
+          const pedidoMix = this.DataPedidosMix.find((item) => item.descripcion === this.referenciaMix);
+          if (pedidoMix) {
+            this.pedidoSelectedForPlanificar.pedObservOrd = pedidoMix.pedObservOrd;
+          }
+        } else {
+          this.showAlert('','Las referencias de los pedidos seleccionados ya se encuentran en uso.', 'warning');
+        }
+      },
+      error: (error) => {
+        this.showAlert('','Error al cargar las referencias del mix: ' + error, 'error');
+      },
+      complete: () => {
+        this.loadingVisible = false;
+      }
+    });
+    this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalPlanificarEmbarque',
+    });
+  }
+
+
+
+  async onChangePalletsG1(value: any, rowData: any) {
+    const { id } = rowData;
+    value = this._utilService.validateNumberInt(value);
+    const indexR = this.pedidoSelectedForPlanificarDetalle.findIndex(x => x.id === id);
+    if (value > this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1 || value < 0 || isNaN(value)) {
+      this.showAlert('','El valor debe ser un número válido entre 0 y ' + this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1 + '.','warning');
+      value = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1;
+    }
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1tmp = value;
+    this.refreshGridPedidosPaisDetailByProduct(indexR);
+  }
+
+
+
+  async onChangePalletsG2(value: any, rowData: any) {
+    const { id } = rowData;
+    value = this._utilService.validateNumberInt(value);
+    const indexR = this.pedidoSelectedForPlanificarDetalle.findIndex(x => x.id === id);
+    if (value > this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2 || value < 0 || isNaN(value)) {
+      this.showAlert('','El valor debe ser un número válido entre 0 y ' + this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2 + '.','warning');
+      value = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2;
+    }
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2tmp = value;
+    this.refreshGridPedidosPaisDetailByProduct(indexR);
+  }
+
+
+
+  async onChangePalletsG3(value: any, rowData: any) {
+    const { id } = rowData;
+    value = this._utilService.validateNumberInt(value);
+    const indexR = this.pedidoSelectedForPlanificarDetalle.findIndex(x => x.id === id);
+    if (value > this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3 || value < 0 || isNaN(value)) {
+      this.showAlert('','El valor debe ser un número válido entre 0 y ' + this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3 + '.','warning');
+      value = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3;
+    }
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3tmp = value;
+    this.refreshGridPedidosPaisDetailByProduct(indexR);
+  }
+
+
+
+  async onChangePalletsG4(value: any, rowData: any) {
+    const { id } = rowData;
+    value = this._utilService.validateNumberInt(value);
+    const indexR = this.pedidoSelectedForPlanificarDetalle.findIndex(x => x.id === id);
+    if (value > this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4 || value < 0 || isNaN(value)) {
+      this.showAlert('','El valor debe ser un número válido entre 0 y ' + this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4 + '.','warning');
+      value = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4;
+    }
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4tmp = value;
+    this.refreshGridPedidosPaisDetailByProduct(indexR);
+  }
+
+
+
+  refreshGridPedidosPaisDetailByProduct (indexR: number) {
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsTotMix = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1tmp + 
+      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2tmp +
+      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3tmp +
+      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4tmp;
+    this.pedidoSelectedForPlanificarDetalle = [...this.pedidoSelectedForPlanificarDetalle];
+    this.totalPalletsPlanificar = 0;
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      this.totalPalletsPlanificar += item.palletsTotMix;
+    });
+  }
+  
+
+
+  async validarDatosPlaEmbarque() {
     if (this.pedidoSelectedForPlanificar === null) {
       this.showAlert('','Seleccione un pedido para planificar.','warning');
-      return false;
-    }
-    if (this.pedidoSelectedForPlanificar.plantaEmbarque === null || this.pedidoSelectedForPlanificar.plantaEmbarque === undefined) {
-      this.showAlert('','Seleccione una planta de embarque.','warning');
       return false;
     }
     if (this.pedidoSelectedForPlanificar.fechaPlanificacion === null || this.pedidoSelectedForPlanificar.fechaPlanificacion === undefined) {
@@ -408,62 +736,174 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       this.showAlert('','La fecha de planificación no puede ser menor a la fecha actual.','warning');
       return false;
     }
-    if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.maxFechaPlanificacion) {
-      this.showAlert('','La fecha de planificación no puede ser mayor a un mes.','warning');
+    if (!this.pedidoSelectedForPlanificar.plantaEmbarque) {
+      this.showAlert('','Seleccione una planta de embarque.','warning');
+      return false;
+    } else {
+      // si la planta de embarque es 8 (Bodega Comin) ó 18 (Bodega Refristore) se valida que el pedido tenga stock en esas bodegas 
+      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 8) {
+        const tieneStockComin = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockComin > 0);
+        if (!tieneStockComin) {
+          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          return resp;
+        }
+      }
+      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 18) {
+        const tieneStockOtrasBodegas = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockOtrasBodegas > 0);
+        if (!tieneStockOtrasBodegas) {
+          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          return resp;
+        }
+      }
+    }
+    if (this.pedidoSelectedForPlanificarDetalle.length === 0) {
+      this.showAlert('','No existen pedidos seleccionados para planificar.','warning');
       return false;
     }
-    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.pedidoSelectedForPlanificar.fecPedido) {
-    //   this.showAlert('','La fecha de planificación no puede ser menor a la fecha del pedido.','warning');
-    //   return false;
-    // }
-    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.pedidoSelectedForPlanificar.pedFechaEstimado) {
-    //   this.showAlert('','La fecha de planificación no puede ser menor a la fecha estimada del pedido.','warning');
-    //   return false;
-    // }
-    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.pedidoSelectedForPlanificar.fecPedido) {
-    //   this.showAlert('','La fecha de planificación no puede ser mayor a la fecha del pedido.','warning');
-    //   return false;
-    // }
-    // if (this.pedidoSelectedForPlanificar.fechaPlanificacion > this.pedidoSelectedForPlanificar.pedFechaEstimado) {
-    //   this.showAlert('','La fecha de planificación no puede ser mayor a la fecha estimada del pedido.','warning');
-    //   return false;
-    // }
+
+    // validar lote representativo si validaLoteRepresentativo = 1
+    if (this.pedidoSelectedForPlanificar.validaLoteRepresentativo === 1) {
+      if (!this.pedidoSelectedForPlanificar.loteRepresent) {
+        this.showAlert('','El pedido no tiene asignado lote representativo, por favor verifique.','warning');
+        return false;
+      }
+    }
+
+    if (this.pedidoSelectedForPlanificar.tipoEmbarque === 'M') {
+      if (!this.referenciaMix){
+        this.showAlert('','Seleccione una referencia para el mix.','warning');
+        return false;
+      }
+      // validar que todos los pedidos seleccionados tengan pallets disponibles (palletsTotMix) 
+      if (this.pedidoSelectedForPlanificarDetalle.some((item) => item.palletsTotMix <= 0)) {
+        this.showAlert('','Existen items que no cuentan con pallets disponibles, por favor verifique.','warning');
+        return false;
+      }
+      // Para Mix solo debe dejarme programar si está completo el saldo pedido. con los pallets que esten disponibles.
+      if (this.totalPalletsPlanificar != this.pedidoSelectedForPlanificar.numPallet) {
+        this.showAlert('',`El total de pallets planificados es ${this.totalPalletsPlanificar > this.pedidoSelectedForPlanificar.numPallet ? 'mayor' : 'menor'} al número de pallets que debe de tener el mix. Por favor verifique.`,'warning');
+        return false;
+      }
+
+    }
+    
+    if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 || this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0) {
+      let totalPalletsG1 = 0;
+      let totalPalletsG2 = 0;
+      this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+        totalPalletsG1 += item.palletsG1;
+        totalPalletsG2 += item.palletsG2;
+      });
+      if (this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0 && totalPalletsG1 < this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios) {
+        this.showAlert('','El cliente tiene parametrizado un mínimo de paletes con ausencia de vibrios: ' + this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios + '. Por favor verifique.','warning');
+        return false;
+      }
+      if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 && totalPalletsG2 > this.pedidoSelectedForPlanificar.paletsMaxSulfito) {
+        this.showAlert('','El cliente tiene parametrizado un máximo de palets con sulfito ' + this.pedidoSelectedForPlanificar.paletsMaxSulfito + '. Por favor verifique.','warning');
+        return false;
+      }
+    }
+    
+    return true;
   }
+
+
 
   async onClickGuardarPlaEmbarque() {
     this.loadingVisible = true;
-    if (!this.validarDatos()) {
+    let validacion = await this.validarDatosPlaEmbarque();
+    if (!validacion) {
       this.loadingVisible = false;
       return;
     }
-//    console.log(this.pedidoSelectedForPlanificar);
-    const data = {
-      fecPedido: new Date(this.pedidoSelectedForPlanificar.fecPedido),
-      pedido: this.pedidoSelectedForPlanificar.pedido,
+    let estado = 'PL'; // (Planificado)
+    // si todo el pedido está en 100% se cambia a 'PC' (Planificado Completado)
+    if (this.pedidoSelectedForPlanificarDetalle.every((item) => item.porcentaje === 100)) {
+      estado = 'PC'; // (Planificado Completado)
+    }
+    const data = {      
+      pedido: this.planificacionMix ? this.referenciaMix : this.pedidoSelectedForPlanificar.pedido,
       codCliente: this.pedidoSelectedForPlanificar.codCliente,
-      observacion: this.pedidoSelectedForPlanificar.observacion,
+      codPuertoDestino: this.pedidoSelectedForPlanificar.codPuertoDestino,
+      tipo: this.pedidoSelectedForPlanificar.tipoEmbarque, // (Individual / Mix)
       plantaEmbarque: this.pedidoSelectedForPlanificar.plantaEmbarque,
       fechaPlanificacion: this.pedidoSelectedForPlanificar.fechaPlanificacion,
       pedFechaEstimado: new Date(this.pedidoSelectedForPlanificar.pedFechaEstimado),
+      estado: estado,
+      observacion: this.pedidoSelectedForPlanificar.observacion,
+      referenciasMix: this.pedidoSelectedForPlanificar.referenciasMix || null,
+      detalle: this.pedidoSelectedForPlanificarDetalle.map((item: any) => {
+        return {
+          pedido: item.pedido,
+          codprod: item.codProducto,
+          codtalla: item.codTalla,
+          mPedido: this.pedidoSelectedForPlanificar.tipoEmbarque === 'M' ? (item.ctsXPallet * item.palletsTotMix) : item.saldoPedido,
+        };
+      }),
       userAud: localStorage.getItem(varUser),
     };
-    console.log(data);
-    await this._service.postPlanificacionEmbarque(data).subscribe((data) => {
-      this.loadingVisible = false;
-      if (data.Codigo) {
-        this.showAlert('','Registro guardado correctamente.','success');
-        // ejecutar el metodo updateSelectedMonthYear que está en el componente hijo FrmplanificacionhorarioComponent
-        if (this.horarioComponent) {
-          this.horarioComponent.updateSelectedMonthYear();
+    await this._service.postPlanificacionEmbarque(data).subscribe({
+      next: async (resp) => {
+        if (!resp.Codigo) {
+          throw new Error(resp.Description);
         }
-        // this.limpiarPedidoSelected();
+        if (this.pedidoSelectedForPlanificar.tipoEmbarque === 'M') {
+          // si es un mix, se sincroniza haciendo el breakdown de los pedidos seleccionados
+          // obtener el pedNumero de la referencia seleccionada para Mix this.referenciaMix
+          let pedNumero = this.DataPedidosMix.find((item) => item.descripcion === this.referenciaMix)?.codigo;
+          let dataSync = {
+            pedido: pedNumero,
+            observBreakDown: this.pedidoSelectedForPlanificar.pedObservOrd,
+            plantaEmb: this.pedidoSelectedForPlanificar.plantaEmbarque,
+            dataJson: this.pedidoSelectedForPlanificarDetalle.map((item: any) => {
+              return {
+                dpe_pedido: item.pedNumero,
+                dpe_sectab: item.dpe_sectab,
+                dpe_codprod: item.codProducto,
+                dpe_talla: item.codTalla,
+                dpe_masters: (item.ctsXPallet * item.palletsTotMix),
+              };
+            })
+          }
+          await this._service.postSincronizarPlanificacionBreakDown(dataSync, localStorage.getItem(varUser)).subscribe(data => {
+            if (data.Codigo) {
+              console.log('Sincronización con planificación de Exportaciones exitosa.(Breakdown Mix)');
+            } else {
+              throw new Error('Existió un error en la sincronización con la planificación de Exportaciones. \n' + data.Description);
+            }
+          });
+        }
+        else {
+          // sincronizar con planificacion de exportaciones
+          let dataSync = [{
+            Codigo: this.pedidoSelectedForPlanificar.pedNumero,
+            fechaestimada: formatDate(this.pedidoSelectedForPlanificar.fechaPlanificacion, 'yyyy-MM-dd', 'en-US'),
+          }];
+          await this._service.postSincronizarPlanificacionExportaciones(dataSync, localStorage.getItem(varUser)).subscribe(data => {
+            if (data.Codigo) {
+              console.log('Sincronización con planificación de Exportaciones exitosa.');
+            } else {
+              throw new Error('Existió un error en la sincronización con la planificación de Exportaciones. \n' + data.Description);
+            }
+          });
+        }
+        this.showAlert('','Registro guardado correctamente.','success');
+        // ejecutar el metodo updateSelectedMonth que está en el componente hijo FrmplanificacionhorarioComponent
+        if (this.horarioComponent) {
+          this.horarioComponent.updateSelectedMonth();
+        }
+        this.limpiarNuevo();
+        this.getPedidosPlanificacionEmbarque();
         this.modalReferenceItem.close();
-      } else {
-        this.showAlert('','Error al guardar el registro:' + data.Description ,'error');
+      },
+      error: (error) => {
+        this.showAlert('','Error al guardar el registro: ' + error ,'error');
+      },
+      complete: () => {
+        this.loadingVisible = false;
       }
     });
   }
-
 
 
   async showAlert(title, mensaje, tipo, event = null) {
@@ -487,5 +927,30 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     });
   }
   
+
+  async showAlertConfirm(title, mensaje, tipo) {
+    this.loadingVisible = false;
+
+    return new Promise(async (resolve) => {
+      const confirm = await
+        Swal.fire({
+          title: title,
+          //text: mensaje,
+          html: "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" + mensaje.replaceAll('\n','<br>').replaceAll('\\n','<br>') + "</div>",
+          icon: tipo,
+          showCancelButton: true,
+          confirmButtonColor: '#2196F3',
+          confirmButtonText: 'Aceptar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            return resolve(true);
+          } else {
+            return resolve(false);
+          }
+        });
+    });
+  }
+
+
 
 }

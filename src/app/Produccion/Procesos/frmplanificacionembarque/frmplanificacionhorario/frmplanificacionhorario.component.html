@@ -12,7 +12,7 @@
 <dx-context-menu #contextMenu
   [dataSource]="itemsMenuContext"
   [width]="200"
-  target="#idDetalle"
+  target=".idDetalle"
   (onItemClick)="itemMenuClick($event)"
 >
 </dx-context-menu>
@@ -29,7 +29,7 @@
             </div>
 
             <div class="col-lg-2 col-md-4 col-sm-8 col-8 text-center">
-                <span class="month-year-display">{{ selectedMonthYear }}</span>
+                <span class="month-year-display">{{ selectedMonth }}</span>
             </div>
 
             <div class="col-lg-1 col-md-1 col-sm-2 col-2">
@@ -39,7 +39,18 @@
             </div>
             
             <div class="col-lg-8 col-md-6 col-sm-12 col-12 pb-1" style="min-height: 32px;">
-                 <div id="search_container">
+                <dx-drop-down-button
+                    #FilterButton
+                    id="FilterButton"
+                    text="Filtrar por"
+                    icon="filter"
+                    class="btn-filter"
+                    [items]="listFilterState"
+                    (onItemClick)="onItemClickFiltrar($event)"
+                ></dx-drop-down-button>
+                
+                <div id="search_container">
+                    
                      <input id="search-filter" name="" type="text"
                         (keyup)="onChangeSearchFilter($event,txtSearch)" 
                         [(ngModel)]="txtSearch" placeholder="Texto a buscar">
@@ -72,31 +83,31 @@
             
             <!-- <thead>
                 <tr class="dayOfWeek">
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Martes</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Miércoles</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Jueves</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Viernes</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Sábado</th>
-                    <th tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Lunes</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Martes</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Miércoles</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Jueves</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Viernes</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Sábado</th>
+                    <th tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Domingo</th>
                 </tr>
             </thead> -->
             <tbody >
                 <tr class="header">
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Lunes</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Martes</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Miércoles</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Jueves</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Viernes</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Sábado</td>
-                    <td tabindex="0" (click)="Marcar($event, '')" (keydown)="MarcarCursor($event)">Domingo</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Lunes</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Martes</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Miércoles</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Jueves</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Viernes</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Sábado</td>
+                    <td tabindex="0" (click)="Marcar($event)" (keydown)="MarcarCursor($event)">Domingo</td>
                 </tr>
                 <ng-container *ngFor="let week of dataByWeek; let w = index" >
                     <tr class="dayOfWeek">
                         <td *ngFor="let day of week; trackBy: trackByDay" 
                             tabindex="0"
                             [ngClass]="day.disabled ? 'dayDisabled' : ''"
-                            (click)="Marcar($event, '')"
+                            (click)="Marcar($event)"
                             (keydown)="MarcarCursor($event)"
                             [attr.data-day]="day.day"
                             >
@@ -105,10 +116,12 @@
                     </tr>
                     <tr *ngFor="let f of [].constructor(week[0].maxRows); let i = index">
                         <td *ngFor="let day of week; let j = index; trackBy: trackByDay" 
-                            [id]="day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : ''"
+                            class="idDetalle"
+                            [id]="day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Referencia : ''"
                             [ngStyle]="{'height': '75px'}"
-                            [ngClass]="day.dataPedidos[i] !== undefined ? getClassEstado(day.dataPedidos[i].Estado, day.dataPedidos[i].emb_Documentacion, day.dataPedidos[i].emb_DocCaducado) : 'default-class'"
-                            (click)="Marcar($event, day.dataPedidos[i] !== undefined ? day.dataPedidos[i].Factura : '')"
+                            [ngClass]="day.dataPedidos[i] !== undefined ? getClassEstado(day.dataPedidos[i]) : 'default-class'"
+                            (click)="Marcar($event)"
+                            (contextmenu)="onRightClick($event, day.dataPedidos[i])"
                             (keydown)="MarcarCursor($event)"
                             tabindex="{{((w*i)+(7*i)+j)}}"
                             [attr.data-day]="day.day"
@@ -132,31 +145,225 @@
         <table>
             <tr>
                 <th colspan="2">
-                    <span class="titulo">{{param.Factura}}</span> 
+                    <span class="titulo">{{param.Referencia}}</span> 
                     {{ param.Cliente | slice:0:35}}
                 </th>
             </tr>
-            <!-- <tr>
-                <td class="titulo">REF:</td>
-                <td class="descri">{{param.Factura}}</td>
-            </tr>
-            <tr>
-                <td class="titulo">CLIENTE:</td>
-                <td class="descri">{{ param.Cliente | slice:0:35 }}</td>
-            </tr> -->
             <tr>
                 <td class="titulo">DESTINO:</td>
-                <td class="descri" title="{{param.pto_descripcion.length > 20 ? param.pto_descripcion : ''}}">{{param.pto_descripcion}}</td>
+                <td class="descri" title="{{param.puertoDescripcion.length > 20 ? param.puertoDescripcion : ''}}">{{param.puertoDescripcion}}</td>
+            </tr>
+            <tr *ngIf="param.tipoEmbarque === 'M'">
+                <td class="titulo">REF MIX:</td>
+                <td class="descri" style="white-space: break-spaces;">{{param.referenciasMix}}</td>
             </tr>
             <tr>
                 <td class="titulo">OBSERV:</td>
-                <td class="descri">{{param.emb_observaprogemb}}</td>
+                <td class="descri" style="white-space: break-spaces;">{{param.observacion}}</td>
             </tr>
         </table>
     </div>
 </ng-template>
 
 
+<ng-template #modalReplanificarEmbarque let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Replanificar Embarque 
+        </h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+
+                <div class="row">
+
+                    <label class="col-12 col-sm-4 col-md-4 col-lg-4 pl-0 mb-0 control-label">Referencia: </label>
+                    <div class="col-12 col-sm-7 col-md-7 col-lg-7 mb-2 pl-0">
+                        <span>{{planificacionEmbSelected.Referencia}}</span>
+                    </div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+                    
+                    <label class="col-12 col-sm-4 col-md-4 col-lg-4 pl-0 mb-0 control-label">Fec Embarque:</label>
+                    <div class="col-12 col-sm-7 col-md-7 col-lg-7 mb-2 pl-0">
+                        <dx-date-box 
+                            standalone="true" 
+                            [(ngModel)]="planificacionEmbSelected.fechaEmbarque" 
+                            name="fechaEmbarque"
+                            type="date" displayFormat="yyyy/MM/dd" 
+                            adaptivityEnabled="true" openOnFieldClick="true" 
+                            [width]="'100%'" 
+                            [min]="minFechaPlanificacion" 
+                            [max]="maxFechaPlanificacion">
+                        </dx-date-box>
+                    </div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <dx-button text="Guardar" icon="save" type="success" 
+            (onClick)="onClickGuardarReplanificacionEmbarque()">
+        </dx-button>
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>
 
 
-	
+
+
+<ng-template #modalPlanificacionEmbarque let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Embarque Planificado 
+            <span *ngIf="planificacionEmbViewDetail.cab.numeroEmbarque" class="" style="float: right;display: flex">
+                Ref: <span class="ml-2 mr-4" style="font-weight: bold;">{{planificacionEmbViewDetail.cab.Referencia }}</span>
+                Estado: <span class="ml-2" style="color: brown; font-weight: bold;">{{planificacionEmbViewDetail.cab.Estado }}</span>
+            </span>
+        </h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+
+                <div class="row">
+
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Cliente: </label>
+                    <div class="col-12 col-sm-8 col-md-10 col-lg-10 mb-2 pl-0">
+                        <span>{{planificacionEmbViewDetail.cab.Cliente }}</span>
+                    </div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Destino: </label>
+                    <div class="col-12 col-sm-8 col-md-10 col-lg-10 mb-2 pl-0">
+                        <span>{{planificacionEmbViewDetail.cab.puertoDescripcion }}</span>
+                    </div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Fec Embarque: </label>     
+                    <div class="col-12 col-sm-8 col-md-4 col-lg-4 mb-2 pl-0">
+                        <dx-date-box 
+                            standalone="true" 
+                            [(ngModel)]="planificacionEmbViewDetail.cab.fechaEmbarque" 
+                            name="fechaEmbarque"
+                            type="date" displayFormat="yyyy/MM/dd" 
+                            adaptivityEnabled="true" openOnFieldClick="true" 
+                            [width]="'100%'" 
+                            [disabled]="true"
+                            >
+                        </dx-date-box>
+                        <!-- [min]="minFechaPlanificacion" 
+                        [max]="maxFechaPlanificacion" -->
+                    </div>               
+
+                    <label *ngIf="planificacionEmbViewDetail.cab.origen == 'VAG'" class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Fec Estimada: </label>     
+                    <div *ngIf="planificacionEmbViewDetail.cab.origen == 'VAG'" class="col-12 col-sm-8 col-md-4 col-lg-4 mb-2 pl-0">
+                        <dx-date-box 
+                            standalone="true" 
+                            [(ngModel)]="planificacionEmbViewDetail.cab.fechaEstimada" 
+                            name="fechaEstimada"
+                            type="date" displayFormat="yyyy/MM/dd" 
+                            adaptivityEnabled="true" openOnFieldClick="true" 
+                            [width]="'100%'" 
+                            [disabled]="true"
+                            >
+                        </dx-date-box>
+                    </div>               
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+                    
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Planta Embarque:</label>
+                    <div class="col-12 col-sm-8 col-md-4 col-lg-4 mb-2 pl-0">
+                        <ng-select style="width: 100%" standalone="true" 
+                            [(ngModel)]="planificacionEmbViewDetail.cab.plantaEmbarque" 
+                            name="plantaEmbarque" 
+                            appendTo="body" 
+                            [searchable]="true" 
+                            [clearable]="false"
+                            [disabled]="true">
+                            <ng-option *ngFor="let data of plantasEmbarque" [value]="data.codigo">
+                                <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                    {{ data.descripcion }}
+                                </div>
+                            </ng-option>
+                        </ng-select>
+                    </div>   
+                    <div *ngIf="planificacionEmbViewDetail.cab.origen == 'VAG'" class="col-12 col-sm-12 col-md-6 col-lg-6 mb-2 pl-0">
+                        <div class="pt-1 sng-dbtn" style="float: right;display: flex">
+                            <label class="mr-2">Total Pedido: </label>
+                            <label class="mr-4" style="font-weight: bold;">{{planificacionEmbViewDetail.cab.mastersPedido | number:'1.0-2'}}</label>
+                            <label class="mr-2">Saldo: </label>
+                            <label class="mr-4" style="font-weight: bold;">{{planificacionEmbViewDetail.cab.saldoPedido | number:'1.0-2'}}</label>
+                            <div style="min-width: 50px;">
+                                <div class="progress-container">
+                                    <div class="progress-bar" [style.width.%]="planificacionEmbViewDetail.cab.porcentaje" [attr.aria-valuenow]="planificacionEmbViewDetail.cab.porcentaje">
+                                        {{ planificacionEmbViewDetail.cab.porcentaje }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                 
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+
+                    <label class="col-12 col-sm-4 col-md-2 col-lg-2 pl-0 mb-0 control-label">Observación:</label>
+                    <div class="col-12 col-sm-8 col-md-10 col-lg-10 mb-2 pl-0">
+                        <input type="text" class="form-control" standalone="true" 
+                            [(ngModel)]="planificacionEmbViewDetail.cab.observacion" 
+                            name="observacion" 
+                            [disabled]="true"/>
+                    </div>
+                    <div class="w-100 d-lg-none d-md-block"></div>
+                    <div class="w-100 d-lg-block"></div>
+
+                </div>
+
+                <div class="row">
+                    <dx-data-grid #GridPlanificacionEmbarqueDetail 
+                        id="GridPlanificacionEmbarqueDetail" 
+                        style="width: 100%; max-height: 85vh;" 
+                        [dataSource]="planificacionEmbViewDetail.det"
+                        keyExpr="pdet_id" 
+                        [showColumnHeaders]="true"
+                        [showColumnLines]="true" 
+                        [showRowLines]="true" 
+                        [showBorders]="true" 
+                        [columnAutoWidth]="true"
+                        (onInitialized)="onInitializedPlanificacionEmbarqueDetail(GridPlanificacionEmbarqueDetail)" 
+                    >
+                        <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
+                        <dxi-column dataField="pdet_pedido" caption="Factura" [width]="100"></dxi-column>
+                        <dxi-column dataField="producto" caption="Producto"></dxi-column>
+                        <dxi-column dataField="talla" caption="Talla Venta" [width]="100"></dxi-column>
+                        <dxi-column dataField="pdet_mpedido" caption="Masters" format="#,###.##" [allowFiltering]="false" [width]="100"></dxi-column>
+                        
+                        <!-- <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="60"
+                            cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'porcentajeTemplate'">
+                            <div class="progress-container">
+                                <div class="progress-bar" [style.width.%]="cell.value" [attr.aria-valuenow]="cell.value">
+                                    {{ cell.value }}%
+                                </div>
+                            </div>
+                        </div> -->
+                    </dx-data-grid>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <!-- <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardarPlaEmbarque()">
+        </dx-button> -->
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>
