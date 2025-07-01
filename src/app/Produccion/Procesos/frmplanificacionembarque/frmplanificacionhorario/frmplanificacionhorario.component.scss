@@ -45,18 +45,23 @@
 
 table.table-bordered {
     tr.header {
-        color: #366f00 !important;
+        // color: #366f00 !important;
+        color: #6ddf00 !important;
         font-size: 14px;
-        border-bottom: 2px solid #366f00;
+        // border-bottom: 2px solid #366f00;
+        border-bottom: 2px solid #6ddf00;
     }
     thead th, tr.header td {
-        color: #366f00 !important;
+        // color: #366f00 !important;
+        color: #6ddf00 !important;
         width: 200px;
     }
     thead th, tr.header td, tr.dayOfWeek td {
-        background-color: #9ebcdb; 
+        // background-color: #9ebcdb; 
+        background-color: #203e5b; 
         // border: 1px solid #9ebcdb !important;
-        color: black; 
+        // color: black; 
+        color: #e8e6e3; 
         font-weight: 600; 
         text-align: center; 
         padding: 6px;
@@ -66,7 +71,7 @@ table.table-bordered {
     thead tr.dayOfWeek, tr.header {
         position: sticky; /* Fija el encabezado */
         top: 0; /* Fija el encabezado en la parte superior */
-        z-index: 2; /* Asegura que el encabezado esté por encima del contenido */
+        z-index: 4; /* Asegura que el encabezado esté por encima del contenido */
     }
     tbody tr.dayOfWeek {
         position: sticky; /* Hace que el elemento se fije en su contenedor */
@@ -196,3 +201,7 @@ table.table-bordered {
     overflow: hidden;
     border-radius: 4px;
   }  
+
+#contenedor {
+  background: #fff; /* o el color que prefieras */
+}

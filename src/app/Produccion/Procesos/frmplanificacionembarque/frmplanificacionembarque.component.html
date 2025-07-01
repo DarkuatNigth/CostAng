@@ -79,8 +79,11 @@
                                                                 [filterValue]="['agrupacionCodigo', '=', pais.data.id]"
                                                                 (onInitialized)="onInitializedPedidosPaisDetail(GridPedidosPaisDetail)" 
                                                             >
-                                                                <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
-                                                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row>
+                                                                <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar...">
+                                                                </dxo-search-panel>
+                                                                <dxo-paging [pageSize]="20" [pageIndex]="0"></dxo-paging>
+                                                                <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
+                                                                <!-- <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row> -->
                                                                 <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
                                                                     cellTemplate="checkPlanificarTemplate" [visible]="pais.data.pais != 'MIXES'"> 
                                                                 </dxi-column>
@@ -96,7 +99,9 @@
                                                                 </dxi-column>
                                                                 <dxi-column dataField="paisCodigo" caption="paisCodigo" [visible]="false">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="cliente" caption="Cliente" [width]="100">
+                                                                <dxi-column dataField="cliente" caption="Cliente" [groupIndex]="pais.data.pais == 'OTROS' ? 0 : null" [visible]="pais.data.pais == 'OTROS'">
+                                                                </dxi-column>
+                                                                <dxi-column dataField="tallas" caption="Tallas" [groupIndex]="pais.data.pais == 'CHINA' ? 0 : null" [visible]="pais.data.pais == 'CHINA'">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="destino" caption="Destino" [width]="100">
                                                                 </dxi-column>

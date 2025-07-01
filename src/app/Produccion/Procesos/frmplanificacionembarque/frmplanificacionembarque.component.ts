@@ -180,153 +180,161 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         });
       }
     });
-    this.getPedidosPlanificacionEmbarque();
+    let responseSub = await this.getPedidosPlanificacionEmbarque();
   }
 
 
 
-  getPedidosPlanificacionEmbarque() {
+  async getPedidosPlanificacionEmbarque(): Promise<boolean> {
     this.loadingVisible = true;
-    this._service.getPedidosPlanificacionEmbarque().subscribe({
-      next: (data) => {
-        if (!data.Codigo) {
-          throw new Error(data.Description);
+    let response: Promise<boolean> = new Promise(async (resolve) => {
+      await this._service.getPedidosPlanificacionEmbarque().subscribe({
+        next: (data) => {
+          if (!data.Codigo) {
+            throw new Error(data.Description);
+          }
+          this.pedidosPorPais = data.Dt.Table.map((item: any) => {
+            return {
+              id: item.CODIGO,
+              pais: item.PAIS,
+              vendido: item.VENDIDO,
+              stock: item.STOCK,
+              bloqueado: item.BLOQUEADO,
+            };
+          });
+  
+          let idSec = 0;
+          this.pedidosPaisDetail = data.Dt.Table1.map((item: any) => {
+            return {
+              id: idSec++,
+              paisCodigo: item.paisCodigo,
+              pais: item.paisDescripcion?.trim() || '',
+              codPuertoDestino: item.puertoCodigo,
+              destino: item.destino?.trim() || '',
+              cliente: item.cliente?.trim() || '',
+              codCliente: item.cliCodigo,
+              pedNumero: item.pedNumero,
+              pedido: item.pedido,
+              fecPedido: item.fecpedido,
+              pedFechaEstimado: item.ped_fechaestimada,
+              mastersPedido: item.mastersPedidoOriginal,
+              saldoPedido: item.saldoPedido,
+              xFabricar: item.XFABRICAR,
+              stockSonga: item.stockS1 + item.stockS2,
+              stockSonga2: item.stockS2,
+              stockComin: item.stockComin,
+              stockOtrasBodegas: item.stockOtrasBodegas,
+              stockCongelado: item.stockCongelado,
+              bloqueado: item.cuarentenaBloqueado,
+  
+              etiquetadoChina: item.etiquetadoChina,
+              mastersProgramados: item.mastersProgramados,
+              cuarentenaSulfito: item.cuarentenaSulfito,
+              cuarentena: item.cuarentena,
+              cuarentenaBloqueado: item.cuarentenaBloqueado,
+              libPositiva: item.libPositiva,
+              analisisVB: item.analisisVB,
+              esperaResult: item.esperaResult,
+              bloqueadoUV: item.bloqueadoUV,
+              reetiquetadoChina: item.reetiquetadoChina,
+              reprocesoDescab: item.reprocesoDescab,
+              bloqueadoLT: item.bloqueadoLT,
+              stockTotal: item.stockTotal,
+              saldo: item.saldo,
+  
+              porcentaje: parseFloat(item.Porcentaje),
+              agrupacionCodigo: item.OrdenAgrupacion,
+              agrupacionDescri: item.Agrupacion,
+              tallas: item.tallas,
+            };
+          });
+  
+          let idSec2 = 0;
+          this.pedidosPaisDetailByProduct = data.Dt.Table2.map((item: any) => {
+            return {
+              id: idSec2++,
+              paisCodigo: item.paisCodigo,
+              pais: item.paisDescripcion?.trim() || '',
+              codPuertoDestino: item.puertoCodigo,
+              destino: item.destino?.trim() || '',
+              cliente: item.cliente?.trim() || '',
+              codCliente: item.cliCodigo,
+              pedNumero: item.pedNumero,
+              pedido: item.pedido,
+              dpe_sectab: item.dpe_sectab,
+              codProducto: item.codProd,
+              producto: item.producto,
+              codTalla: item.codTalla,
+              talla: item.talla?.trim() || '',
+              numPallet: item.numPallet,
+              pesoVta: item.pesoVta,
+              ctsXPallet: item.ctsXPallet,
+              fecPedido: item.fecpedido,
+              pedFechaEstimado: item.ped_fechaestimada,
+              mastersPedido: item.mastersPedidoOriginal,
+              saldoPedido: item.saldoPedido,
+              xFabricar: item.XFABRICAR,
+              stockSonga: item.stockS1 + item.stockS2,
+              stockSonga2: item.stockS2,
+              stockComin: item.stockComin,
+              stockOtrasBodegas: item.stockOtrasBodegas,
+              stockCongelado: item.stockCongelado,
+              bloqueado: item.cuarentenaBloqueado,
+              
+              etiquetadoChina: item.etiquetadoChina,
+              mastersProgramados: item.mastersProgramados,
+              cuarentenaSulfito: item.cuarentenaSulfito,
+              cuarentena: item.cuarentena,
+              cuarentenaBloqueado: item.cuarentenaBloqueado,
+              libPositiva: item.libPositiva,
+              analisisVB: item.analisisVB,
+              esperaResult: item.esperaResult,
+              bloqueadoUV: item.bloqueadoUV,
+              reetiquetadoChina: item.reetiquetadoChina,
+              reprocesoDescab: item.reprocesoDescab,
+              bloqueadoLT: item.bloqueadoLT,
+              stockTotal: item.stockTotal,
+              saldo: item.saldo,
+  
+              palletsG1: item.palletsG1,
+              palletsG1tmp: item.palletsG1,
+              palletsG2: item.palletsG2,
+              palletsG2tmp: item.palletsG2,
+              palletsG3: item.palletsG3,
+              palletsG3tmp: item.palletsG3,
+              palletsG4: item.palletsG4,
+              palletsG4tmp: item.palletsG4,
+              palletsTotMix: item.palletsG1 + item.palletsG2 + item.palletsG3 + item.palletsG4,
+              // palletsTotMix: item.palletsCompletos,
+              palletsCompletos: item.palletsCompletos,
+              palletsParciales: item.palletsParciales,
+              porcentaje: parseFloat(item.Porcentaje),
+              agrupacionCodigo: item.OrdenAgrupacion,
+              agrupacionDescri: item.Agrupacion,
+              paletsMaxSulfito: item.paletsMaxSulfito,
+              paletsMinAusenciaVibrios: item.paletsMinAusenciaVibrios,
+              pedObservOrd: item.pedObservOrd,
+              validaLoteRepresentativo: item.validaLoteRepresentativo,
+              loteRepresent: item.loteRepresent,
+              loteRepresentPallets: item.loteRepresentPallets,
+              checkPlanificar: false,
+            };
+          });
+  
+        }, 
+        error: (error) => {
+          this.showAlert('','Error al cargar los datos: ' + error, 'error');
+          this.loadingVisible = false;
+          return resolve(false);
+        },
+        complete: () => {
+          this.loadingVisible = false;
+          return resolve(true);
         }
-        this.pedidosPorPais = data.Dt.Table.map((item: any) => {
-          return {
-            id: item.CODIGO,
-            pais: item.PAIS,
-            vendido: item.VENDIDO,
-            stock: item.STOCK,
-            bloqueado: item.BLOQUEADO,
-          };
-        });
+      });
 
-        let idSec = 0;
-        this.pedidosPaisDetail = data.Dt.Table1.map((item: any) => {
-          return {
-            id: idSec++,
-            paisCodigo: item.paisCodigo,
-            pais: item.paisDescripcion?.trim() || '',
-            codPuertoDestino: item.puertoCodigo,
-            destino: item.destino?.trim() || '',
-            cliente: item.cliente?.trim() || '',
-            codCliente: item.cliCodigo,
-            pedNumero: item.pedNumero,
-            pedido: item.pedido,
-            fecPedido: item.fecpedido,
-            pedFechaEstimado: item.ped_fechaestimada,
-            mastersPedido: item.mastersPedidoOriginal,
-            saldoPedido: item.saldoPedido,
-            xFabricar: item.XFABRICAR,
-            stockSonga: item.stockS1 + item.stockS2,
-            stockSonga2: item.stockS2,
-            stockComin: item.stockComin,
-            stockOtrasBodegas: item.stockOtrasBodegas,
-            stockCongelado: item.stockCongelado,
-            bloqueado: item.cuarentenaBloqueado,
-
-            etiquetadoChina: item.etiquetadoChina,
-            mastersProgramados: item.mastersProgramados,
-            cuarentenaSulfito: item.cuarentenaSulfito,
-            cuarentena: item.cuarentena,
-            cuarentenaBloqueado: item.cuarentenaBloqueado,
-            libPositiva: item.libPositiva,
-            analisisVB: item.analisisVB,
-            esperaResult: item.esperaResult,
-            bloqueadoUV: item.bloqueadoUV,
-            reetiquetadoChina: item.reetiquetadoChina,
-            reprocesoDescab: item.reprocesoDescab,
-            bloqueadoLT: item.bloqueadoLT,
-            stockTotal: item.stockTotal,
-            saldo: item.saldo,
-
-            porcentaje: parseFloat(item.Porcentaje),
-            agrupacionCodigo: item.OrdenAgrupacion,
-            agrupacionDescri: item.Agrupacion,
-          };
-        });
-
-        let idSec2 = 0;
-        this.pedidosPaisDetailByProduct = data.Dt.Table2.map((item: any) => {
-          return {
-            id: idSec2++,
-            paisCodigo: item.paisCodigo,
-            pais: item.paisDescripcion?.trim() || '',
-            codPuertoDestino: item.puertoCodigo,
-            destino: item.destino?.trim() || '',
-            cliente: item.cliente?.trim() || '',
-            codCliente: item.cliCodigo,
-            pedNumero: item.pedNumero,
-            pedido: item.pedido,
-            dpe_sectab: item.dpe_sectab,
-            codProducto: item.codProd,
-            producto: item.producto,
-            codTalla: item.codTalla,
-            talla: item.talla?.trim() || '',
-            numPallet: item.numPallet,
-            pesoVta: item.pesoVta,
-            ctsXPallet: item.ctsXPallet,
-            fecPedido: item.fecpedido,
-            pedFechaEstimado: item.ped_fechaestimada,
-            mastersPedido: item.mastersPedidoOriginal,
-            saldoPedido: item.saldoPedido,
-            xFabricar: item.XFABRICAR,
-            stockSonga: item.stockS1 + item.stockS2,
-            stockSonga2: item.stockS2,
-            stockComin: item.stockComin,
-            stockOtrasBodegas: item.stockOtrasBodegas,
-            stockCongelado: item.stockCongelado,
-            bloqueado: item.cuarentenaBloqueado,
-            
-            etiquetadoChina: item.etiquetadoChina,
-            mastersProgramados: item.mastersProgramados,
-            cuarentenaSulfito: item.cuarentenaSulfito,
-            cuarentena: item.cuarentena,
-            cuarentenaBloqueado: item.cuarentenaBloqueado,
-            libPositiva: item.libPositiva,
-            analisisVB: item.analisisVB,
-            esperaResult: item.esperaResult,
-            bloqueadoUV: item.bloqueadoUV,
-            reetiquetadoChina: item.reetiquetadoChina,
-            reprocesoDescab: item.reprocesoDescab,
-            bloqueadoLT: item.bloqueadoLT,
-            stockTotal: item.stockTotal,
-            saldo: item.saldo,
-
-            palletsG1: item.palletsG1,
-            palletsG1tmp: item.palletsG1,
-            palletsG2: item.palletsG2,
-            palletsG2tmp: item.palletsG2,
-            palletsG3: item.palletsG3,
-            palletsG3tmp: item.palletsG3,
-            palletsG4: item.palletsG4,
-            palletsG4tmp: item.palletsG4,
-            palletsTotMix: item.palletsG1 + item.palletsG2 + item.palletsG3 + item.palletsG4,
-            // palletsTotMix: item.palletsCompletos,
-            palletsCompletos: item.palletsCompletos,
-            palletsParciales: item.palletsParciales,
-            porcentaje: parseFloat(item.Porcentaje),
-            agrupacionCodigo: item.OrdenAgrupacion,
-            agrupacionDescri: item.Agrupacion,
-            paletsMaxSulfito: item.paletsMaxSulfito,
-            paletsMinAusenciaVibrios: item.paletsMinAusenciaVibrios,
-            pedObservOrd: item.pedObservOrd,
-            validaLoteRepresentativo: item.validaLoteRepresentativo,
-            loteRepresent: item.loteRepresent,
-            loteRepresentPallets: item.loteRepresentPallets,
-            checkPlanificar: false,
-          };
-        });
-
-      }, 
-      error: (error) => {
-        this.showAlert('','Error al cargar los datos: ' + error, 'error');
-      },
-      complete: () => {
-        this.loadingVisible = false;
-      }
     });
+    return response;
   }
 
 
@@ -741,6 +749,13 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       return false;
     } else {
       // si la planta de embarque es 8 (Bodega Comin) ó 18 (Bodega Refristore) se valida que el pedido tenga stock en esas bodegas 
+      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 1) {
+        const tieneStockSonga = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockSonga > 0);
+        if (!tieneStockSonga) {
+          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          return resp;
+        }
+      }
       if (this.pedidoSelectedForPlanificar.plantaEmbarque == 8) {
         const tieneStockComin = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockComin > 0);
         if (!tieneStockComin) {
@@ -795,11 +810,11 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         totalPalletsG2 += item.palletsG2;
       });
       if (this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0 && totalPalletsG1 < this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios) {
-        this.showAlert('','El cliente tiene parametrizado un mínimo de paletes con ausencia de vibrios: ' + this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios + '. Por favor verifique.','warning');
+        this.showAlert('',`El cliente tiene parametrizado un mínimo de (${this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios}) pallets con ausencia de vibrios. Por favor verifique.`,'warning');
         return false;
       }
       if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 && totalPalletsG2 > this.pedidoSelectedForPlanificar.paletsMaxSulfito) {
-        this.showAlert('','El cliente tiene parametrizado un máximo de palets con sulfito ' + this.pedidoSelectedForPlanificar.paletsMaxSulfito + '. Por favor verifique.','warning');
+        this.showAlert('',`El cliente tiene parametrizado un máximo de (${this.pedidoSelectedForPlanificar.paletsMaxSulfito}) pallets con sulfito. Por favor verifique.`,'warning');
         return false;
       }
     }
