@@ -8,7 +8,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FrmenvioxmlnatComponent } from './frmenvioxmlnat.component';
 
 
-
 @NgModule({
   declarations: [
     FrmenvioxmlnatComponent
@@ -21,7 +20,6 @@ import { FrmenvioxmlnatComponent } from './frmenvioxmlnat.component';
         DxDataGridModule,
         DxDateBoxModule,
         DxLoadPanelModule,
-        DxTabPanelModule,
         DxButtonGroupModule,
         DxDropDownButtonModule,
         DxPopupModule,
@@ -31,10 +29,9 @@ import { FrmenvioxmlnatComponent } from './frmenvioxmlnat.component';
         DxFormModule,
         DxCheckBoxModule,
         DxRadioGroupModule,
-        DxFileUploaderModule,
     
         RouterModule.forChild([
-          { path: 'ext-envioXml', component: FrmenvioxmlnatComponent },
+          { path: 'ext-envioXml', canActivate: [AuthGuard], component: FrmenvioxmlnatComponent },
         ]) 
   ]
 })

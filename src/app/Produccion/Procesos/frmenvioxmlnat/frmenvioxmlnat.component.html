@@ -29,29 +29,6 @@
         <div class="card-header"> {{title}} </div>
         <div class="card-body">
 
-            <!-- add constrol or controls to select 2 dates, fecha desde and fecha hasta --> 
-            <!-- <div class="form-group row" id="row-fechas">
-                <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 date-selection mb-2">
-                    <label class="col-12 control-label">Fecha Desde:</label>
-                    <div class="col-12 pb-1" style="display: flex">
-                        <dx-date-box [(ngModel)]="fechaDesde" type="date" displayFormat="yyyy/MM/dd"
-                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaDesde"
-                            (onValueChanged)="onChangeFechaDesde($event)">
-                        </dx-date-box>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 date-selection mb-2">
-                    <label class="col-12 control-label">Fecha Hasta:</label>
-                    <div class="col-12 pb-1" style="display: flex">
-                        <dx-date-box [(ngModel)]="fechaHasta" type="date" displayFormat="yyyy/MM/dd"
-                            adaptivityEnabled="true" openOnFieldClick="true" [width]="'100%'" name="fechaHasta"
-                            (onValueChanged)="onChangeFechaHasta($event)">
-                        </dx-date-box>
-                    </div>
-                </div>
-            </div> -->
-
             <div class="form-group row" id="row-fechas">
                 <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
                     Fecha Desde:
@@ -91,8 +68,6 @@
         </div>
     </div>
 
-
-    <!-- add a grid control with columns lote, fecha, proveedor, piscina. the data will load from data in database -->
     <div class="grid-container">
         <dx-data-grid #gridLotes
             id="gridLotes"
@@ -107,12 +82,8 @@
             (onInitialized)="onInitializedGridLotes(gridLotes)"
             [columnFixing]="{ enabled: true }"
         >
-            
-            <!-- Enable row selection with checkboxes -->
             <dxo-selection mode="multiple" showCheckBoxesMode="always"></dxo-selection>
-            <!-- <dxo-column-chooser [enabled]="true" width="35"></dxo-column-chooser> -->
             <dxo-filter-row [visible]="true" [applyFilter]="true"></dxo-filter-row>
-            <!-- <dxo-header-filter [visible]="true"></dxo-header-filter> -->
             
             <dxi-column dataField="rlo_numero" caption="Lote" width="70" selectedFilterOperation="contains" [fixed]="true" [fixedPosition]="'left'"></dxi-column>
             <dxi-column dataField="clp_nomcom" caption="Proveedor" width="50%"  selectedFilterOperation="contains"></dxi-column>
@@ -122,19 +93,3 @@
     </div>
 
 </div>
-
-
-
-<!-- add a button to send the data to the server -->
-<!-- <div class="button-container">
-  <button (click)="sendData()" class="send-button">Enviar Datos</button>
-</div> -->
-
-<!-- add a message to show the result of the operation -->
-<!-- <div class="message-container">
-  <p *ngIf="message" class="result-message">{{ message }}</p>
-</div> -->
-
-
-
-
