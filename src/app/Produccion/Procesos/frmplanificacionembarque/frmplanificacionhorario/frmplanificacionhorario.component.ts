@@ -419,24 +419,6 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   }
   
 
-  exportExcel() {
-    this._service.callApiReportePlanificacionEmbarque(moment(this.desde).format("yyyy/MM/DD"), moment(this.hasta).format("yyyy/MM/DD")).subscribe(async (rr) => {
-      let resp = JSON.parse(JSON.parse(JSON.stringify(rr)));
-      if (resp.Codigo) {
-          var byteCharacters = atob(resp.doc);
-          var byteNumbers = new Array(byteCharacters.length);
-          for (var i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          var byteArray = new Uint8Array(byteNumbers);
-          saveAs(new Blob([byteArray], { type: 'application/octet-stream' }), 'PlanificacionEmb.xlsx');
-          this.loadingVisible2 = false;
-      } else {
-        await this.showAlert('', resp.Description, 'error');
-      }
-    });
-  }
-
 
   onClickGuardarReplanificacionEmbarque() {
     if (!this.planificacionEmbSelected) {
@@ -446,6 +428,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     let dataUpdate: IUpdatePlanificacionEmbarque = {
       numeroEmbarque: this.planificacionEmbSelected.numeroEmbarque,
       fechaEmbarque: this.planificacionEmbSelected.fechaEmbarque,
+      plantaEmbarque: this.planificacionEmbSelected.plantaEmbarque,
+      observacion: this.planificacionEmbSelected.observacion,
       tipoUpdate: 'replanificar',
       userAud: localStorage.getItem(varUser),
     };
@@ -553,11 +537,11 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
               plantaEmb: this.planificacionEmbSelected.plantaEmbarque,
               dataJson: this.planificacionEmbViewDetail.det.map((item: any) => {
                 return {
-                  dpe_pedido: item.dpe_pedido,
+                  dpe_pedido: item.pedNumero,
                   dpe_sectab: item.dpe_sectab,
-                  dpe_codprod: item.pdet_codprod,
-                  dpe_talla: item.pdet_codtalla,
-                  dpe_masters: item.pdet_mpedido,
+                  dpe_codprod: item.codProd,
+                  dpe_talla: item.codTalla,
+                  dpe_masters: item.mPedido,
                 };
               })
             }

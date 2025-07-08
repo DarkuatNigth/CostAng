@@ -85,11 +85,12 @@
                                                                 <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
                                                                 <!-- <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row> -->
                                                                 <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
-                                                                    cellTemplate="checkPlanificarTemplate" [visible]="pais.data.pais != 'MIXES'"> 
+                                                                    cellTemplate="checkPlanificarTemplate" [visible]="pais.data.pais != 'MIXES'" > 
                                                                 </dxi-column>
-                                                                <div *dxTemplate="let cell of 'checkPlanificarTemplate'">
+                                                                <div *dxTemplate="let cell of 'checkPlanificarTemplate'" [class]="cell.data.referenciaPlanificada == 'S' ? 'rowDisabled' : ''">
                                                                     <div>
                                                                         <input type="checkbox" class="cssCheckBox" 
+                                                                            [disabled]="cell.data.referenciaPlanificada == 'S'"
                                                                             (change)="onChangeGridCheckPlanificar(cell.value, cell)"
                                                                             [(ngModel)]="cell.value" 
                                                                             style="text-align: right; " />
@@ -99,7 +100,7 @@
                                                                 </dxi-column>
                                                                 <dxi-column dataField="paisCodigo" caption="paisCodigo" [visible]="false">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="cliente" caption="Cliente" [groupIndex]="pais.data.pais == 'OTROS' ? 0 : null" [visible]="pais.data.pais == 'OTROS'">
+                                                                <dxi-column dataField="cliente" caption="Cliente" [groupIndex]="pais.data.pais == 'OTROS' ? 0 : null" [width]="100">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="tallas" caption="Tallas" [groupIndex]="pais.data.pais == 'CHINA' ? 0 : null" [visible]="pais.data.pais == 'CHINA'">
                                                                 </dxi-column>
@@ -192,9 +193,10 @@
                                                                             <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
                                                                                 cellTemplate="checkPlanificarTemplate2" > 
                                                                             </dxi-column>
-                                                                            <div *dxTemplate="let cell of 'checkPlanificarTemplate2'">
+                                                                            <div *dxTemplate="let cell of 'checkPlanificarTemplate2'" [class]="cell.data.itemPlanificado == 'S' ? 'rowDisabled' : ''">
                                                                                 <div>
                                                                                     <input type="checkbox" class="cssCheckBox" 
+                                                                                        [disabled]="cell.data.itemPlanificado == 'S'"
                                                                                         (change)="onChangeGridCheckPlanificarMix(cell.value, cell)"
                                                                                         [(ngModel)]="cell.value" 
                                                                                         style="text-align: right; " />
@@ -605,7 +607,8 @@
     <div class="modal-footer">
         <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardarPlaEmbarque()">
         </dx-button>
-        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="onClickCerrarModalPlaEmbarque();modal.close('0');">
+            <!-- modal.close('0') -->
         </dx-button>
     </div>
 </ng-template>

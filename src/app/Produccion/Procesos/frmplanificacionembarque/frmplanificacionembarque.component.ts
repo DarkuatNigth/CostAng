@@ -11,7 +11,7 @@ import { varUser } from 'src/app/config/url.servicios';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { ActivatedRoute, Router } from '@angular/router';
 import { parseNumber } from 'devextreme/localization';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FrmplanificacionembarqueService } from './frmplanificacionembarque.service';
 import { FrmplanificacionhorarioComponent } from './frmplanificacionhorario/frmplanificacionhorario.component';
 
@@ -37,10 +37,6 @@ export interface PedidosPaisDetail {
   codPuertoDestino: number;
   pedNumero: number;
   pedido: string;
-  // codProducto: string;
-  // producto: string;
-  // codTalla: number;
-  // talla: string;
   fecPedido: Date;
   pedFechaEstimado: Date;
   mastersPedido: number;
@@ -121,8 +117,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
   currentFilter = this.applyFilterTypes[0].key;
   currentFilter2 = this.applyFilterTypes[0].key;
-  modalReferenceItem: any;
-
+  modalReferenceItem: NgbModalRef | undefined;
   referenciaMix = '';
   DataPedidosMix:any[] = [];
 
@@ -246,6 +241,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               agrupacionCodigo: item.OrdenAgrupacion,
               agrupacionDescri: item.Agrupacion,
               tallas: item.tallas,
+              referenciaPlanificada: item.referenciaPlanificada,
             };
           });
   
@@ -318,6 +314,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               loteRepresent: item.loteRepresent,
               loteRepresentPallets: item.loteRepresentPallets,
               checkPlanificar: false,
+              itemPlanificado: item.itemPlanificado,
+
             };
           });
   
@@ -494,6 +492,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
 
   async onChangeGridCheckPlanificar(value: any, data: any) {
+    this.loadingVisible = true;
     this.planificacionMix = false;
     this.pedidosPaisDetail.find((x) => x.id == data.data.id).checkPlanificar = value;
     if (value) {
@@ -526,7 +525,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         windowClass: 'cssModalPlanificarEmbarque',
       });
     }
-    this.GridPedidosPaisDetail.instance.refresh();
+    await this.GridPedidosPaisDetail.instance.refresh();
+    this.loadingVisible = false;
   }
   
 
@@ -542,12 +542,13 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       });      
     }
     this.disabledGenerarMix = !this.pedidosPaisDetailByProduct.some((item) => item.checkPlanificar);
-    this.GridPedidosPaisDetailByProduct.instance.refresh();
+    await this.GridPedidosPaisDetailByProduct.instance.refresh();
   }
   
 
   
   async onChangeGridCheckPlanificarMix2(value: any, data: any) {
+    this.loadingVisible = true;
     this.pedidosPaisDetailByProduct.find((x) => x.id == data.data.id).checkPlanificar = value;
     this.GridPedidosPaisDetailByProduct.instance.refresh();
     const pedidosSeleccionadosMix: any[] = this.pedidosPaisDetailByProduct.filter((x) => x.checkPlanificar);
@@ -556,6 +557,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
       this.totalPalletsPlanificar += item.palletsTotMix;
     });
+    this.loadingVisible = false;
   }
 
 
@@ -612,47 +614,58 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       this.totalStockPlanificar += item.stockTotal;
       this.totalPalletsPlanificar += item.palletsTotMix;
     });
-    // para obtener la referencia del mix, debo de darle prioridad a la referencia con mayor saldoPedido.
-    let referenciasPrioridad: any[] = [];
-    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
-      if (referenciasPrioridad.length === 0) {
-        referenciasPrioridad.push({pedido: item.pedido, saldoPedido: (item.saldoPedido || item.mastersProgramados)});
-      } else {
-        const index = referenciasPrioridad.findIndex((x) => x.pedido === item.pedido);
-        if (index === -1) {
+
+    // si solo se selecciona una referencia, entonces no se debe de generar el mix. se generará una planificacion normal.
+    let nRef = this.pedidoSelectedForPlanificar.referenciasMix.split(';').length;
+    if (nRef === 1) {
+      this.planificacionMix = false;
+      this.pedidoSelectedForPlanificar.tipoEmbarque = 'I'; // tipo de embarque Individual
+      this.pedidoSelectedForPlanificar.referenciasMix = '';
+      this.loadingVisible = false;
+    } else {
+      // para obtener la referencia del mix, debo de darle prioridad a la referencia con mayor saldoPedido.
+      let referenciasPrioridad: any[] = [];
+      this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+        if (referenciasPrioridad.length === 0) {
           referenciasPrioridad.push({pedido: item.pedido, saldoPedido: (item.saldoPedido || item.mastersProgramados)});
         } else {
-          referenciasPrioridad[index].saldoPedido += (item.saldoPedido || item.mastersProgramados);
-        }
-      }
-    });
-    referenciasPrioridad.sort((a, b) => b.saldoPedido - a.saldoPedido);
-    
-    // CONSULTAR EN LA BASE QUE REFERENCIA USAR PARA EL MIX
-    this._service.getReferenciaMix(referenciasPrioridad, this.pedidoSelectedForPlanificar.codCliente).subscribe({
-      next: (data) => {
-        if (!data.Codigo) {
-          throw new Error(data.Description);
-        }
-        if (data.Dt.Table.length > 0) {
-          let dt: any = data.Dt.Table;
-          this.DataPedidosMix = data.Dt.Table1;
-          this.referenciaMix = dt[0].referencia;
-          const pedidoMix = this.DataPedidosMix.find((item) => item.descripcion === this.referenciaMix);
-          if (pedidoMix) {
-            this.pedidoSelectedForPlanificar.pedObservOrd = pedidoMix.pedObservOrd;
+          const index = referenciasPrioridad.findIndex((x) => x.pedido === item.pedido);
+          if (index === -1) {
+            referenciasPrioridad.push({pedido: item.pedido, saldoPedido: (item.saldoPedido || item.mastersProgramados)});
+          } else {
+            referenciasPrioridad[index].saldoPedido += (item.saldoPedido || item.mastersProgramados);
           }
-        } else {
-          this.showAlert('','Las referencias de los pedidos seleccionados ya se encuentran en uso.', 'warning');
         }
-      },
-      error: (error) => {
-        this.showAlert('','Error al cargar las referencias del mix: ' + error, 'error');
-      },
-      complete: () => {
-        this.loadingVisible = false;
-      }
-    });
+      });
+      referenciasPrioridad.sort((a, b) => b.saldoPedido - a.saldoPedido);
+
+      // CONSULTAR EN LA BASE QUE REFERENCIA USAR PARA EL MIX
+      this._service.getReferenciaMix(referenciasPrioridad, this.pedidoSelectedForPlanificar.codCliente).subscribe({
+        next: (data) => {
+          if (!data.Codigo) {
+            throw new Error(data.Description);
+          }
+          if (data.Dt.Table.length > 0) {
+            let dt: any = data.Dt.Table;
+            this.DataPedidosMix = data.Dt.Table1;
+            this.referenciaMix = dt[0].referencia;
+            const pedidoMix = this.DataPedidosMix.find((item) => item.descripcion === this.referenciaMix);
+            if (pedidoMix) {
+              this.pedidoSelectedForPlanificar.pedObservOrd = pedidoMix.pedObservOrd;
+            }
+          } else {
+            this.showAlert('','Las referencias de los pedidos seleccionados ya se encuentran en uso.', 'warning');
+          }
+        },
+        error: (error) => {
+          this.showAlert('','Error al cargar las referencias del mix: ' + error, 'error');
+        },
+        complete: () => {
+          this.loadingVisible = false;
+        }
+      });
+    }
+
     this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
       ariaLabelledBy: 'modal-basic-title',
       windowClass: 'cssModalPlanificarEmbarque',
@@ -736,6 +749,10 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       this.showAlert('','Seleccione un pedido para planificar.','warning');
       return false;
     }
+    if (this.pedidoSelectedForPlanificarDetalle.length === 0) {
+      this.showAlert('','No existen pedidos seleccionados para planificar.','warning');
+      return false;
+    }
     if (this.pedidoSelectedForPlanificar.fechaPlanificacion === null || this.pedidoSelectedForPlanificar.fechaPlanificacion === undefined) {
       this.showAlert('','Seleccione una fecha de planificación.','warning');
       return false;
@@ -753,27 +770,29 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         const tieneStockSonga = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockSonga > 0);
         if (!tieneStockSonga) {
           let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
-          return resp;
+          if (!resp) {
+            return resp;
+          }
         }
       }
       if (this.pedidoSelectedForPlanificar.plantaEmbarque == 8) {
         const tieneStockComin = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockComin > 0);
         if (!tieneStockComin) {
           let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
-          return resp;
+          if (!resp) {
+            return resp;
+          }
         }
       }
       if (this.pedidoSelectedForPlanificar.plantaEmbarque == 18) {
         const tieneStockOtrasBodegas = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockOtrasBodegas > 0);
         if (!tieneStockOtrasBodegas) {
           let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
-          return resp;
+          if (!resp) {
+            return resp;
+          }
         }
       }
-    }
-    if (this.pedidoSelectedForPlanificarDetalle.length === 0) {
-      this.showAlert('','No existen pedidos seleccionados para planificar.','warning');
-      return false;
     }
 
     // validar lote representativo si validaLoteRepresentativo = 1
@@ -794,12 +813,22 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         this.showAlert('','Existen items que no cuentan con pallets disponibles, por favor verifique.','warning');
         return false;
       }
-      // Para Mix solo debe dejarme programar si está completo el saldo pedido. con los pallets que esten disponibles.
-      if (this.totalPalletsPlanificar != this.pedidoSelectedForPlanificar.numPallet) {
-        this.showAlert('',`El total de pallets planificados es ${this.totalPalletsPlanificar > this.pedidoSelectedForPlanificar.numPallet ? 'mayor' : 'menor'} al número de pallets que debe de tener el mix. Por favor verifique.`,'warning');
-        return false;
+      // validar que el total de pallets no sea mayor al saldo pedido (item.ctsXPallet * item.palletsTotMix) > item.saldoPedido
+      for (let item of this.pedidoSelectedForPlanificarDetalle) {
+        if ((item.ctsXPallet * item.palletsTotMix) > item.saldoPedido) {
+          this.showAlert('Advertencia',`El total de pallets planificados para el item (${item.codProducto}) es mayor al saldo pedido, por favor verifique.`,'warning');
+          return false;
+        }
       }
 
+
+      // Para Mix solo debe dejarme programar si está completo el saldo pedido. con los pallets que esten disponibles.
+      if (this.totalPalletsPlanificar != this.pedidoSelectedForPlanificar.numPallet) {
+        let resp = await this.showAlertConfirm('Advertencia',`El total de pallets planificados es ${this.totalPalletsPlanificar > this.pedidoSelectedForPlanificar.numPallet ? 'mayor' : 'menor'} al número de pallets que debe de tener el mix. ¿Está seguro de continuar?`,'warning');
+        if (!resp) {
+          return resp;
+        }
+      }
     }
     
     if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 || this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0) {
@@ -810,12 +839,16 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         totalPalletsG2 += item.palletsG2;
       });
       if (this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0 && totalPalletsG1 < this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios) {
-        this.showAlert('',`El cliente tiene parametrizado un mínimo de (${this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios}) pallets con ausencia de vibrios. Por favor verifique.`,'warning');
-        return false;
+        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un mínimo de (${this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios}) pallets con ausencia de vibrios. ¿Está seguro de continuar?.`,'warning');
+        if (!resp) {
+          return resp;
+        }
       }
       if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 && totalPalletsG2 > this.pedidoSelectedForPlanificar.paletsMaxSulfito) {
-        this.showAlert('',`El cliente tiene parametrizado un máximo de (${this.pedidoSelectedForPlanificar.paletsMaxSulfito}) pallets con sulfito. Por favor verifique.`,'warning');
-        return false;
+        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un máximo de (${this.pedidoSelectedForPlanificar.paletsMaxSulfito}) pallets con sulfito. ¿Está seguro de continuar?.`,'warning');
+        if (!resp) {
+          return resp;
+        }
       }
     }
     
@@ -832,8 +865,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       return;
     }
     let estado = 'PL'; // (Planificado)
-    // si todo el pedido está en 100% se cambia a 'PC' (Planificado Completado)
-    if (this.pedidoSelectedForPlanificarDetalle.every((item) => item.porcentaje === 100)) {
+    // si todo el pedido está en 100% se cambia a 'PC' (Planificado Completado), y libPositiva = 0
+    if (this.pedidoSelectedForPlanificarDetalle.every((item) => (item.porcentaje === 100 && item.libPositiva === 0))) {
       estado = 'PC'; // (Planificado Completado)
     }
     const data = {      
@@ -864,7 +897,6 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         }
         if (this.pedidoSelectedForPlanificar.tipoEmbarque === 'M') {
           // si es un mix, se sincroniza haciendo el breakdown de los pedidos seleccionados
-          // obtener el pedNumero de la referencia seleccionada para Mix this.referenciaMix
           let pedNumero = this.DataPedidosMix.find((item) => item.descripcion === this.referenciaMix)?.codigo;
           let dataSync = {
             pedido: pedNumero,
@@ -880,13 +912,14 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               };
             })
           }
-          await this._service.postSincronizarPlanificacionBreakDown(dataSync, localStorage.getItem(varUser)).subscribe(data => {
-            if (data.Codigo) {
-              console.log('Sincronización con planificación de Exportaciones exitosa.(Breakdown Mix)');
-            } else {
-              throw new Error('Existió un error en la sincronización con la planificación de Exportaciones. \n' + data.Description);
-            }
-          });
+          // TODO: No se generará el breakdown 
+          // await this._service.postSincronizarPlanificacionBreakDown(dataSync, localStorage.getItem(varUser)).subscribe(data => {
+          //   if (data.Codigo) {
+          //     console.log('Sincronización con planificación de Exportaciones exitosa.(Breakdown Mix)');
+          //   } else {
+          //     throw new Error('Existió un error en la sincronización con la planificación de Exportaciones. \n' + data.Description);
+          //   }
+          // });
         }
         else {
           // sincronizar con planificacion de exportaciones
@@ -902,6 +935,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
             }
           });
         }
+
         this.showAlert('','Registro guardado correctamente.','success');
         // ejecutar el metodo updateSelectedMonth que está en el componente hijo FrmplanificacionhorarioComponent
         if (this.horarioComponent) {
@@ -918,6 +952,13 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         this.loadingVisible = false;
       }
     });
+  }
+
+
+  onClickCerrarModalPlaEmbarque() {
+    if (this.pedidoSelectedForPlanificar !== null) {
+      this.pedidosPaisDetail.find((x) => x.id == this.pedidoSelectedForPlanificar.id).checkPlanificar = false;
+    }
   }
 
 
