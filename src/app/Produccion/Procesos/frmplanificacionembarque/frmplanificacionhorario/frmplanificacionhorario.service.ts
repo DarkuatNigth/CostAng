@@ -16,6 +16,8 @@ const itemsMenu = [
 export interface IUpdatePlanificacionEmbarque {
   numeroEmbarque: number, 
   fechaEmbarque?: Date, 
+  plantaEmbarque?: number,
+  observacion?: string,
   tipoUpdate: string,
   userAud: string, 
 }
@@ -65,6 +67,8 @@ export class FrmplanificacionhorarioService {
     const ListParam = [
       { "Name": "pemb_numero", "Type": "Int", "Value": data.numeroEmbarque.toString() },
       { "Name": "pemb_fechaEmbarque", "Type": "VarChar", "Value": data.fechaEmbarque ? formatDate(data.fechaEmbarque, 'yyyy-MM-dd', 'en-US') : null },
+      { "Name": "pemb_plantaEmbarque", "Type": "Int", "Value": data.plantaEmbarque ? data.plantaEmbarque.toString() : null },
+      { "Name": "pemb_observacion", "Type": "VarChar", "Value": data.observacion ? data.observacion : null },
       { "Name": "i_accion", "Type": "varchar", "Value": "U" },
       { "Name": "i_accion2", "Type": "varchar", "Value": data.tipoUpdate },
       { "Name": "i_user_aud", "Type": "varchar", "Value": data.userAud },
@@ -77,4 +81,5 @@ export class FrmplanificacionhorarioService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
+  
 }

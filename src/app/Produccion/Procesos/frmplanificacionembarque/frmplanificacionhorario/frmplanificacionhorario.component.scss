@@ -170,9 +170,9 @@ table.table-bordered {
 
 ::ng-deep .cssModalPlanificacionEmbarque {
     .modal-dialog {
-        min-width: 550px;
-        max-width: 750px;
-        width: 70%;
+        min-width: 650px;
+        max-width: 1100px;
+        width: 90%;
         z-index: unset;
     }
     .control-label {
@@ -204,4 +204,13 @@ table.table-bordered {
 
 #contenedor {
   background: #fff; /* o el color que prefieras */
+}
+
+::ng-deep #GridPlanificacionEmbarqueDetail {
+  .dx-datagrid .dx-row > td {
+    padding: 5px;
+  }
+  td[role="columnheader"] div.dx-datagrid-text-content{
+    text-wrap: wrap;
+  }
 }

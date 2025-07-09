@@ -21,7 +21,7 @@
 
 ::ng-deep #GridPedidosPorPais {
   .dx-datagrid .dx-row > td {
-    padding: 5px;
+    padding: 6px;
   }
   td.cell-temp-valor[role="gridcell"] {
       padding: 2px;
@@ -56,7 +56,7 @@
   // }
 
   .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
-    padding: 15px 5px 10px 5px;
+    padding: 5px 0px 10px 0px;
   }
 
   // obtener el parent del td con attr aria-label="Collapse"
@@ -67,11 +67,13 @@
   td.cell-temp-valor-2[role="gridcell"] {
     padding: 2px;
   }
+
+  
 }
 
 ::ng-deep #GridPedidosPaisDetail {
   .dx-datagrid .dx-row > td {
-    padding: 5px;
+    padding: 4px;
   }
   td[role="columnheader"] div.dx-datagrid-text-content{
     text-wrap: wrap;
@@ -82,6 +84,11 @@
   // obtener el parent del td con attr aria-label="Collapse"
   tr.dx-row.dx-data-row > td.dx-command-expand[aria-label="Collapse"] {
     background-color: inherit; 
+  }
+  // aplicar estilo a todo el elemento tr donde el td tiene un div con clase rowDisabled
+  tr:has(td > div.rowDisabled) {
+    background-color: beige;
+    color: #757575 !important;
   }
   .grupo1[role="columnheader"], .grupo1.tot {
     background-color: #4caf50;
@@ -102,11 +109,18 @@
   .dx-toolbar .dx-toolbar-after {
     width: 100%;
   }
+  
+  .dx-datagrid-search-panel.dx-searchbox {
+    width: 98%;
+  }
+  .dx-datagrid-search-panel {
+    margin: 0px;
+  }
 }
 
 ::ng-deep #GridPedidosPaisDetailByProduct {
   .dx-datagrid .dx-row > td {
-    padding: 5px;
+    padding: 4px;
   }
   .grupo1[role="columnheader"], .grupo1.tot {
     background-color: #4caf50;
@@ -128,7 +142,7 @@
 
 ::ng-deep #GridPedidosPaisDetailByProduct2 {
   .dx-datagrid .dx-row > td {
-    padding: 5px;
+    padding: 4px;
   }
   td[role="columnheader"] div.dx-datagrid-text-content{
     text-wrap: wrap;
