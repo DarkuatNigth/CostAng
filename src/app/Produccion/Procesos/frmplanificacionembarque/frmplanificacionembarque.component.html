@@ -100,11 +100,11 @@
                                                                 </dxi-column>
                                                                 <dxi-column dataField="paisCodigo" caption="paisCodigo" [visible]="false">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="cliente" caption="Cliente" [groupIndex]="pais.data.pais == 'OTROS' ? 0 : null" [width]="100">
+                                                                <dxi-column dataField="cliente" caption="Cliente" [groupIndex]="pais.data.pais == 'OTROS' || pais.data.pais == 'MIXES' ? 0 : null" [width]="100">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="tallas" caption="Tallas" [groupIndex]="pais.data.pais == 'CHINA' ? 0 : null" [visible]="pais.data.pais == 'CHINA'">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="destino" caption="Destino" [width]="100">
+                                                                <dxi-column dataField="destino" caption="Destino" [width]="pais.data.pais == 'OTROS' || pais.data.pais == 'MIXES' ? 200 : 100">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="pedido" caption="Factura" [width]="80">
                                                                 </dxi-column>
@@ -121,17 +121,22 @@
                                                                 <dxi-column dataField="stockComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo1' : ''">
                                                                 </dxi-column>
+                                                                <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" 
+                                                                    [visible]="pais.data.pais != 'MIXES'">
+                                                                </dxi-column>
                                                                 <dxi-column dataField="cuarentena" caption="Sin Ret" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo1' : ''">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" 
-                                                                    [visible]="pais.data.pais == 'MIXES'" [cssClass]="pais.data.pais == 'MIXES' ? 'grupo1 tot' : ''">
+                                                                    [visible]="pais.data.pais == 'MIXES'" >
+                                                                    <!-- [cssClass]="pais.data.pais == 'MIXES' ? 'grupo1 tot' : ''" -->
                                                                 </dxi-column>
                                                                 <dxi-column dataField="cuarentenaSulfito" caption="Sulfito" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo2' : ''">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" 
-                                                                    [visible]="pais.data.pais == 'MIXES'" [cssClass]="pais.data.pais == 'MIXES' ? 'grupo2 tot' : ''">
+                                                                    [visible]="pais.data.pais == 'MIXES'" >
+                                                                    <!-- [cssClass]="pais.data.pais == 'MIXES' ? 'grupo2 tot' : ''" -->
                                                                 </dxi-column>
                                                                 <dxi-column dataField="analisisVB" caption="An. VB" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo3' : ''">
@@ -140,7 +145,8 @@
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo3' : ''">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" 
-                                                                    [visible]="pais.data.pais == 'MIXES'" [cssClass]="pais.data.pais == 'MIXES' ? 'grupo3 tot' : ''">
+                                                                    [visible]="pais.data.pais == 'MIXES'" >
+                                                                    <!-- [cssClass]="pais.data.pais == 'MIXES' ? 'grupo3 tot' : ''" -->
                                                                 </dxi-column>
                                                                 <dxi-column dataField="libPositiva" caption="Lib Pos." format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo4' : ''">
@@ -149,15 +155,13 @@
                                                                     [cssClass]="pais.data.pais == 'MIXES' ? 'grupo4' : ''">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" 
-                                                                    [visible]="pais.data.pais == 'MIXES'" [cssClass]="pais.data.pais == 'MIXES' ? 'grupo4 tot' : ''">
+                                                                    [visible]="pais.data.pais == 'MIXES'" > 
+                                                                    <!-- [cssClass]="pais.data.pais == 'MIXES' ? 'grupo4 tot' : ''" -->
                                                                 </dxi-column>
                                                                 <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [visible]="pais.data.pais != 'MIXES'">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" 
-                                                                    [visible]="pais.data.pais != 'MIXES'">
-                                                                </dxi-column>
-                                                                <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false">
+                                                                <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="55" 
                                                                     [visible]="pais.data.pais != 'MIXES'">
@@ -172,7 +176,7 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <dxo-master-detail [enabled]="pais.data.pais === 'MIXES'" template="detail2"></dxo-master-detail>
+                                                                <dxo-master-detail [enabled]="pais.data.pais === 'MIXES' || pais.data.pais === 'OTROS'" template="detail2"></dxo-master-detail>
                                                                 <div *dxTemplate="let pedido of 'detail2'">
                                                                     <div class="detail" style="width: 99.9%; border: 1px dashed darkgrey;">
                                                                         <dx-data-grid #GridPedidosPaisDetailByProduct 
@@ -191,7 +195,7 @@
                                                                             <!-- (onContentReady)="expandAllPedidosPaisDetailByProduct($event)" -->
                                                                             <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
                                                                             <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
-                                                                                cellTemplate="checkPlanificarTemplate2" > 
+                                                                                cellTemplate="checkPlanificarTemplate2" [visible]="pais.data.pais === 'MIXES'"> 
                                                                             </dxi-column>
                                                                             <div *dxTemplate="let cell of 'checkPlanificarTemplate2'" [class]="cell.data.itemPlanificado == 'S' ? 'rowDisabled' : ''">
                                                                                 <div>
@@ -203,16 +207,17 @@
                                                                                 </div>
                                                                             </div>
                                                                             <dxi-column dataField="pedido" caption="Factura" [width]="80" [visible]="false"></dxi-column>
-                                                                            <dxi-column dataField="producto" caption="Producto" [width]="286"></dxi-column>
+                                                                            <dxi-column dataField="producto" caption="Producto" [width]="pais.data.pais == 'OTROS' ? 395 : 317"></dxi-column>
                                                                             <dxi-column dataField="talla" caption="Talla Venta" [width]="60"></dxi-column>
                                                                             <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                                                                             <dxi-column dataField="saldoPedido" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                                                                             <dxi-column dataField="stockSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="55" cssClass="grupo1"></dxi-column>
                                                                             <dxi-column dataField="stockComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo1"></dxi-column>
+                                                                            <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="cuarentena" caption="Sin Ret" format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo1"></dxi-column>
-                                                                            <dxi-column dataField="palletsG1" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo1 tot"></dxi-column>
+                                                                            <dxi-column dataField="palletsG1" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo1 tot" [visible]="pais.data.pais == 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="cuarentenaSulfito" caption="Sulfito" format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo2"></dxi-column>
-                                                                            <dxi-column dataField="palletsG2" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo2 tot"></dxi-column>
+                                                                            <dxi-column dataField="palletsG2" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo2 tot" [visible]="pais.data.pais == 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="analisisVB" caption="An. VB" [width]="50" [allowFiltering]="false"
                                                                                 cellTemplate="bloqueadoTemplate2" cssClass="cell-temp-valor-2 grupo3">
                                                                             </dxi-column>
@@ -237,13 +242,12 @@
                                                                                     </button>
                                                                                 </div>
                                                                             </div>
-                                                                            <dxi-column dataField="palletsG3" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo3 tot"></dxi-column>
+                                                                            <dxi-column dataField="palletsG3" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo3 tot" [visible]="pais.data.pais == 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="libPositiva" caption="Lib Pos." format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo4"></dxi-column>
                                                                             <dxi-column dataField="stockCongelado" caption="Stock Cong" format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo4"></dxi-column>
-                                                                            <dxi-column dataField="palletsG4" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo4 tot"></dxi-column>
+                                                                            <dxi-column dataField="palletsG4" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo4 tot" [visible]="pais.data.pais == 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
-                                                                            <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
-                                                                            <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false" ></dxi-column>
+                                                                            <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true" ></dxi-column>
                                                                             <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="55" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="55"
                                                                                 cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
@@ -494,6 +498,7 @@
                         <dxi-column dataField="saldoPedido" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                         <dxi-column dataField="stockSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="55" [cssClass]="planificacionMix ? 'grupo1' : ''"></dxi-column>
                         <dxi-column dataField="stockComin" caption="Stock Comin" format="#,###.##" [allowFiltering]="false" [width]="50" [cssClass]="planificacionMix ? 'grupo1' : ''"></dxi-column>
+                        <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
                         <dxi-column dataField="cuarentena" caption="Sin Ret" format="#,###.##" [allowFiltering]="false" [width]="50" [cssClass]="planificacionMix ? 'grupo1' : ''"></dxi-column>
                         <dxi-column dataField="palletsG1tmp" caption="Tot Pall" [allowFiltering]="false" [width]="40" 
                             [visible]="planificacionMix" cellTemplate="totPallG1Template" cssClass="cell-temp-valor" [cssClass]="planificacionMix ? 'grupo1 tot' : ''">
@@ -574,12 +579,27 @@
                             </div>
                         </div>
                         <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
-                        <dxi-column dataField="etiquetadoChina" caption="Etiquet China" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
                         <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false"></dxi-column>
-                        <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="55" [visible]="!planificacionMix"></dxi-column>
-                        <dxi-column dataField="palletsCompletos" caption="Pallets Disp" format="#,###.##" [allowFiltering]="false" [width]="55" [visible]="true"></dxi-column>
-                        <dxi-column dataField="palletsTotMix" caption="Pallets Pedido" format="#,###.##" [allowFiltering]="false" [width]="55" [visible]="planificacionMix" ></dxi-column>
-                        <!-- <dxi-column dataField="palletsParciales" caption="pallets Parciales" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column> -->
+                        <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
+                        <dxi-column dataField="ctsXPallet" caption="cts X Pallet" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column>
+                        <dxi-column dataField="palletsCompletos" caption="Pallets Pedido" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true"></dxi-column>
+                        <!-- <dxi-column dataField="palletsTotMix" caption="Pallets Planificados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column> -->
+                        <dxi-column dataField="palletsTotMix" caption="Tot Planif." format="#,###.##" [allowFiltering]="false" [width]="40"  
+                            [visible]="planificacionMix" cellTemplate="totPallG5Template" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'totPallG5Template'">
+                            <div>
+                                <input type="text" class="form-control sng-template" 
+                                    (change)="onChangePalletsG5($event.target.value, cell.data)" 
+                                    (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                    (paste)="_utilService.onPasteValidateNumber($event)"
+                                    (focus)="_utilService.selectAllContent($event)"
+                                    [(ngModel)]="cell.value" 
+                                    [ngModelOptions]="{standalone: true}"
+                                    style="text-align: right;" />
+                            </div>
+                        </div>
+                        <!-- <dxi-column dataField="palletsParciales" caption="pallets Parciales" format="#,###.##" [allowFiltering]="false" [width]="50"></dxi-column> -->
                         <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="55"
                             cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
                         </dxi-column>
