@@ -730,11 +730,26 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
 
 
-  refreshGridPedidosPaisDetailByProduct (indexR: number) {
-    this.pedidoSelectedForPlanificarDetalle[indexR].palletsTotMix = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1tmp + 
-      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2tmp +
-      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3tmp +
-      this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4tmp;
+  async onChangePalletsG5(value: any, rowData: any) {
+    const { id } = rowData;
+    value = this._utilService.validateNumberInt(value);
+    const indexR = this.pedidoSelectedForPlanificarDetalle.findIndex(x => x.id === id);
+    if (value > this.pedidoSelectedForPlanificarDetalle[indexR].palletsCompletos || value < 0 || isNaN(value)) {
+      this.showAlert('','El valor debe ser un número válido entre 0 y ' + this.pedidoSelectedForPlanificarDetalle[indexR].palletsCompletos + '.','warning');
+    }
+    this.pedidoSelectedForPlanificarDetalle[indexR].palletsTotMix = value;
+    this.refreshGridPedidosPaisDetailByProduct(indexR, false);
+  }
+
+
+
+  refreshGridPedidosPaisDetailByProduct (indexR: number, reclacularpalletsTotMix: boolean = true) {
+    if (reclacularpalletsTotMix) {
+      this.pedidoSelectedForPlanificarDetalle[indexR].palletsTotMix = this.pedidoSelectedForPlanificarDetalle[indexR].palletsG1tmp + 
+        this.pedidoSelectedForPlanificarDetalle[indexR].palletsG2tmp +
+        this.pedidoSelectedForPlanificarDetalle[indexR].palletsG3tmp +
+        this.pedidoSelectedForPlanificarDetalle[indexR].palletsG4tmp;
+    }
     this.pedidoSelectedForPlanificarDetalle = [...this.pedidoSelectedForPlanificarDetalle];
     this.totalPalletsPlanificar = 0;
     this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
@@ -816,7 +831,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       // validar que el total de pallets no sea mayor al saldo pedido (item.ctsXPallet * item.palletsTotMix) > item.saldoPedido
       for (let item of this.pedidoSelectedForPlanificarDetalle) {
         if ((item.ctsXPallet * item.palletsTotMix) > item.saldoPedido) {
-          this.showAlert('Advertencia',`El total de pallets planificados para el item (${item.codProducto}) es mayor al saldo pedido, por favor verifique.`,'warning');
+          this.showAlert('Advertencia',`El total de pallets planificados para el producto (${item.codProducto}) es mayor al saldo pedido, por favor verifique.`,'warning');
           return false;
         }
       }

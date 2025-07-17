@@ -652,16 +652,16 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
         fecFin: this.hasta
       }
       this._service.getDataByMes(data).subscribe({
-        next: (resp) => {
+        next: async (resp) => {
           if (resp.Codigo) {
             if (Object.keys(resp.Dt).length > 0) {
               this.dataPedidos = resp.Dt.Table || [];
               // si hay seleccionado un filtro de estado, aplicar el filtro
               let estadoSeleccionado = this.listFilterState.find(item => item.icon === 'check');
               if (estadoSeleccionado) {
-                this.onItemClickFiltrar({ itemData: estadoSeleccionado });
+                await this.onItemClickFiltrar({ itemData: estadoSeleccionado });
               } else {
-                this.armarCalendario(this.dataPedidos, this.desde, this.hasta, this.selectedDate.format("MM"));
+                await this.armarCalendario(this.dataPedidos, this.desde, this.hasta, this.selectedDate.format("MM"));
               }
               let planificacionesNoCumplidas = resp.Dt.Table1 || [];
               if (planificacionesNoCumplidas.length > 0 && this.mensajePlanificacionNoCumplidas) {
@@ -680,6 +680,20 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
         }, 
         complete: () => {
           this.loadingVisible2 = false;
+          // si el mes es actual, ubicarse en la semana actual
+          if (this.selectedDate.isSame(moment(), 'month')) {
+            let currentWeek = this.dataByWeek.find(week => 
+              week.some(day => moment(day.day).isSame(moment(), 'day'))
+            );
+            if (currentWeek) {
+              let currentDay = currentWeek.find(day => moment(day.day).isSame(moment(), 'day'));
+              if (currentDay && currentDay.dataPedidos.length > 0) {
+                setTimeout(() => {
+                  this.scrollToElement(currentDay.dataPedidos[0].Referencia);
+                }, 1000);
+              }
+            }
+          }
         }
       });
 
