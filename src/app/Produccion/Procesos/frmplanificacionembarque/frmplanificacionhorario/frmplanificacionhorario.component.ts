@@ -844,8 +844,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       // this.controlAnterior.id = "";
       this.controlAnterior = v.currentTarget;
     }
-    v.currentTarget.style.borderColor = "black";
-    v.currentTarget.style.borderWidth = "2px";
+    v.currentTarget.style.borderColor = "red";
+    v.currentTarget.style.borderWidth = "3px";
     // v.currentTarget.id = "idDetalle";
   }
 

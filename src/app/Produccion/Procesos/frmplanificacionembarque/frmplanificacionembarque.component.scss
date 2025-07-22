@@ -87,8 +87,8 @@
   }
   // aplicar estilo a todo el elemento tr donde el td tiene un div con clase rowDisabled
   tr:has(td > div.rowDisabled) {
-    background-color: beige;
-    color: #757575 !important;
+    background-color: beige !important;
+    color: #646464 !important;
   }
   .grupo1[role="columnheader"], .grupo1.tot {
     background-color: #4caf50;
@@ -121,21 +121,22 @@
 ::ng-deep #GridPedidosPaisDetailByProduct {
   .dx-datagrid .dx-row > td {
     padding: 4px;
+    background-color: #daf1ff;
   }
   .grupo1[role="columnheader"], .grupo1.tot {
-    background-color: #4caf50;
+    background-color: #4caf50 !important;
     color: white;
   }
   .grupo2[role="columnheader"], .grupo2.tot {
-    background-color: #414580;
+    background-color: #414580 !important;
     color: white;
   }
   .grupo3[role="columnheader"], .grupo3.tot {
-    background-color: #4f8a8b;
+    background-color: #4f8a8b !important;
     color: white;
   }
   .grupo4[role="columnheader"], .grupo4.tot {
-    background-color: #f0ad4e;
+    background-color: #f0ad4e !important;
     color: white;
   }
 }
@@ -175,8 +176,8 @@
 
 ::ng-deep .cssModalPlanificarEmbarque {
   .modal-dialog {
-      min-width: 650px;
-      max-width: 1150px;
+      min-width: 750px;
+      max-width: 1200px;
       width: 95%;
       z-index: unset;
   }

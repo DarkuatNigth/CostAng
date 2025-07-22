@@ -62,6 +62,8 @@ interface DetalleStockBloqueado {
   producto: string;
   codTalla: number;
   talla: string;
+  codTallaMP: number;
+  tallaMP: string;
   master: number;
   proveedor: string;
   fecha: Date;
@@ -262,6 +264,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               producto: item.producto,
               codTalla: item.codTalla,
               talla: item.talla?.trim() || '',
+              codTallaMP: item.codTallaMP,
+              tallaMP: item.tallaMP?.trim() || '',
               numPallet: item.numPallet,
               pesoVta: item.pesoVta,
               ctsXPallet: item.ctsXPallet,
@@ -898,6 +902,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       detalle: this.pedidoSelectedForPlanificarDetalle.map((item: any) => {
         return {
           pedido: item.pedido,
+          dpeSectab: item.dpe_sectab,
           codprod: item.codProducto,
           codtalla: item.codTalla,
           mPedido: this.pedidoSelectedForPlanificar.tipoEmbarque === 'M' ? (item.ctsXPallet * item.palletsTotMix) : item.saldoPedido,
@@ -956,7 +961,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
         if (this.horarioComponent) {
           this.horarioComponent.updateSelectedMonth();
         }
-        this.limpiarNuevo();
+        // this.limpiarNuevo();
         this.getPedidosPlanificacionEmbarque();
         this.modalReferenceItem.close();
       },

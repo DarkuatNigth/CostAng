@@ -81,7 +81,7 @@
                                                             >
                                                                 <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar...">
                                                                 </dxo-search-panel>
-                                                                <dxo-paging [pageSize]="20" [pageIndex]="0"></dxo-paging>
+                                                                <dxo-paging [pageSize]="30" [pageIndex]="0"></dxo-paging>
                                                                 <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
                                                                 <!-- <dxo-filter-row [visible]="true" [applyFilter]="currentFilter"></dxo-filter-row> -->
                                                                 <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
@@ -494,6 +494,7 @@
                         <dxi-column dataField="pedido" caption="Factura" [width]="85"></dxi-column>
                         <dxi-column dataField="producto" caption="Producto" [width]="100"></dxi-column>
                         <dxi-column dataField="talla" caption="Talla Venta" [width]="50"></dxi-column>
+                        <dxi-column dataField="tallaMP" caption="Talla MP" [width]="50"></dxi-column>
                         <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                         <dxi-column dataField="saldoPedido" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                         <dxi-column dataField="stockSonga" caption="Stock Songa" format="#,###.##" [allowFiltering]="false" [width]="55" [cssClass]="planificacionMix ? 'grupo1' : ''"></dxi-column>
@@ -581,10 +582,10 @@
                         <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
                         <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false"></dxi-column>
                         <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
-                        <dxi-column dataField="ctsXPallet" caption="cts X Pallet" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column>
+                        <dxi-column dataField="ctsXPallet" caption="cts X Pallet" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true" ></dxi-column>
                         <dxi-column dataField="palletsCompletos" caption="Pallets Pedido" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true"></dxi-column>
                         <!-- <dxi-column dataField="palletsTotMix" caption="Pallets Planificados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column> -->
-                        <dxi-column dataField="palletsTotMix" caption="Tot Planif." format="#,###.##" [allowFiltering]="false" [width]="40"  
+                        <dxi-column dataField="palletsTotMix" caption="Pallets Planif." format="#,###.##" [allowFiltering]="false" [width]="50"  
                             [visible]="planificacionMix" cellTemplate="totPallG5Template" cssClass="cell-temp-valor">
                         </dxi-column>
                         <div *dxTemplate="let cell of 'totPallG5Template'">
@@ -618,7 +619,7 @@
                     <label class="mr-4" style="font-weight: bold;">{{totalPedidoPlanificar | number:'1.0-2'}}</label>
                     <label class="mr-2">Total Stock: </label>
                     <label class="mr-4" style="font-weight: bold;">{{totalStockPlanificar | number:'1.0-2'}}</label>
-                    <label class="mr-2">Pallets Pedido: </label>
+                    <label class="mr-2">Pallets Planificados: </label>
                     <label class="" style="font-weight: bold;">{{totalPalletsPlanificar | number:'1.0-2'}}</label>
                 </div>
             </form>
