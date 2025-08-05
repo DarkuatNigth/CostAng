@@ -1,0 +1,251 @@
+
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div style="padding-left: 5px; padding-right: 5px; padding-top: 10px">
+
+    <div class="row" style="justify-content: center;">
+
+        <div class="col-lg-8 col-8 col-md-8 col-sm-6 col-xs-6">
+
+            <div class="card">
+
+                <div class="card-header"
+                style="
+                font-weight: bold;
+                border: 2px solid #d9dbdd;
+                border-radius: 4px;
+                color: #0087b9;
+                ">
+                    Días de Para de Planta
+                </div>
+
+                <div
+                class="card-body"
+                style="border: 2px solid #d9dbdd; border-radius: 4px">
+
+                    <div class="form-group row">
+
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-left control-label"
+                        style="font-size: 13px"
+                        >Planta:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 pb-1">
+                            <ng-select
+                                style="width: 100%"
+                                [(ngModel)]="pa_codigo"
+                                appendTo="body"
+                                [searchable]="false"
+                                [clearable]="false"
+                                name="ng-select-planta"
+                                (change)="onChangePlanta($event)"
+                            >
+                                <ng-option *ngFor="let data of listaPlanta" [value]="data.pa_codigo">
+                                <div title="{{ data.pa_codigo}}" style="font-size: 14px">
+                                    {{ data.pa_descripcion }}
+                                </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-left control-label"
+                        style="font-size: 13px"
+                        >Tipo Proceso:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pb-1">
+                            <ng-select
+                                style="width: 100%"
+                                [(ngModel)]="pp_tipo"
+                                appendTo="body"
+                                [searchable]="false"
+                                [clearable]="false"
+                                name="ng-select-tipo-proceso"
+                                (change)="onChangeTipoProceso($event)"
+                            >
+                                <ng-option *ngFor="let data of listaTipoProceso" [value]="data.det_codigo">
+                                <div title="{{ data.det_codigo}}" style="font-size: 14px">
+                                    {{ data.det_descripcion }}
+                                </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group row">
+
+                        <label
+                        id="libras-label"
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-left control-label"
+                        style="font-size: 13px"
+                        >Libras:</label>
+
+                        <!-- set control for libras with max 2 decimals -->
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 pb-1">
+                            <input
+                                id="input-libras"
+                                type="number"
+                                [(ngModel)]="pp_libras"
+                                class="form-control"
+                                min="0"
+                                step="0.01"
+                                placeholder="Ingrese libras"
+                                name="input-libras"
+                                maxlength="18"
+                                (blur)="formatLibrasN2()"
+                            />
+                        </div>
+
+                        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
+                        Fecha:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pb-1" style="display: flex; align-items: center; gap: 8px;">
+                        <dx-date-box
+                            [(ngModel)]="pp_fecha"
+                            type="date"
+                            [width]="'100%'"
+                            displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true"
+                            openOnFieldClick="true"
+                            name="dx-date-box-fecha"
+                        >
+                        </dx-date-box>
+                        <dx-button
+                            name="dx-button-add-dias"
+                            icon="add"
+                            type="default"
+                            (onClick)="onClickAddDias()"
+                            style="width: 36px; height: 36px; min-width: 36px; min-height: 36px; padding: 0;"
+                            class="icon-button"
+                        >
+                        </dx-button>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Grid ini -->
+                    <div class="row"  style="justify-content: center;">
+                        <div class="col-12">
+                        <div class="row">
+                            <div
+                            class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1"
+                            >
+                            <dx-data-grid
+                                key="df_id"
+                                style="width: 100%; max-height: 60vh"
+                                class="cssGrid"
+                                id="gridDiasParaPlanta"
+                                [dataSource]="listaDiasParaPlanta"
+                                noDataText="No existen dias de para de planta configurados"
+                                [showColumnLines]="true"
+                                [showRowLines]="true"
+                                [showBorders]="true"
+                                [columnHidingEnabled]="false"
+                                [columnAutoWidth]="true"
+                                (onRowRemoved)="
+                                onRemoveDiaParaPlanta($event)
+                                "
+                            >
+                                <dxo-editing
+                                mode="row"
+                                [allowDeleting]="true"
+                                [useIcons]="true"
+                                [texts]="{
+                                saveRowChanges: 'Aceptar',
+                                cancelRowChanges: 'Cancelar',
+                            }"
+                                >
+                                <dxo-texts
+                                    confirmDeleteMessage="¿Está seguro de eliminar el registro?"
+                                ></dxo-texts>
+                                </dxo-editing>
+                                <!-- <dxo-selection mode="single"></dxo-selection> -->
+                                <dxo-search-panel
+                                [visible]="false"
+                                width="100%"
+                                placeholder="Buscar..."
+                                >
+                                </dxo-search-panel>
+
+                                <dxi-column
+                                [caption]="'Eliminar'"
+                                type="buttons"
+                                [width]="110"
+                                >
+                                <dxi-button
+                                    [cssClass]="'color-danger'"
+                                    name="delete"
+                                ></dxi-button>
+                                </dxi-column>
+
+                                <dxi-column
+                                dataField="pp_id"
+                                [caption]="'pp_id'"
+                                [dataType]="'number'" [visible]="false"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_paCodigoT"
+                                [caption]="'Planta'"
+                                [dataType]="'string'"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_fecha"
+                                [caption]="'Fecha'"
+                                [dataType]="'string'"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_tipoT"
+                                [caption]="'Tipo'"
+                                [dataType]="'string'"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_libras"
+                                [caption]="'Libras'"
+                                [dataType]="'number'"
+                                [format]="{ type: 'fixedPoint', precision: 2 }"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_paCodigo"
+                                [caption]="'pppp_paCodigo_id'"
+                                [dataType]="'number'" [visible]="false"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_tipo"
+                                [caption]="'pp_tipo'"
+                                [dataType]="'string'" [visible]="false"
+                                ></dxi-column>
+
+                                <dxo-paging [pageSize]="10" [pageIndex]="0">
+                                </dxo-paging>
+                            </dx-data-grid>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- Grid fin -->
+            
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
