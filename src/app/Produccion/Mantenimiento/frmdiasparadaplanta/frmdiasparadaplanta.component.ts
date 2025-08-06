@@ -1,7 +1,7 @@
+
 import { Component, OnInit } from '@angular/core';
 import { FrmdiasparadaplantaService } from './frmdiasparadaplanta.service';
 import { varUser } from 'src/app/config/url.servicios';
-import { formatDate } from '@angular/common';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { int } from '@zxing/library/esm/customTypings';
 import * as moment from 'moment';
@@ -24,6 +24,7 @@ export class FrmdiasparadaplantaComponent implements OnInit {
   listaPlanta = [];
   listaTipoProceso = [];
   listaDiasParaPlanta = [];
+  prevFecha: Date = null;
 
   async ngOnInit() {
     await this.PlantasLoad();
@@ -49,16 +50,12 @@ export class FrmdiasparadaplantaComponent implements OnInit {
           if (data.Codigo && data.Dt.Table.length > 0) {
             this.listaPlanta = data.Dt.Table;
           } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se encontraron plantas.'
-            });
+            this.listaPlanta = data.Dt.Table;
           }
           resolve();
         },
-        error: (error) => {
-          console.error('Error al cargar las plantas: ', error);
+        error: async (error) => {
+          await this.showAlert('Error', 'Error al cargar plantas', 'error');
           resolve();
         }
       });
@@ -72,16 +69,12 @@ export class FrmdiasparadaplantaComponent implements OnInit {
           if (data.Codigo && data.Dt.Table.length > 0) {
             this.listaTipoProceso = data.Dt.Table;
           } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se encontraron tipos de proceso.'
-            });
+            this.listaTipoProceso = data.Dt.Table;
           }
           resolve();
         },
-        error: (error) => {
-          console.error('Error al cargar las plantas: ', error);
+        error: async (error) => {
+          await this.showAlert('Error', 'Error al cargar los tipos de proceso', 'error');
           resolve();
         }
       });
@@ -91,23 +84,19 @@ export class FrmdiasparadaplantaComponent implements OnInit {
   async DiasParaPlantaConsultar() {
     this.loadingVisible = true;
     return new Promise<void>((resolve) => {
-      this._service.diasParaPlantaConsultar(this.pa_codigo.toString(), moment(this.pp_fecha).format('YYYY/MM/DD')).subscribe({
+      this._service.diasParaPlantaConsultar(this.pa_codigo.toString(), this.pp_tipo, moment(this.pp_fecha).format('YYYY/MM/DD')).subscribe({
         next: (data) => {
           this.loadingVisible = false;
           if (data.Codigo && data.Dt.Table.length > 0) {
             this.listaDiasParaPlanta = data.Dt.Table;
           } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se encontraron días para la planta.'
-            });
+            this.listaDiasParaPlanta = data.Dt.Table;
           }
           resolve();
         },
-        error: (error) => {
+        error: async (error) => {
           this.loadingVisible = false;
-          console.error('Error al cargar los días para la planta: ', error);
+          await this.showAlert('Error', 'Error al cargar los días para la planta', 'error');
           resolve();
         }
       });
@@ -117,7 +106,6 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
 
   async onClickAddDias() {
-    console.log('onClickAddDias');
 
     //validate planta and fecha does not exist in listaDiasParaPlanta
     if (this.listaDiasParaPlanta.some(dia => dia.pp_paCodigo === this.pa_codigo && dia.pp_fecha === moment(this.pp_fecha).format('YYYY/MM/DD'))) {
@@ -148,10 +136,9 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
   }
 
-    async diasParaPlantaGuardar(usuario: string, jsonData: string) {
+  async diasParaPlantaGuardar(usuario: string, jsonData: string) {
 
-    // this.loadingVisible = true;
-    console.log('diasParaPlantaGuardar', usuario, jsonData);
+    this.loadingVisible = true;
     
     await new Promise(async (resolve) => {
         await this._service
@@ -159,7 +146,28 @@ export class FrmdiasparadaplantaComponent implements OnInit {
         .subscribe(async (res) => {
           if (res.Codigo) {
             await this.showAlert('', 'Los datos han sido guardados.', 'success');
-            // this.diasParaPlantaConsultar();
+            resolve(true);
+          } else {
+            this.loadingVisible = false;
+            await this.showAlert('', res.Description, 'error');
+            resolve(false);
+          }
+        });
+    });
+
+    this.loadingVisible = false;
+  }
+
+  async diasParaPlantaEliminar(pp_id: string, usuario: string) {
+
+    this.loadingVisible = true;
+    
+    await new Promise(async (resolve) => {
+        await this._service
+        .diasParaPlantaEliminar(pp_id, usuario)
+        .subscribe(async (res) => {
+          if (res.Codigo) {
+            await this.showAlert('', 'Los datos han sido eliminados.', 'success');
             resolve(true);
           } else {
             this.loadingVisible = false;
@@ -177,9 +185,24 @@ export class FrmdiasparadaplantaComponent implements OnInit {
   }
 
   async onChangeTipoProceso($event: any) {
-    console.log('onChangeTipoProceso', $event);
+    await this.DiasParaPlantaConsultar();
     this.inputLibrasShowHide();
     this.formatLibrasN2();
+  }
+
+  onChangeFecha(e: any) {
+    if (e && e.value) {
+      const oldDate = this.prevFecha ? moment(this.prevFecha) : moment(this.pp_fecha);
+      const newDate = moment(e.value);
+      if (newDate.month() !== oldDate.month() || newDate.year() !== oldDate.year()) {
+        this.pp_fecha = e.value;
+        this.prevFecha = e.value;
+        this.DiasParaPlantaConsultar();
+      } else {
+        this.pp_fecha = e.value;
+        this.prevFecha = e.value;
+      }
+    }
   }
 
   inputLibrasShowHide() {
@@ -196,8 +219,9 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
   };
 
-  onRemoveDiaParaPlanta($event: any) {
-    console.log('onRemoveDiaParaPlanta', $event);
+  async onRemoveDiaParaPlanta(event: any) {
+    await this.diasParaPlantaEliminar(event.data.pp_id.toString(), localStorage.getItem(varUser));
+    await this.DiasParaPlantaConsultar();
   }
 
   formatLibrasN2(): void {

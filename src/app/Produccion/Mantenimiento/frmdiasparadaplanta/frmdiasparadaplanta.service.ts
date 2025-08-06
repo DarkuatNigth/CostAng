@@ -53,10 +53,29 @@ export class FrmdiasparadaplantaService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
-  diasParaPlantaConsultar(paCodigo: string, fecha: string) {
+  diasParaPlantaEliminar(pp_id: string, usuario: string) {
+
+    console.log('diasParaPlantaEliminar', pp_id, usuario);
+
+    const ListParam = [
+      { Name: 'ppid', Type: 'varchar', Value: pp_id },
+      { Name: 'usuario', Type: 'Varchar', Value: usuario },
+    ];
+
+    const base = {
+      sp: 'SGCAM.produccion.spr_procesoDiasParadaPlantaEliminar',
+      param: ListParam,
+      conexion: CONNECTION_RRHH,
+    };
+
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  diasParaPlantaConsultar(paCodigo: string, tipo: string, fecha: string) {
     console.log('diasParaPlantaConsultar', paCodigo, fecha);
     const ListParam = [
       { Name: 'paCodigo', Type: 'Varchar', Value: paCodigo },
+      { Name: 'tipo', Type: 'Varchar', Value: tipo },
       { Name: 'fecha', Type: 'Varchar', Value: fecha },
     ];
 
