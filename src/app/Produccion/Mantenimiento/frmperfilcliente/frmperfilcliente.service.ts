@@ -42,6 +42,7 @@ export class FrmperfilclienteService {
       { "Name": "pcl_paletsAusenciaVibrios", "Type": "nvarchar", "Value": parametros.paletsAusenciaVibrios ? parametros.paletsAusenciaVibrios.toString() : '0' },
       { "Name": "pcl_permiteMix", "Type": "nvarchar", "Value": parametros.permiteMix ? '1' : null },
       { "Name": "pcl_permiteMixTemp", "Type": "nvarchar", "Value": parametros.permiteMixTemp ? '1' : null },
+      { "Name": "pcl_permiteElegirDestino", "Type": "nvarchar", "Value": parametros.permiteElegirDestino ? '1' : null },
       { "Name": "pcl_fechaMixTemp", "Type": "varchar", "Value": parametros.fechaMixTemp },
       { "Name": "i_user_aud", "Type": "varchar", "Value": parametros.userAud },
     ];

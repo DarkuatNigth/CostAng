@@ -8,12 +8,13 @@ import { FrmplanificacionparametrizacionService } from '../../Mantenimiento/frmp
 import { formatDate } from '@angular/common';
 import { UtilService } from 'src/app/shared/util.service';
 import * as moment from 'moment';
-import { varUser } from 'src/app/config/url.servicios';
+import { URL_SOCKET, varUser } from 'src/app/config/url.servicios';
 import Swal from 'sweetalert2/src/sweetalert2.js';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FrmplanificacionvagconsultaService } from '../frmplanificacionvagconsulta/frmplanificacionvagconsulta.service';
 import { parseNumber } from 'devextreme/localization';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import * as io from "socket.io-client";
 
 declare var $: any;
 declare var window;
@@ -146,6 +147,7 @@ export class FrmplanificacionvagComponent implements OnInit {
   @ViewChild('GridDisponibilidadPersonal', { static: false }) GridDisponibilidadPersonal: DxDataGridComponent;
   @ViewChild('tabPanel') tabPanel: DxTabPanelComponent;
 
+  public socket = io.io(URL_SOCKET);
   
   constructor(
     private _service: FrmplanificacionvagService,
@@ -245,6 +247,11 @@ export class FrmplanificacionvagComponent implements OnInit {
       this.loadingVisible = false;
 
     });
+
+    this.socket.on('connect', () => {
+      console.log('Conectado al socket');
+    });
+
   }
   
   cleanPlanificacion() {
@@ -593,7 +600,7 @@ export class FrmplanificacionvagComponent implements OnInit {
               userAud: localStorage.getItem(varUser)
             }).subscribe(data => {
               if (data.Codigo) {
-                console.log('Embarque generado correctamente.');
+                this.socket.emit('save-planificacion-vag', { action: 'new', message: `Se creó una nueva planificación de Valor Agregado.` });
               } else {
                 console.log('Error al generar el embarque: ' + data.Description);
               }

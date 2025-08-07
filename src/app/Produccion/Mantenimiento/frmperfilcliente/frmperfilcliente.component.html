@@ -123,6 +123,13 @@
                         <div class="w-100 d-lg-none d-md-block"></div>
                         <div class="w-100 d-lg-block"></div>
 
+                        <label *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Permite Elegir Destino:</label>
+                        <div *ngIf="cmbTipoParametro == 'CL'" class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1">
+                            <input type="checkbox" class="form-control" [(ngModel)]="chkPermiteElegirDestino" placeholder="">
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+
                     </div>
 
 
