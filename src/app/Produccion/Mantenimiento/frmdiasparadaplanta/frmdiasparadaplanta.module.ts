@@ -32,7 +32,7 @@ import { FrmdiasparadaplantaComponent } from './frmdiasparadaplanta.component';
       DxFileUploaderModule,
       DxContextMenuModule,
       RouterModule.forChild([
-        { path: 'ext-parada', canActivate: [], component: FrmdiasparadaplantaComponent },
+        { path: 'ext-parada', canActivate: [AuthGuard], component: FrmdiasparadaplantaComponent },
       ]) ,
     ],
     exports: [
