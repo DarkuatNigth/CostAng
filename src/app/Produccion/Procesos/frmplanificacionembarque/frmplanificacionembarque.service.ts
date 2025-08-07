@@ -153,5 +153,19 @@ export class FrmplanificacionembarqueService {
   }
 
   
+  
+  getReqEspecialPedido(pedNumero: Number) {
+    const ListParam = [
+      { "Name": "i_tipoB", "Type": "varchar", "Value": "byGetReqEspecialPedido" },
+      { "Name": "pedNumero", "Type": "nvarchar", "Value": pedNumero.toString() },
+    ];
+    const base = {
+      sp: 'Embarque.spr_PedidosPlanificacionEmbarqueConsultar',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
 
 }

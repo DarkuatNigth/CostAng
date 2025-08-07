@@ -10,7 +10,7 @@ const itemsMenu = [
   { text: 'Replanificar', icon: 'edit', action: 'edit' },
   { text: 'Ver Detalle', icon: 'info', action: 'details' },
   { text: 'Confirmar Planificación de VA', icon: 'check', action: 'confirmVA' },
-  { text: 'Generar BreakDown', icon: 'exportselected', action: 'breakDown' },
+  // { text: 'Generar BreakDown', icon: 'exportselected', action: 'breakDown' },
 ];
 
 export interface IUpdatePlanificacionEmbarque {

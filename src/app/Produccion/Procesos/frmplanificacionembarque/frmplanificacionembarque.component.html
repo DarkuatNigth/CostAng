@@ -104,7 +104,7 @@
                                                                 </dxi-column>
                                                                 <dxi-column dataField="tallas" caption="Tallas" [groupIndex]="pais.data.pais == 'CHINA' ? 0 : null" [visible]="pais.data.pais == 'CHINA'">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="destino" caption="Destino" [width]="pais.data.pais == 'OTROS' || pais.data.pais == 'MIXES' ? 200 : 100">
+                                                                <dxi-column dataField="destino" caption="Destino" [width]="pais.data.pais == 'OTROS' || pais.data.pais == 'MIXES' ? 160 : 100">
                                                                 </dxi-column>
                                                                 <dxi-column dataField="pedido" caption="Factura" [width]="80">
                                                                 </dxi-column>
@@ -161,12 +161,15 @@
                                                                 <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" 
                                                                     [visible]="pais.data.pais != 'MIXES'">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true">
+                                                                <dxi-column dataField="stockRefristore" caption="Refristore" format="#,###.##" [allowFiltering]="false" [width]="50">
                                                                 </dxi-column>
-                                                                <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="55" 
-                                                                    [visible]="pais.data.pais != 'MIXES'">
+                                                                <dxi-column dataField="stockArtiko" caption="Artiko" format="#,###.##" [allowFiltering]="false" [width]="50" >
                                                                 </dxi-column>
-                                                                <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="55"
+                                                                <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50">
+                                                                </dxi-column>
+                                                                <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50">
+                                                                </dxi-column>
+                                                                <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="50"
                                                                     cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
                                                                 </dxi-column>
                                                                 <div *dxTemplate="let cell of 'porcentajeTemplate'">
@@ -176,12 +179,12 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <dxo-master-detail [enabled]="pais.data.pais === 'MIXES' || pais.data.pais === 'OTROS'" template="detail2"></dxo-master-detail>
+                                                                <dxo-master-detail [enabled]="pais.data.pais === 'MIXES' || pais.data.pais === 'OTROS'" template="detail2" [autoExpandAll]="pais.data.pais === 'MIXES'"></dxo-master-detail>
                                                                 <div *dxTemplate="let pedido of 'detail2'">
                                                                     <div class="detail" style="width: 99.9%; border: 1px dashed darkgrey;">
                                                                         <dx-data-grid #GridPedidosPaisDetailByProduct 
                                                                             id="GridPedidosPaisDetailByProduct" 
-                                                                            style="width: 100%; max-height: 100vh;" 
+                                                                            style="width: 100%; max-height: 120vh;" 
                                                                             [dataSource]="pedidosPaisDetailByProduct"
                                                                             keyExpr="id" 
                                                                             [showColumnHeaders]="false"
@@ -207,7 +210,7 @@
                                                                                 </div>
                                                                             </div>
                                                                             <dxi-column dataField="pedido" caption="Factura" [width]="80" [visible]="false"></dxi-column>
-                                                                            <dxi-column dataField="producto" caption="Producto" [width]="pais.data.pais == 'OTROS' ? 395 : 317"></dxi-column>
+                                                                            <dxi-column dataField="producto" caption="Producto" [width]="pais.data.pais == 'OTROS' ? 355 : 273"></dxi-column>
                                                                             <dxi-column dataField="talla" caption="Talla Venta" [width]="60"></dxi-column>
                                                                             <dxi-column dataField="mastersPedido" caption="Pedido Original" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
                                                                             <dxi-column dataField="saldoPedido" caption="Saldo Pedido" format="#,###.##" [allowFiltering]="false" [width]="55"></dxi-column>
@@ -247,9 +250,13 @@
                                                                             <dxi-column dataField="stockCongelado" caption="Stock Cong" format="#,###.##" [allowFiltering]="false" [width]="50" cssClass="grupo4"></dxi-column>
                                                                             <dxi-column dataField="palletsG4" caption="Tot Pall" format="#,###.##" [allowFiltering]="false" [width]="40" cssClass="grupo4 tot" [visible]="pais.data.pais == 'MIXES'"></dxi-column>
                                                                             <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
-                                                                            <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true" ></dxi-column>
-                                                                            <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="55" [visible]="pais.data.pais != 'MIXES'"></dxi-column>
-                                                                            <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="55"
+                                                                            <dxi-column dataField="stockRefristore" caption="Refristore" format="#,###.##" [allowFiltering]="false" [width]="50">
+                                                                            </dxi-column>
+                                                                            <dxi-column dataField="stockArtiko" caption="Artiko" format="#,###.##" [allowFiltering]="false" [width]="50" >
+                                                                            </dxi-column>
+                                                                            <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [width]="50"></dxi-column>
+                                                                            <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50"></dxi-column>
+                                                                            <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="50"
                                                                                 cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
                                                                             </dxi-column>
                                                                             <div *dxTemplate="let cell of 'porcentajeTemplate'">
@@ -349,8 +356,8 @@
                                 <dxi-column dataField="fechaLib" caption="F.Liberación" [width]="80" dataType="date">
                                     <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
                                 </dxi-column>
-                                <dxi-column dataField="observa" caption="Observación" [width]="350"></dxi-column>
                                 <dxi-column dataField="master" caption="Masters" [width]="70" format="#.##"></dxi-column>
+                                <dxi-column dataField="observa" caption="Observación" [width]="350"></dxi-column>
                             </dx-data-grid>
 
                         </div>
@@ -400,6 +407,9 @@
                         <i *ngIf="pedidoSelectedForPlanificar.pedObservOrd" class="dx-icon-info ml-1" style="font-size: 15px;color: #337ab7;" 
                             (mouseenter)="toggleInformacionRef()"></i>
                         <a id="link4"></a>
+                        <i *ngIf="dataReqEspecialPedido && dataReqEspecialPedido.length > 0" class="dx-icon-info ml-1" style="font-size: 15px;color: #dba43e;" 
+                            (mouseenter)="toggleInformacionReqEsp()"></i>
+                        <a id="link5"></a>
                     </div>
                     <label class="col-12 col-sm-4 col-md-2 col-lg-1 pl-0 mb-0 control-label">Cliente: </label>
                     <div class="col-12 col-sm-8 col-md-6 col-lg-7 mb-2 pl-0">
@@ -422,7 +432,17 @@
                     </div>
                     <label class="col-12 col-sm-4 col-md-2 col-lg-1 pl-0 mb-0 control-label">Destino: </label>
                     <div class="col-12 col-sm-8 col-md-6 col-lg-7 mb-2 pl-0">
-                        <span>{{pedidoSelectedForPlanificar.destino}}</span>
+                        <span *ngIf="pedidoSelectedForPlanificar.permiteElegirDestino == 0">{{pedidoSelectedForPlanificar.destino}}</span>
+                        <span *ngIf="pedidoSelectedForPlanificar.permiteElegirDestino == 1">
+                            <ng-select class="col-12 col-sm-8 col-md-6" 
+                                [(ngModel)]="cmbDestino" standalone="true" name="cmbDestino" appendTo="body" [searchable]="true" [clearable]="true" placeholder="Seleccione">
+                                <ng-option *ngFor="let data of Destinos" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </span>
                     </div>
                     <div class="w-100 d-lg-none d-md-block"></div>
                     <div class="w-100 d-lg-block"></div>
@@ -477,6 +497,7 @@
                         (onInitialized)="onInitializedPedidosPaisDetailByProduct2(GridPedidosPaisDetailByProduct2)" 
                     >
                         <!-- (onContentReady)="expandAllPedidosPaisDetailByProduct($event)" -->
+                        <dxo-sorting mode="none"></dxo-sorting>
                         <dxo-paging [pageSize]="10" [pageIndex]="0"></dxo-paging>
                         <dxi-column dataField="checkPlanificar" [caption]="''" [dataType]="'boolean'" [allowFiltering]="false" [width]="40"
                             cellTemplate="checkPlanificarTemplate3" [visible]="planificacionMix"> 
@@ -580,12 +601,32 @@
                             </div>
                         </div>
                         <dxi-column dataField="stockOtrasBodegas" caption="Stock Otros" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
+                        <dxi-column dataField="stockRefristore" caption="Refristore" format="#,###.##" [allowFiltering]="false" [width]="50"> </dxi-column>
+                        <dxi-column dataField="stockArtiko" caption="Artiko" format="#,###.##" [allowFiltering]="false" [width]="50" > </dxi-column>
                         <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false"></dxi-column>
                         <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
-                        <dxi-column dataField="ctsXPallet" caption="cts X Pallet" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true" ></dxi-column>
-                        <dxi-column dataField="palletsCompletos" caption="Pallets Pedido" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="true"></dxi-column>
+                        <dxi-column dataField="palletsCompletos" caption="Pallet Ped" format="#,###.##" [allowFiltering]="false" [width]="45" [visible]="true"></dxi-column>
+                        <dxi-column dataField="ctsXPallet" caption="ctsX Pallet" format="#,###.##" [allowFiltering]="false" [width]="45" [visible]="!planificacionMix" ></dxi-column>
+                        <dxi-column dataField="ctsXPallet" caption="ctsX Pallet" format="#,###.##" [allowFiltering]="false" [width]="45"   
+                            [visible]="planificacionMix" cellTemplate="ctsXPalletTemplate" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'ctsXPalletTemplate'">
+                            <div *ngIf="cell.data.palletsParciales > 0">
+                                <input type="text" class="form-control sng-template" 
+                                    (change)="onChangeCtsXPallet($event.target.value, cell.data)" 
+                                    (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                    (paste)="_utilService.onPasteValidateNumber($event)"
+                                    (focus)="_utilService.selectAllContent($event)"
+                                    [(ngModel)]="cell.value" 
+                                    [ngModelOptions]="{standalone: true}"
+                                    style="text-align: right;" />
+                            </div>
+                            <div *ngIf="cell.data.palletsParciales === 0">
+                                {{cell.value}}
+                            </div>
+                        </div>
                         <!-- <dxi-column dataField="palletsTotMix" caption="Pallets Planificados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column> -->
-                        <dxi-column dataField="palletsTotMix" caption="Pallets Planif." format="#,###.##" [allowFiltering]="false" [width]="50"  
+                        <dxi-column dataField="palletsTotMix" caption="Pale_ tizado" format="#,###.##" [allowFiltering]="false" [width]="45"  
                             [visible]="planificacionMix" cellTemplate="totPallG5Template" cssClass="cell-temp-valor">
                         </dxi-column>
                         <div *dxTemplate="let cell of 'totPallG5Template'">
@@ -600,6 +641,39 @@
                                     style="text-align: right;" />
                             </div>
                         </div>
+
+                        <dxi-column dataField="ctsXPallet2" caption="ctsX Pallet2" format="#,###.##" [allowFiltering]="false" [width]="45"   
+                            [visible]="planificacionMix" cellTemplate="ctsXPalletTemplate2" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'ctsXPalletTemplate2'">
+                            <div *ngIf="cell.data.palletsParciales > 0">
+                                <input type="text" class="form-control sng-template" 
+                                    (change)="onChangeCtsXPallet2($event.target.value, cell.data)" 
+                                    (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                    (paste)="_utilService.onPasteValidateNumber($event)"
+                                    (focus)="_utilService.selectAllContent($event)"
+                                    [(ngModel)]="cell.value" 
+                                    [ngModelOptions]="{standalone: true}"
+                                    style="text-align: right;" />
+                            </div>
+                        </div>
+                        <!-- <dxi-column dataField="palletsTotMix" caption="Pallets Planificados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column> -->
+                        <dxi-column dataField="palletsTotMix2" caption="Pale_ tizado2" format="#,###.##" [allowFiltering]="false" [width]="45"  
+                            [visible]="planificacionMix" cellTemplate="totPaletizado2" cssClass="cell-temp-valor">
+                        </dxi-column>
+                        <div *dxTemplate="let cell of 'totPaletizado2'">
+                            <div *ngIf="cell.data.palletsParciales > 0">
+                                <input type="text" class="form-control sng-template" 
+                                    (change)="onChangeTotPaletizado2($event.target.value, cell.data)" 
+                                    (keypress)="_utilService.onKeypressValidateNumber($event)"
+                                    (paste)="_utilService.onPasteValidateNumber($event)"
+                                    (focus)="_utilService.selectAllContent($event)"
+                                    [(ngModel)]="cell.value" 
+                                    [ngModelOptions]="{standalone: true}"
+                                    style="text-align: right;" />
+                            </div>
+                        </div>
+                        
                         <!-- <dxi-column dataField="palletsParciales" caption="pallets Parciales" format="#,###.##" [allowFiltering]="false" [width]="50"></dxi-column> -->
                         <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="55"
                             cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">
@@ -725,6 +799,52 @@
                         [(ngModel)]="pedidoSelectedForPlanificar.pedObservOrd" rows="20"
                         style="resize: none; font-size: 12px; white-space: pre-line!important">
                     </textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</dx-popover>
+
+<dx-popover
+    target="#link5"
+    position="top"
+    [width]="550"
+    [(visible)]="popupInfoReqEspVisible"
+    >
+    <dxo-animation>
+        <dxo-show
+        type="pop"
+        [from]="{ scale: 0 }"
+        [to]="{ scale: 1 }"
+        ></dxo-show>
+        <dxo-hide type="fade" [from]="1" [to]="0"></dxo-hide>
+    </dxo-animation>
+    
+    <div class="row" style="padding: 0px;">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div *ngIf="dataReqEspecialPedido" class="form-group row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                    
+                    <dx-data-grid #GridReqEspecialPedido 
+                        id="GridReqEspecialPedido" 
+                        style="width: 100%;"
+                        [dataSource]="dataReqEspecialPedido" 
+                        keyExpr="tr_id" 
+                        [showColumnLines]="true" 
+                        [showRowLines]="true" 
+                        [showBorders]="true"
+                        [rowAlternationEnabled]="false" 
+                        [columnHidingEnabled]="false" 
+                        [columnAutoWidth]="true"
+                        (onInitialized)="onInitializedReqEspecialPedido(GridReqEspecialPedido)"
+                    >
+                        <dxi-column dataField="tr_id" caption="" [visible]="false"></dxi-column>
+                        <dxi-column dataField="tr_descripcion" caption="Requerimiento Especial del Pedido"></dxi-column>
+                        <dxi-column dataField="requiereAprobacion" caption="Requiere Aprobación" [width]="70" [visible]="false"></dxi-column>
+                        <dxi-column dataField="aprobado" caption="Aprobado" [width]="70" dataType="boolean"> </dxi-column>
+                    </dx-data-grid>
+
                 </div>
             </div>
         </div>

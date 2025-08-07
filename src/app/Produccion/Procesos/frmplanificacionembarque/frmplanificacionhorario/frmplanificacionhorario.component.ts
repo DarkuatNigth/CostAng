@@ -5,12 +5,13 @@ import Swal from 'sweetalert2/src/sweetalert2.js';
 import { ClickEvent } from 'devextreme/ui/button';
 import { PedidosPaisDetail } from '../frmplanificacionembarque.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { varUser } from 'src/app/config/url.servicios';
+import { URL_SOCKET, varUser } from 'src/app/config/url.servicios';
 import { FrmplanificacionembarqueService } from '../frmplanificacionembarque.service';
 import { DxDataGridComponent } from 'devextreme-angular';
 import { state } from '@angular/animations';
 import { saveAs } from 'file-saver';
-
+import notify from 'devextreme/ui/notify';
+import * as io from "socket.io-client";
 
 declare var window;
 declare var $: any;
@@ -80,6 +81,8 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   // para emitir el evento de actualización de la planificación al componente padre
   @Output() planificacionActualizada: EventEmitter<void> = new EventEmitter<void>();
 
+  public socket = io.io(URL_SOCKET);
+
   constructor(
     private _service: FrmplanificacionhorarioService,
     private _planificacionembarqueService: FrmplanificacionembarqueService,
@@ -105,8 +108,6 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       }
     });
     this.loadingVisible2 = false;
-
-    // como recargar los estilos css
 
   }
 
@@ -157,20 +158,20 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       }
     });
     // si la fecha de embarque es menor a la fecha actual desactivar la opción de quitar de planificación
-    if (moment(item.Fecha).isBefore(moment(), 'day')) {
+    if (moment(item.Fecha).isBefore(moment(), 'day') || item.EstadoVisualizacion === 'BD') {
       this.itemsMenuContext[0].disabled = true; 
     }
     // si la fecha de embarque es menor a la fecha actual - 1 día desactivar la opción de replanificar
-    if (moment(item.Fecha).isBefore(moment().subtract(1, 'day'), 'day')) {
+    if (moment(item.Fecha).isBefore(moment().subtract(1, 'day'), 'day') || item.EstadoVisualizacion === 'BD') {
       this.itemsMenuContext[1].disabled = true; 
     }
     // si origen es VAG y confirmacionVA es false activar la opción de confirmación de valor agregado
     if (item.origen === 'VAG' && !item.confirmacionVA) {
       this.itemsMenuContext[3].disabled = false; 
     }
-    if (item.EstadoVisualizacion === 'PC' || item.EstadoVisualizacion === 'PL') {
-      this.itemsMenuContext[4].disabled = false; // Activar la opción de BreakDown
-    }
+    // if (item.EstadoVisualizacion === 'PC' || item.EstadoVisualizacion === 'PL') {
+    //   this.itemsMenuContext[4].disabled = false; // Activar la opción de BreakDown
+    // }
 
     this.planificacionEmbSelected = item;
     this.contextMenu.visible = true;
@@ -196,7 +197,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
             tipoUpdate: 'anular',
             userAud: localStorage.getItem(varUser),
           };
-          this.updatePlanificacionEmbarque(dataUpdate);
+          this.updatePlanificacionEmbarque(dataUpdate, this.planificacionEmbSelected);
         }
         break;
       case 'details':
@@ -210,7 +211,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
             tipoUpdate: 'confirmVA',
             userAud: localStorage.getItem(varUser),
           };
-          this.updatePlanificacionEmbarque(dataUpdate);
+          this.updatePlanificacionEmbarque(dataUpdate, this.planificacionEmbSelected);
         }
         break;
       case 'breakDown':
@@ -244,10 +245,13 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     const target = event.target as HTMLElement;
     const targetDay = target.getAttribute('data-day');
     if (this.draggedItem && targetDay) {
+      if (this.draggedItem.EstadoVisualizacion === "BD"){
+        notify(`No se puede mover la planificación, ya se generó un BreakDown`, "warning", 3000);
+        return;
+      }
       const day = this.dayMap.get(targetDay);
-      // console.log('onDrop', this.draggedItem, targetDay, day);
       if (moment(day.day).isBefore(moment(), 'day') || (day.day == this.draggedItem.Fecha || day.disabled)) {
-        console.log('El elemento no se puede mover a esta fecha');
+        notify(`No se puede mover la planificación a esta fecha`, "warning", 3000);
         return;
       }
       // this.moveItemToDay(this.draggedItem, day);
@@ -257,7 +261,7 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
         tipoUpdate: 'replanificar',
         userAud: localStorage.getItem(varUser),
       };
-      this.updatePlanificacionEmbarque(dataUpdate, this.draggedItem.Referencia);
+      this.updatePlanificacionEmbarque(dataUpdate, this.draggedItem);
       this.draggedItem = null; // Limpia el elemento arrastrado
     } 
   }
@@ -433,29 +437,29 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
       tipoUpdate: 'replanificar',
       userAud: localStorage.getItem(varUser),
     };
-    
-    this.updatePlanificacionEmbarque(dataUpdate, this.planificacionEmbSelected.Referencia );
+
+    this.updatePlanificacionEmbarque(dataUpdate, this.planificacionEmbSelected);
   }
   
 
-  updatePlanificacionEmbarque(dataUpdate: IUpdatePlanificacionEmbarque, referencia = null) {
+  updatePlanificacionEmbarque(dataUpdate: IUpdatePlanificacionEmbarque, planificacionSelected = null) {
     this.loadingVisible2 = true;
     this._service.updatePlanificacionEmbarque(dataUpdate).subscribe({
       next: (resp) => {
         if (resp.Codigo) {
-          this.showAlert('', 
-            dataUpdate.tipoUpdate == 'replanificar' ? 'Se replanificó correctamente' : 
-            dataUpdate.tipoUpdate == 'anular' ? 'Se eliminó correctamente' :
-            'Se actualizó correctamente', 
-            'success'
-          );
+          let msj = `Se ${dataUpdate.tipoUpdate === 'replanificar' ? 'replanificó' : dataUpdate.tipoUpdate === 'anular' ? 'eliminó' : 'modificó'} 
+            la programación de la referencia: ${planificacionSelected.Referencia}`;
+          if (planificacionSelected.EstadoVisualizacion && planificacionSelected.EstadoVisualizacion != 'VAG'){
+            this.socket.emit('save-planificacion', { action: 'edit', message: msj });
+          }
+          this.showAlert('', msj, 'success' );
           this.updateSelectedMonth();
           if (dataUpdate.tipoUpdate == 'anular') {
             // Emitir el evento al componente padre
             this.planificacionActualizada.emit();
           }
-          if (referencia) {
-            setTimeout(() => { this.scrollToElement(referencia); }, 1000);
+          if (planificacionSelected && planificacionSelected.Referencia) {
+            setTimeout(() => { this.scrollToElement(planificacionSelected.Referencia); }, 1000);
           }
           if (this.modalReferenceItem) {
             this.modalReferenceItem.close();
@@ -528,8 +532,6 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
           if (cab && cab.length > 0) {
             this.planificacionEmbViewDetail.cab = cab[0];
             this.planificacionEmbViewDetail.det = det;
-
-            console.log('planificacionEmbViewDetail', this.planificacionEmbViewDetail);
 
             let dataSync = {
               pedido: this.planificacionEmbSelected.pedNumero,
@@ -640,6 +642,15 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     this.getDataxMes();
   }
 
+
+  async updateReferenciasBreakdown(referencias: string[]) {
+    // solo actualizar las referencias que esten en data
+    this.dataPedidos.forEach(item => {
+      if (referencias.includes(item.Referencia)) {
+        item.EstadoVisualizacion = 'BD';
+      }
+    });
+  }
 
   async getDataxMes() {
     this.loadingVisible2 = true;

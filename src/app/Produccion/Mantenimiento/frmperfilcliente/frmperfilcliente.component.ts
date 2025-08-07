@@ -30,6 +30,7 @@ export class FrmperfilclienteComponent implements OnInit {
   txtPaletsAusenciaVibrios: number = 0;
   chkMixPermanente: boolean = false;
   chkMixTemporal: boolean = false;
+  chkPermiteElegirDestino: boolean = false;
 
   TiposParametrizacion: Catalogo[] = [
     { codigo: 'GR', descripcion: 'GRUPO' },
@@ -72,6 +73,7 @@ export class FrmperfilclienteComponent implements OnInit {
     this.txtPaletsAusenciaVibrios = 0;
     this.chkMixPermanente = false;
     this.chkMixTemporal = false;
+    this.chkPermiteElegirDestino = false;
   }
 
   limpiar(tipo: string): void {
@@ -81,6 +83,7 @@ export class FrmperfilclienteComponent implements OnInit {
     this.txtPaletsAusenciaVibrios = 0;
     this.chkMixPermanente = false;
     this.chkMixTemporal = false;
+    this.chkPermiteElegirDestino = false;
     switch (tipo) {
       case 'grupo':
         this.cmbPais = null;
@@ -172,6 +175,7 @@ export class FrmperfilclienteComponent implements OnInit {
       paletsAusenciaVibrios: this.txtPaletsAusenciaVibrios,
       permiteMix: this.chkMixPermanente,
       permiteMixTemp: this.chkMixTemporal,
+      permiteElegirDestino: this.chkPermiteElegirDestino,
       fechaMixTemp: this.chkMixTemporal ? formatDate(new Date(), 'yyyy-MM-dd', 'en-US') : null, 
       userAud: localStorage.getItem(varUser),
     };
@@ -206,6 +210,7 @@ export class FrmperfilclienteComponent implements OnInit {
     this.txtPaletsAusenciaVibrios = perfil.pcl_paletsAusenciaVibrios ? parseInt(perfil.pcl_paletsAusenciaVibrios, 10) : 0;
     this.chkMixPermanente = perfil.pcl_permiteMix ? true : false;
     this.chkMixTemporal = perfil.pcl_permiteMixTemp ? true : false;
+    this.chkPermiteElegirDestino = perfil.pcl_permiteElegirDestino ? true : false;
   }
 
   onChangeTipoParametro(e: any): void {
