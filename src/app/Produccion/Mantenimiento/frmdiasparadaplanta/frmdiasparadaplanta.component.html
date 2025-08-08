@@ -70,7 +70,6 @@
                                 [searchable]="false"
                                 [clearable]="false"
                                 name="ng-select-tipo-proceso"
-                                (change)="onChangeTipoProceso($event)"
                             >
                                 <ng-option *ngFor="let data of listaTipoProceso" [value]="data.det_codigo">
                                 <div title="{{ data.det_codigo}}" style="font-size: 14px">
