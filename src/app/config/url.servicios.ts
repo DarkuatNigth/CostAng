@@ -16,6 +16,8 @@ let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
 let DomainSiteRRHH = 'https://talentohumano.songa.com';
 
+export const URL_SOCKET = 'https://sites.songa.com/AppSockets/';
+
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";
 export const URL_CONSULT = DomainSite + "/api/Consult";
@@ -31,6 +33,7 @@ export const URL_BARCODE = DomainSite + "/SiteReports/Api/Barcode";
 //export const URL_OTHERAPI = "http://localhost:1814/Signature";
 export const URL_OTHERAPI = DomainSite + "/ApiBackend/Signature";
 export const URL_CONSULTRRHH = DomainSiteRRHH + '/api/Consult';
+export const URL_TRANSACIMAGENRRHH = DomainSiteRRHH + '/api/TransacImagen';
 
 
 /*CONEXION MARINA*/
