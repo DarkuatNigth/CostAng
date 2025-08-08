@@ -37,8 +37,6 @@ export class FrmdiasparadaplantaService {
 
   diasParaPlantaGuardar(usuario: string, jsonData: string) {
 
-    console.log('diasParaPlantaGuardar', usuario, jsonData);
-
     const ListParam = [
       { Name: 'usuario', Type: 'Varchar', Value: usuario },
       { Name: 'jsonData', Type: 'Varchar', Value: jsonData },
@@ -55,8 +53,6 @@ export class FrmdiasparadaplantaService {
 
   diasParaPlantaEliminar(pp_id: string, usuario: string) {
 
-    console.log('diasParaPlantaEliminar', pp_id, usuario);
-
     const ListParam = [
       { Name: 'ppid', Type: 'varchar', Value: pp_id },
       { Name: 'usuario', Type: 'Varchar', Value: usuario },
@@ -72,7 +68,7 @@ export class FrmdiasparadaplantaService {
   }
 
   diasParaPlantaConsultar(paCodigo: string, tipo: string, fecha: string) {
-    console.log('diasParaPlantaConsultar', paCodigo, fecha);
+
     const ListParam = [
       { Name: 'paCodigo', Type: 'Varchar', Value: paCodigo },
       { Name: 'tipo', Type: 'Varchar', Value: tipo },

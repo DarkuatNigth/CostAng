@@ -38,7 +38,6 @@ export class FrmdiasparadaplantaComponent implements OnInit {
     }
 
     await this.DiasParaPlantaConsultar();
-    this.inputLibrasShowHide();
 
     this.loadingVisible = false;
   }
