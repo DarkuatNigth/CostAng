@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { int } from '@zxing/library/esm/customTypings';
-import { CONNECTION_PROD, CONNECTION_RRHH, URL_CONSULT } from 'src/app/config/url.servicios';
+import { CONNECTION_PROD, CONNECTION_RRHH, URL_CONSULTRRHH } from 'src/app/config/url.servicios';
 import { ResultWS } from 'src/app/Interfaces/interfaces';
 
 @Injectable({
@@ -20,7 +20,7 @@ export class FrmdiasparadaplantaService {
       param: ListParam,
       conexion: CONNECTION_RRHH
     };
-    return this.http.post<ResultWS>(URL_CONSULT, base);
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
   getCatalogosTipoProceso(cabcodigo: string) {
@@ -32,7 +32,7 @@ export class FrmdiasparadaplantaService {
       param: ListParam,
       conexion: CONNECTION_RRHH
     };
-    return this.http.post<ResultWS>(URL_CONSULT, base);
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
   diasParaPlantaGuardar(usuario: string, jsonData: string) {
@@ -48,7 +48,7 @@ export class FrmdiasparadaplantaService {
       conexion: CONNECTION_RRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULT, base);
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
   diasParaPlantaEliminar(pp_id: string, usuario: string) {
@@ -64,7 +64,7 @@ export class FrmdiasparadaplantaService {
       conexion: CONNECTION_RRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULT, base);
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
   diasParaPlantaConsultar(paCodigo: string, tipo: string, fecha: string) {
@@ -81,7 +81,7 @@ export class FrmdiasparadaplantaService {
       conexion: CONNECTION_RRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULT, base);
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
 }
