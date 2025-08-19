@@ -147,8 +147,12 @@ export class FrmplanificacionvagComponent implements OnInit {
   @ViewChild('GridDisponibilidadPersonal', { static: false }) GridDisponibilidadPersonal: DxDataGridComponent;
   @ViewChild('tabPanel') tabPanel: DxTabPanelComponent;
 
-  public socket = io.io(URL_SOCKET);
-  
+  public socket = io.io(URL_SOCKET, {
+    // transports: ['websocket'], 
+    autoConnect: true, 
+    path: '/AppSockets/socket/'
+  });
+
   constructor(
     private _service: FrmplanificacionvagService,
     private _serviceConsulta: FrmplanificacionvagconsultaService,

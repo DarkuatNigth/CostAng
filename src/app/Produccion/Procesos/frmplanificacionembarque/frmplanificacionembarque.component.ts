@@ -163,7 +163,11 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
   @ViewChild(FrmplanificacionhorarioComponent, { static: false }) horarioComponent!: FrmplanificacionhorarioComponent;
 
-  public socket = io.io(URL_SOCKET);
+  public socket = io.io(URL_SOCKET, {
+    // transports: ['websocket'], 
+    autoConnect: true, 
+    path: '/AppSockets/socket/'
+  });
 
   
   constructor(
