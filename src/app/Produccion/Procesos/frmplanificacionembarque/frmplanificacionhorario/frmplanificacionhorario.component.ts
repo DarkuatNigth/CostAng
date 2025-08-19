@@ -81,7 +81,11 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
   // para emitir el evento de actualización de la planificación al componente padre
   @Output() planificacionActualizada: EventEmitter<void> = new EventEmitter<void>();
 
-  public socket = io.io(URL_SOCKET);
+  public socket = io.io(URL_SOCKET, {
+    // transports: ['websocket'], 
+    autoConnect: true, 
+    path: '/AppSockets/socket/'
+  });
 
   constructor(
     private _service: FrmplanificacionhorarioService,
