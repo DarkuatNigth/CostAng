@@ -35,11 +35,11 @@
                     <div class="form-group row">
 
                         <label
-                        class="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-left control-label"
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-1 text-left control-label"
                         style="font-size: 13px"
                         >Planta:</label>
 
-                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 pb-1">
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-2 pb-1">
                             <ng-select
                                 style="width: 100%"
                                 [(ngModel)]="pa_codigo"
@@ -70,8 +70,33 @@
                                 [searchable]="false"
                                 [clearable]="false"
                                 name="ng-select-tipo-proceso"
+                                (change)="onChangeTipoProceso($event)"
                             >
                                 <ng-option *ngFor="let data of listaTipoProceso" [value]="data.det_codigo">
+                                <div title="{{ data.det_codigo}}" style="font-size: 14px">
+                                    {{ data.det_descripcion }}
+                                </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+
+                        <label
+                        id="turno-label"
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-1 text-left control-label"
+                        style="font-size: 13px"
+                        >Turno:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-2 pb-1">
+                            <ng-select
+                                style="width: 100%"
+                                [(ngModel)]="pp_turno"
+                                appendTo="body"
+                                [searchable]="false"
+                                [clearable]="false"
+                                name="ng-select-turno"
+                                id="ng-select-turno"
+                            >
+                                <ng-option *ngFor="let data of listaTurno" [value]="data.det_codigo">
                                 <div title="{{ data.det_codigo}}" style="font-size: 14px">
                                     {{ data.det_descripcion }}
                                 </div>
@@ -85,12 +110,12 @@
 
                         <label
                         id="libras-label"
-                        class="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-left control-label"
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-1 text-left control-label"
                         style="font-size: 13px"
                         >Libras:</label>
 
                         <!-- set control for libras with max 2 decimals -->
-                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 pb-1">
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-2 pb-1">
                             <input
                                 id="input-libras"
                                 type="number"
@@ -203,6 +228,12 @@
                                 <dxi-column
                                 dataField="pp_fecha"
                                 [caption]="'Fecha'"
+                                [dataType]="'string'"
+                                ></dxi-column>
+
+                                <dxi-column
+                                dataField="pp_turnoT"
+                                [caption]="'Turno'"
                                 [dataType]="'string'"
                                 ></dxi-column>
 

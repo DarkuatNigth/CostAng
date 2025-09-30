@@ -35,6 +35,18 @@ export class FrmdiasparadaplantaService {
     return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
   }
 
+  getCatalogoTurno(cabcodigo: string) {
+    const ListParam = [
+      { "Name": "i_cabCodigo", "Type": "varchar", "Value": cabcodigo }
+    ];
+    const base = {
+      sp: 'RRHH.general.spr_catalogoConsulta',
+      param: ListParam,
+      conexion: CONNECTION_RRHH
+    };
+    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+  }
+
   diasParaPlantaGuardar(usuario: string, jsonData: string) {
 
     const ListParam = [
