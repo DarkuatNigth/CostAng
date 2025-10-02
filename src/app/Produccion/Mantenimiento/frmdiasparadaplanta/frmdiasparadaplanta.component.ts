@@ -145,7 +145,7 @@ export class FrmdiasparadaplantaComponent implements OnInit {
       pp_fecha: moment(this.pp_fecha).format('YYYY/MM/DD'),
       pp_tipo: this.pp_tipo,
       pp_libras: this.pp_libras,
-      pp_usuario: localStorage.getItem(varUser),
+      pp_usuario: await localStorage.getItem(varUser),
       pp_turno: this.pp_turno
     });
 
