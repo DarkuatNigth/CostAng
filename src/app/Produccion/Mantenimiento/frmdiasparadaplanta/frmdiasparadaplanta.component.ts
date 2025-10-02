@@ -25,6 +25,8 @@ export class FrmdiasparadaplantaComponent implements OnInit {
   listaTipoProceso = [];
   listaDiasParaPlanta = [];
   prevFecha: Date = null;
+  listaTurno = [];
+  pp_turno: string = '';
 
   async ngOnInit() {
     await this.PlantasLoad();
@@ -35,6 +37,12 @@ export class FrmdiasparadaplantaComponent implements OnInit {
     await this.CatalogosTipoProcesoLoad();
     if (this.listaTipoProceso.length > 0) {
       this.pp_tipo = this.listaTipoProceso[0].det_codigo;
+    }
+
+    await this.CatalogoTurnoLoad();
+    if (this.listaTurno.length > 0) {
+      this.listaTurno.unshift({ det_codigo: '', det_descripcion: 'Todos' });
+      this.pp_turno = this.listaTurno[0].det_codigo;
     }
 
     await this.DiasParaPlantaConsultar();
@@ -80,6 +88,25 @@ export class FrmdiasparadaplantaComponent implements OnInit {
     });
   }
 
+  async CatalogoTurnoLoad() {
+    return new Promise<void>((resolve) => {
+      this._service.getCatalogoTurno('TURNO').subscribe({
+        next: (data) => {
+          if (data.Codigo && data.Dt.Table.length > 0) {
+            this.listaTurno = data.Dt.Table;
+          } else {
+            this.listaTurno = data.Dt.Table;
+          }
+          resolve();
+        },
+        error: async (error) => {
+          await this.showAlert('Error', 'Error al cargar turnos', 'error');
+          resolve();
+        }
+      });
+    });
+  }
+
   async DiasParaPlantaConsultar() {
     this.loadingVisible = true;
     return new Promise<void>((resolve) => {
@@ -118,7 +145,8 @@ export class FrmdiasparadaplantaComponent implements OnInit {
       pp_fecha: moment(this.pp_fecha).format('YYYY/MM/DD'),
       pp_tipo: this.pp_tipo,
       pp_libras: this.pp_libras,
-      pp_usuario: localStorage.getItem(varUser)
+      pp_usuario: await localStorage.getItem(varUser),
+      pp_turno: this.pp_turno
     });
 
     const jsonData = this.listaDiasParaPlanta.map(r => ({
@@ -127,7 +155,8 @@ export class FrmdiasparadaplantaComponent implements OnInit {
       pp_fecha: r.pp_fecha,
       pp_tipo: r.pp_tipo,
       pp_libras: r.pp_libras,
-      pp_usuario: r.pp_usuario
+      pp_usuario: r.pp_usuario,
+      pp_turno: r.pp_turno === '' ? null : r.pp_turno,
     }));
 
     await this.diasParaPlantaGuardar(localStorage.getItem(varUser), JSON.stringify(jsonData));
@@ -186,6 +215,7 @@ export class FrmdiasparadaplantaComponent implements OnInit {
   async onChangeTipoProceso($event: any) {
     await this.DiasParaPlantaConsultar();
     this.inputLibrasShowHide();
+    this.selectTurnoShowHide();
     this.formatLibrasN2();
   }
 
@@ -208,15 +238,29 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
     const label = document.getElementById('libras-label');
     const input = document.getElementById('input-libras');
-    if (this.pp_tipo === '1') {
-      if (label) label.style.visibility = 'hidden';
-      if (input) input.style.visibility = 'hidden';
-    } else {
+    if (this.pp_tipo === 'PA') {
       if (label) label.style.visibility = 'visible';
       if (input) input.style.visibility = 'visible';
+    } else {
+      if (label) label.style.visibility = 'hidden';
+      if (input) input.style.visibility = 'hidden';
     }
 
   };
+
+  selectTurnoShowHide() {
+    const label = document.getElementById('turno-label');
+    const select = document.getElementById('ng-select-turno');  
+
+    if (this.pp_tipo === 'PA') {
+      if (label) label.style.visibility = 'visible';
+      if (select) select.style.visibility = 'visible';
+      this.pp_turno = this.listaTurno[0].det_codigo;
+    } else {
+      if (label) label.style.visibility = 'hidden';
+      if (select) select.style.visibility = 'hidden';
+    }
+  }
 
   async onRemoveDiaParaPlanta(event: any) {
     await this.diasParaPlantaEliminar(event.data.pp_id.toString(), localStorage.getItem(varUser));
