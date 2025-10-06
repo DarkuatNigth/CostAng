@@ -606,12 +606,12 @@
                         <dxi-column dataField="mastersProgramados" caption="Programados" format="#,###.##" [allowFiltering]="false" [visible]="false"></dxi-column>
                         <dxi-column dataField="xFabricar" caption="Por Prod" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="!planificacionMix"></dxi-column>
                         <dxi-column dataField="palletsCompletos" caption="Pallet Ped" format="#,###.##" [allowFiltering]="false" [width]="45" [visible]="true"></dxi-column>
-                        <dxi-column dataField="ctsXPallet" caption="ctsX Pallet" format="#,###.##" [allowFiltering]="false" [width]="45" [visible]="!planificacionMix" ></dxi-column>
+                        <!-- <dxi-column dataField="ctsXPallet" caption="ctsX Pallet" format="#,###.##" [allowFiltering]="false" [width]="45" [visible]="!planificacionMix" ></dxi-column> -->
                         <dxi-column dataField="ctsXPallet" caption="ctsX Pallet" format="#,###.##" [allowFiltering]="false" [width]="45"   
-                            [visible]="planificacionMix" cellTemplate="ctsXPalletTemplate" cssClass="cell-temp-valor">
+                            cellTemplate="ctsXPalletTemplate" cssClass="cell-temp-valor">
                         </dxi-column>
                         <div *dxTemplate="let cell of 'ctsXPalletTemplate'">
-                            <div *ngIf="cell.data.palletsParciales > 0">
+                            <div *ngIf="cell.data.palletsParciales > 0 && planificacionMix">
                                 <input type="text" class="form-control sng-template" 
                                     (change)="onChangeCtsXPallet($event.target.value, cell.data)" 
                                     (keypress)="_utilService.onKeypressValidateNumber($event)"
@@ -621,8 +621,8 @@
                                     [ngModelOptions]="{standalone: true}"
                                     style="text-align: right;" />
                             </div>
-                            <div *ngIf="cell.data.palletsParciales === 0">
-                                {{cell.value}}
+                            <div *ngIf="cell.data.palletsParciales === 0 || !planificacionMix"  >
+                                <span [ngClass]="{'text-danger': cell.value === 0}">{{cell.value}}</span>
                             </div>
                         </div>
                         <!-- <dxi-column dataField="palletsTotMix" caption="Pallets Planificados" format="#,###.##" [allowFiltering]="false" [width]="50" [visible]="planificacionMix" ></dxi-column> -->
