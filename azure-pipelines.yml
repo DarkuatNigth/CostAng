@@ -17,6 +17,9 @@ steps:
 - script: npm install --legacy-peer-deps
   displayName: 'Force install dependencies'
 
+- script: npm install sweetalert2@11.10.1 --force
+  displayName: 'Force install sweetalert2@11.10.1'
+
 - powershell: |
     $filePath = "src/index.html"
     (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Set-Content $filePath
