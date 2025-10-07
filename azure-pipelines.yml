@@ -14,8 +14,8 @@ steps:
     versionSpec: '18.x'
   displayName: 'Install Node.js'
 
-- script: npm install
-  displayName: 'Install dependencies'
+- script: npm install --legacy-peer-deps
+  displayName: 'Force install dependencies'
 
 - powershell: |
     $filePath = "src/index.html"
