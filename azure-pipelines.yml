@@ -1,0 +1,40 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  artifactName: 'angular-dist'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: npm install
+  displayName: 'Install dependencies'
+
+- powershell: |
+    $filePath = "src/index.html"
+    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Set-Content $filePath
+  displayName: 'Update <base href> in index.html'
+
+- script: npm run build -- --configuration=production
+  displayName: 'Build Angular project'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'dist-compressed/produccion'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy build output'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: '$(artifactName)'
+    publishLocation: 'Container'
+  displayName: 'Publish build artifacts'
