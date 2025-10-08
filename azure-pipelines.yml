@@ -25,6 +25,12 @@ steps:
     (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Set-Content $filePath
   displayName: 'Update <base href> in index.html'
 
+- powershell: |
+    $filePath = "src/app/layouts/full/full.component.ts"
+    $today = Get-Date -Format "yyyy-MM-dd"
+    (Get-Content $filePath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Set-Content $filePath
+  displayName: 'Update LabelPublicacion to today'
+
 - script: npm run build -- --configuration=production
   displayName: 'Build Angular project'
 
