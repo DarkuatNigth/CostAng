@@ -25,7 +25,7 @@ steps:
 
 - powershell: |
     $filePath = "src/index.html"
-    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Set-Content $filePath -Encoding UTF8
+    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding UTF8
   displayName: 'Update <base href> in index.html'
 
 - powershell: |
