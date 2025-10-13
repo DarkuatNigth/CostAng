@@ -23,16 +23,16 @@ steps:
 - script: npm install -g @angular/cli@17.0.2 @angular-devkit/build-angular@17.0.2
   displayName: 'Install Angular CLI globally'
 
-- powershell: |
-    $filePath = "src/index.html"
-    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding utf8NoBOM
-  displayName: 'Update <base href> in index.html'
+# - powershell: |
+#     $filePath = "src/index.html"
+#     (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding utf8NoBOM
+#   displayName: 'Update <base href> in index.html'
 
-- powershell: |
-    $fullComponentPath = "src/app/layouts/full/full.component.ts"
-    $today = Get-Date -Format "yyyy-MM-dd"
-    (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding utf8NoBOM
-  displayName: 'Update LabelPublicacion to today'
+# - powershell: |
+#     $fullComponentPath = "src/app/layouts/full/full.component.ts"
+#     $today = Get-Date -Format "yyyy-MM-dd"
+#     (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding utf8NoBOM
+#   displayName: 'Update LabelPublicacion to today'
 
 - script: ng build --configuration production
   displayName: 'Build Angular project'
