@@ -9,6 +9,8 @@ variables:
   artifactName: 'angular-dist'
 
 steps:
+- checkout: self
+  clean: true
 - task: NodeTool@0
   inputs:
     versionSpec: '18.x'
