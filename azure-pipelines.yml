@@ -39,7 +39,7 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'dist-compressed/produccion'
+    SourceFolder: 'dist/produccion'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
   displayName: 'Copy build output'
