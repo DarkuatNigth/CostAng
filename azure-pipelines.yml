@@ -25,13 +25,13 @@ steps:
 
 - powershell: |
     $filePath = "src/index.html"
-    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding UTF8
+    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding utf8NoBOM
   displayName: 'Update <base href> in index.html'
 
 - powershell: |
     $fullComponentPath = "src/app/layouts/full/full.component.ts"
     $today = Get-Date -Format "yyyy-MM-dd"
-    (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding UTF8
+    (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding utf8NoBOM
   displayName: 'Update LabelPublicacion to today'
 
 - script: ng build --configuration production
