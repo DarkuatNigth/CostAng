@@ -31,7 +31,7 @@ steps:
     (Get-Content $filePath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Set-Content $filePath
   displayName: 'Update LabelPublicacion to today'
 
-- script: npm run build -- --configuration=production
+- script: ng build --configuration production
   displayName: 'Build Angular project'
 
 - task: CopyFiles@2
