@@ -38,6 +38,10 @@ steps:
     (Get-Content $filePath) -replace 'let DomainSite\s*=\s*".*";', 'let DomainSite = "https://portaltest.songa.com";' | Set-Content $filePath -Encoding utf8
   displayName: 'Set DomainSite value to https://portaltest.songa.com'
 
+- powershell: |
+    Get-Content src/app/config/url.servicios.ts
+  displayName: 'Show url.servicios.ts content after update'
+
 - script: ng build --configuration production
   displayName: 'Build Angular project'
 
