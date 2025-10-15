@@ -19,7 +19,7 @@ steps:
 - script: npm install sweetalert2@11.10.1 --force
   displayName: 'Force install sweetalert2@11.10.1'
 
-- script: npm install -g @angular/cli@17.0.2 @angular-devkit/build-angular@17.0.2
+- script: npm install -g @angular/cli@17.0.2
   displayName: 'Install Angular CLI globally'
 
 - powershell: |
