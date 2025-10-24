@@ -214,7 +214,7 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
   async onChangeTipoProceso($event: any) {
     await this.DiasParaPlantaConsultar();
-    this.inputLibrasShowHide();
+    //this.inputLibrasShowHide();
     this.selectTurnoShowHide();
     this.formatLibrasN2();
   }

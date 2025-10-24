@@ -16,7 +16,7 @@ let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
 let DomainSiteRRHH = 'https://talentohumano.songa.com';
 
-export const URL_SOCKET = 'https://sites.songa.com/AppSockets/';
+export const URL_SOCKET = 'https://sites.songa.com';
 
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";
