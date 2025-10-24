@@ -131,37 +131,53 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 
 
 
-  async onClickAddDias() {
+async onClickAddDias() {
 
-    //validate planta and fecha does not exist in listaDiasParaPlanta
-    if (this.listaDiasParaPlanta.some(dia => dia.pp_paCodigo === this.pa_codigo && dia.pp_fecha === moment(this.pp_fecha).format('YYYY/MM/DD'))) {
-      await this.showAlert('Alerta', 'Ya existe un registro para la planta y fecha seleccionada.', 'warning');
+    //validate libras are valid
+    if (this.pp_tipo === 'PA' && (this.pp_libras === null || this.pp_libras === undefined || isNaN(this.pp_libras) || this.pp_libras <= 0)) {
+      await this.showAlert('Alerta', 'Ingrese un valor válido para libras.', 'warning');
       return;
     }
 
-    this.listaDiasParaPlanta.push({
-      pp_id: 0,
-      pp_paCodigo: this.pa_codigo,
-      pp_fecha: moment(this.pp_fecha).format('YYYY/MM/DD'),
-      pp_tipo: this.pp_tipo,
-      pp_libras: this.pp_libras,
-      pp_usuario: await localStorage.getItem(varUser),
-      pp_turno: this.pp_turno
-    });
+    //validate planta and fecha does not exist in listaDiasParaPlanta
+    if (this.listaDiasParaPlanta.some(dia => dia.pp_paCodigo === this.pa_codigo && dia.pp_fecha === moment(this.pp_fecha).format('YYYY/MM/DD'))) {
+      
+      const existingRow = this.listaDiasParaPlanta.find(dia => dia.pp_paCodigo === this.pa_codigo && dia.pp_fecha === moment(this.pp_fecha).format('YYYY/MM/DD'));
 
-    const jsonData = this.listaDiasParaPlanta.map(r => ({
-      pp_id: r.pp_id,
-      pp_paCodigo: r.pp_paCodigo,
-      pp_fecha: r.pp_fecha,
-      pp_tipo: r.pp_tipo,
-      pp_libras: r.pp_libras,
-      pp_usuario: r.pp_usuario,
-      pp_turno: r.pp_turno === '' ? null : r.pp_turno,
-    }));
+      const jsonData = {
+        pp_id: existingRow.pp_id,
+        pp_paCodigo: existingRow.pp_paCodigo,
+        pp_fecha: existingRow.pp_fecha,
+        pp_tipo: existingRow.pp_tipo,
+        pp_libras: this.pp_libras,
+        pp_usuario: existingRow.pp_usuario,
+        pp_turno: existingRow.pp_turno === '' ? null : existingRow.pp_turno,
+      };
+      await this.diasParaPlantaGuardar(localStorage.getItem(varUser), JSON.stringify(jsonData));
+    }
+    else {
 
-    await this.diasParaPlantaGuardar(localStorage.getItem(varUser), JSON.stringify(jsonData));
+      this.listaDiasParaPlanta.push({
+        pp_id: 0,
+        pp_paCodigo: this.pa_codigo,
+        pp_fecha: moment(this.pp_fecha).format('YYYY/MM/DD'),
+        pp_tipo: this.pp_tipo,
+        pp_libras: this.pp_libras,
+        pp_usuario: await localStorage.getItem(varUser),
+        pp_turno: this.pp_turno
+      });
+      const jsonData = this.listaDiasParaPlanta.map(r => ({
+        pp_id: r.pp_id,
+        pp_paCodigo: r.pp_paCodigo,
+        pp_fecha: r.pp_fecha,
+        pp_tipo: r.pp_tipo,
+        pp_libras: r.pp_libras,
+        pp_usuario: r.pp_usuario,
+        pp_turno: r.pp_turno === '' ? null : r.pp_turno,
+      }));
+      await this.diasParaPlantaGuardar(localStorage.getItem(varUser), JSON.stringify(jsonData));
+    }
     await this.DiasParaPlantaConsultar();
-
   }
 
   async diasParaPlantaGuardar(usuario: string, jsonData: string) {
