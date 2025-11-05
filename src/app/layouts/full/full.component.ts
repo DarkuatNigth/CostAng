@@ -38,7 +38,7 @@ export class FullComponent implements OnInit {
   public expandLogo = false;
 
   LabelOpcion:string = "Inicio";
-  LabelPublicacion:string = "2025-10-08";
+  LabelPublicacion:string = "2025-11-05";
   
   options = {
     theme: 'light', // two possible values: light, dark

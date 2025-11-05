@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     RouterModule.forChild([
-        { path: 'ext-transa', canActivate: [AuthGuard], component: FrmtransaccionusuarioComponent },
+        { path: 'ext-transauser', canActivate: [AuthGuard], component: FrmtransaccionusuarioComponent },
     ]),
     DxLoadPanelModule,
     DxButtonModule,
