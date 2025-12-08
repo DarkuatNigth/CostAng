@@ -9,6 +9,9 @@ import { FrmplanificacionvagModuleFactory } from './Produccion/Procesos/frmplani
 import { TokenexpiredModuleFactory } from './tokenexpired/tokenexpired.module';
 import { FrmplanificacionembarqueModuleFactory } from './Produccion/Procesos/frmplanificacionembarque/frmplanificacionembarque.module';
 import { FrmperfilclienteModuleFactory } from './Produccion/Mantenimiento/frmperfilcliente/frmperfilcliente.module';
+import { FrmdiasparadaplantaModuleFactory } from './Produccion/Mantenimiento/frmdiasparadaplanta/frmdiasparadaplanta.module';
+import { FrmenvioxmlnatModuleFactory } from './Produccion/Procesos/frmenvioxmlnat/frmenvioxmlnat.module';
+import { FrmtransaccionusuarioModuleFactory } from './Produccion/Mantenimiento/frmtransaccionusuario/frmtransaccionusuario.module';
 
 const routes: Routes = [
   {
@@ -67,7 +70,18 @@ const routes: Routes = [
         path: '', 
         loadChildren: TokenexpiredModuleFactory 
       },
-      
+      {
+        path: '',
+        loadChildren: FrmdiasparadaplantaModuleFactory
+      },
+      {
+        path: '',
+        loadChildren: FrmenvioxmlnatModuleFactory
+      },
+      {
+        path: '',
+        loadChildren: FrmtransaccionusuarioModuleFactory
+      }
 		]
 	},
   
