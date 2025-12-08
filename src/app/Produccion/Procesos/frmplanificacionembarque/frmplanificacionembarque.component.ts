@@ -189,19 +189,27 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     this.socket.on('connect', () => {
       console.log('Conectado al socket');
     });
-    this.socket.on('new-planificacion-vag', (data: any) => {
+    this.socket.on('new-planificacion-vag', async (data: any) => {
       let msg = data.message || 'Nueva planificación de Valor Agregado';
-      notify(msg, "info", 3500);
-      if (this.horarioComponent) {
-        this.horarioComponent.updateSelectedMonth();
+      // notify(msg, "info", 3500);
+      let resp = await this.showAlertConfirm('Advertencia',`${msg}. Desea actualizar los datos?`,'warning');
+      if (resp) {
+        if (this.horarioComponent) {
+          this.horarioComponent.updateSelectedMonth();
+        }
+        this.getPedidosPlanificacionEmbarque();
       }
-      this.getPedidosPlanificacionEmbarque();
     });
     this.socket.on('new-breakdown', (data: any) => {
       let msg = data.message || 'new-breakdown';
       let referencias = data.payload || [];
       console.log('new-breakdown', data);
-      notify(msg, "info", 3500);
+      notify({
+        message: msg,
+        type: 'info',
+        displayTime: 3500,
+        position: { my: 'top center', at: 'top center' }
+      });
       if (this.horarioComponent) {
         this.horarioComponent.updateReferenciasBreakdown(referencias);
       }

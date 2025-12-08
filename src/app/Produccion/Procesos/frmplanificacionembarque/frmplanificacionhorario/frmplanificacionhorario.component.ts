@@ -250,12 +250,22 @@ export class FrmplanificacionhorarioComponent implements OnInit, AfterViewInit {
     const targetDay = target.getAttribute('data-day');
     if (this.draggedItem && targetDay) {
       if (this.draggedItem.EstadoVisualizacion === "BD"){
-        notify(`No se puede mover la planificación, ya se generó un BreakDown`, "warning", 3000);
+        notify({
+          message: `No se puede mover la planificación, ya se generó un BreakDown`,
+          type: 'info',
+          displayTime: 3500,
+          position: { my: 'top center', at: 'top center' }
+        });
         return;
       }
       const day = this.dayMap.get(targetDay);
       if (moment(day.day).isBefore(moment(), 'day') || (day.day == this.draggedItem.Fecha || day.disabled)) {
-        notify(`No se puede mover la planificación a esta fecha`, "warning", 3000);
+        notify({
+          message: `No se puede mover la planificación a esta fecha`,
+          type: 'info',
+          displayTime: 3500,
+          position: { my: 'top center', at: 'top center' }
+        });
         return;
       }
       // this.moveItemToDay(this.draggedItem, day);
