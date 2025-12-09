@@ -12,6 +12,7 @@ import { FrmperfilclienteModuleFactory } from './Produccion/Mantenimiento/frmper
 import { FrmdiasparadaplantaModuleFactory } from './Produccion/Mantenimiento/frmdiasparadaplanta/frmdiasparadaplanta.module';
 import { FrmenvioxmlnatModuleFactory } from './Produccion/Procesos/frmenvioxmlnat/frmenvioxmlnat.module';
 import { FrmtransaccionusuarioModuleFactory } from './Produccion/Mantenimiento/frmtransaccionusuario/frmtransaccionusuario.module';
+import { FrmclasificadoraimpresoraModuleFactory } from './Produccion/Mantenimiento/frmclasificadoraimpresora/frmclasificadoraimpresora.module';
 
 const routes: Routes = [
   {
@@ -81,6 +82,10 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: FrmtransaccionusuarioModuleFactory
+      },
+      {
+        path: '',
+        loadChildren: FrmclasificadoraimpresoraModuleFactory
       }
 		]
 	},

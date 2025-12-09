@@ -1,0 +1,86 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()"
+                [disabled]="disabledBtnGuardar">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <label class="col-12 col-sm-12 col-md-2 col-lg-1 pb-1 control-label">Planta:</label>
+                        <div class="col-12 col-sm-12 col-md-4 col-lg-2 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbPlantas" appendTo="body" [searchable]="true" [clearable]="false"
+                                (change)="onPlantaChange($event)">
+                                <ng-option *ngFor="let data of Plantas" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 pb-1">
+                            <dx-data-grid #GridClasificadoraImpresora 
+                                id="GridClasificadoraImpresora" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="ClasificadoraImpresora" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [filterValue]="['codPlanta', '=', cmbPlantas]" 
+                                [rowAlternationEnabled]="true" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedClasificadoraImpresora(GridClasificadoraImpresora)"
+                            >
+                                <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row>
+                                <dxi-column dataField="codPlanta" caption="Cod Planta" [visible]="false"></dxi-column>
+                                <dxi-column dataField="Id" caption="Id" [visible]="true"></dxi-column>
+                                <dxi-column dataField="claCodigo" caption="Cod Clasificadora" [visible]="true"></dxi-column>
+                                <dxi-column dataField="claDescripcion" caption="Clasificadora"></dxi-column>
+                                <dxi-column dataField="Ip" caption="IP" cellTemplate="cellTempValor"> </dxi-column>
+                                <div *dxTemplate="let cell of 'cellTempValor'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorIpImpresora($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div>
+                        
+                                <!-- Opciones de paginación -->
+                                <dxo-paging [pageSize]="3" [enabled]="false"></dxo-paging>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
