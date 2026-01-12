@@ -1,0 +1,249 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div class="row"  style="padding-left: 1%; padding-right: 1%; padding-top: 2%;">
+  <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+    <button type="button" style="width: 100%" class="btn btn-outline-secondary"
+      (click)="onClickNuevo()">
+      <i class="fa fa-file" style="padding-right: 15px"></i>Nuevo
+    </button>
+  </div>
+  <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+    <dx-button icon="find" type="default" text="Consultar"
+      (onClick)="onClickConsultarVacaciones(modalConsultaSolicitud)"
+      style="width: 100%">
+    </dx-button>
+  </div>
+  <div *ngIf="lvvisiblegrabar" class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+    <dx-button icon="save" type="success" text="Grabar"
+      (onClick)="onClickGuardarSolicitudVacaciones()"
+      style="width: 100%">
+    </dx-button>
+  </div>
+</div>
+<div style="padding-left: 1%; padding-right: 1%; padding-top: 1%;">
+  <div class="card" >
+      <div class="card-header" style="font-weight: bold;border: 2px solid #d9dbdd;border-radius: 4px; color: #0087B9;">
+          Solicitud de Vacaciones
+      </div>
+      <div class="card-body" style="border: 2px solid #d9dbdd;border-radius: 4px;">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="form-group row">
+              <div *ngIf="jefearea" [ngClass]="jefearea ? 'col-lg-6 col-md-12 col-sm-12 col-12' : 'col-lg-12 col-md-12 col-sm-12 col-12'">
+                <!-- grid -->
+                <fieldset class="border p-2" style="padding-bottom: 1px;border: 1px solid #d6d8db !important;">
+                <legend class="float-none w-auto p-2" style="color: #0087b9">
+                  Empleado
+                </legend>
+              
+                <dx-data-grid
+                  #GridPeriodo style="width: 100%; max-height: 40vh" [dataSource]="DataEmpleado" [showColumnLines]="true"
+                  [showRowLines]="true" [showBorders]="true" class="cssDetalleGrid" [rowAlternationEnabled]="true"
+                  [columnHidingEnabled]="false" [columnAutoWidth]="true" [hoverStateEnabled]="true"
+                  (onRowClick)="onRowMostrarDetalleEmpleado($event)"
+                >
+                  <dxo-selection mode="single"></dxo-selection>
+                  <dxo-search-panel [visible]="true" width="100%"placeholder="Buscar...">
+                </dxo-search-panel>
+                  <dxi-column dataField="id" [visible]="false" [caption]="'id'"></dxi-column>
+                  <dxi-column dataField="codigo" [visible]="true" [caption]="'Codigo Empleado'"></dxi-column>
+                  <dxi-column dataField="empleado" [visible]="true" [caption]="'Empleado'"></dxi-column>
+                  <dxi-column dataField="diaspendiente" [visible]="true" [caption]="'Días Pendientes'"></dxi-column>
+                  <div *dxTemplate="let data of 'row'">
+                    <div [ngClass]="getRowClass(data.rowIndex)" [attr.role]="'row'"
+                      [class]="data.rowElement.className">
+                      {{ data.rowIndex }}
+                    </div>
+                  </div>
+                  <dxo-summary>
+                    <dxi-total-item column="periodo"
+                      summaryType="count"
+                      displayFormat="Total Periodos: {0}">
+                    </dxi-total-item>
+                  </dxo-summary>
+                </dx-data-grid>
+              </fieldset>
+              </div> 
+              <div [ngClass]="jefearea ? 'col-lg-6 col-md-12 col-sm-12 col-6' : 'col-lg-12 col-md-12 col-sm-12 col-12'">
+   
+                  <div class="form-group row">
+                    <div *ngIf="isVisibleSolicitud" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" [innerHTML]="txtSolicitudInfo" 
+                    style="font-weight: bold;font-size: 20px;color: #c8424d;margin-bottom: 0;white-space: pre-line; padding-bottom: 1%;">
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" [innerHTML]="txtEmpleadoDetalleInfo" 
+                    style="font-weight: bold;font-size: 22px;color: #03335f;margin-bottom: 0;white-space: pre-line; padding-bottom: 1%;">
+                    </div>
+                    <label [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-2 col-6 pb-1 text-left control-label': 
+                      'col-xs-12 col-sm-12 col-md-2 col-lg-1 col-6 pb-1 text-left control-label'">Desde:</label>
+                    <div [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-4 col-6 pb-1':
+                          'col-xs-12 col-sm-12 col-md-4 col-lg-2 col-6 pb-1'">
+                      <dx-date-box [(ngModel)]="FechaDesde" [min]="minDate" type="date" displayFormat="yyyy/MM/dd"
+                          adaptivityEnabled="true" openOnFieldClick="true" [useMaskBehavior]="true"
+                          (onValueChanged)="calcularDias()" style="width: 100%">
+                      </dx-date-box>
+                    </div>
+                    <label [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-2 col-6 pb-1 text-left control-label': 
+                      'col-xs-12 col-sm-12 col-md-2 col-lg-1 col-6 pb-1 text-left control-label'">Hasta:</label>
+                    <div [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-4 col-6 pb-1':
+                          'col-xs-12 col-sm-12 col-md-4 col-lg-2 col-6 pb-1'">
+                      <dx-date-box [(ngModel)]="FechaHasta" [min]="minFechaHasta" type="date" displayFormat="yyyy/MM/dd" adaptivityEnabled="true"
+                                  openOnFieldClick="true" [useMaskBehavior]="true" (onValueChanged)="calcularDias()"
+                                  style="width: 100%">
+                      </dx-date-box>
+                    </div>
+                    <label [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-2 col-6 pb-1 text-left control-label': 
+                      'col-xs-12 col-sm-12 col-md-2 col-lg-1 col-6 pb-1 text-left control-label'">Días Solicitados:</label>
+                    <div [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-4 col-6 pb-1':
+                          'col-xs-12 col-sm-12 col-md-4 col-lg-2 col-6 pb-1'">
+                      <input type="text" class="form-control" [(ngModel)]="txtdiassolicitado" [disabled]="true"/>
+                    </div>
+                  </div>
+              </div>
+              <label class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1 text-left control-label">Observación:</label>
+              <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                <textarea class="form-control" [(ngModel)]="txtObservacion" rows="20"
+                style="resize: none; font-size: 12px;white-space: pre-line !important;"
+                name="txtEmpleadoInfo" rows="4"></textarea>
+              </div> 
+            </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<ng-template #modalConsultaSolicitud let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Consulta de Solicitud</h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true"> × </span>
+    </button>
+  </div>
+  <div
+    class="modal-body mostly-customized-scrollbar"
+    style="max-height: 70vh; overflow: auto"
+  >
+    <div class="col-lg-12">
+      <div class="row" style="padding-left: 2%; padding-right: 2%">
+        <label
+          class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+          >Estado:</label
+        >
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-3 pb-1">
+          <ng-select
+            style="width: 100%"
+            [(ngModel)]="cmbEstadoConsulta"
+            appendTo="body"
+            [searchable]="false"
+            [clearable]="false"
+          >
+            <ng-option *ngFor="let data of listaEstados" [value]="data.id">
+              <div title="{{ data.descri }}" style="font-size: 14px">
+                {{ data.descri }}
+              </div>
+            </ng-option>
+          </ng-select>
+        </div>
+        <label
+          class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1"
+          style="font-size: 12px; height: 28px; white-space: wrap"
+          >Desde:</label
+        >
+        <div
+          class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pb-1"
+          style="display: flex"
+        >
+          <dx-date-box
+            [(ngModel)]="dtpFechaDesde"
+            type="date"
+            [width]="'100%'"
+            displayFormat="yyyy/MM/dd"
+            adaptivityEnabled="true"
+            openOnFieldClick="true"
+            name="dtpFechaDesde"
+          >
+          </dx-date-box>
+        </div>
+
+        <label
+          class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1"
+          style="font-size: 12px; height: 28px; white-space: wrap"
+          >Hasta:</label
+        >
+
+        <div
+          class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pb-1"
+          style="display: flex"
+        >
+          <dx-date-box
+            [(ngModel)]="dtpFechaHasta"
+            type="date"
+            [width]="'100%'"
+            displayFormat="yyyy/MM/dd"
+            adaptivityEnabled="true"
+            openOnFieldClick="true"
+            name="dtpFechaHasta"
+          >
+          </dx-date-box>
+        </div>
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-2 col-3 pb-1">
+          <dx-button
+            icon="find"
+            type="default"
+            (onClick)="onClickConsultarSolicitudVacaciones()"
+            text="Consultar"
+            style="width: 100%"
+          >
+          </dx-button>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+          <dx-data-grid
+            style="width: 100%; max-height: 60vh"
+            [dataSource]="listaConsultaSolicitud"
+            [columns]="columnasSolicitud"
+            [showColumnLines]="true"
+            [showRowLines]="true"
+            [showBorders]="true"
+            [rowAlternationEnabled]="true"
+            [columnHidingEnabled]="false"
+            [columnAutoWidth]="true"
+            (onRowDblClick)="onRowVacacionesDoubleClick($event, modal)"
+          >
+            <dxo-selection mode="single"></dxo-selection>
+            <dxo-search-panel
+              [visible]="true"
+              width="100%"
+              placeholder="Buscar..."
+            >
+            </dxo-search-panel>
+            <dxo-paging [pageSize]="10" [pageIndex]="0"> </dxo-paging>
+          </dx-data-grid>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="modal.close()">
+      Cancelar
+    </button>
+  </div>
+</ng-template>
+
+
+
+
