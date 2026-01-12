@@ -86,6 +86,14 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: FrmclasificadoraimpresoraModuleFactory
+      },
+      { 
+        path: 'ext-SolicitudVacaciones',
+        loadChildren: () => import('./GestionPersonalRRHH/frmsolvacaciones/frmsolvacaciones.module').then((m) => m.FrmsolvacacionesModule),
+      },
+      { 
+        path: 'ext-AprobSolicitudVacaciones/:opcion',
+        loadChildren: () => import('./GestionPersonalRRHH/frmaprobsolvacaciones/frmaprobsolvacaciones.module').then((m) => m.FrmaprobsolvacacionesModule),
       }
 		]
 	},

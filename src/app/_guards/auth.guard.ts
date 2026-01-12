@@ -17,6 +17,30 @@ export class AuthGuard {
         let tokenuSr = "";
         let validaToken = true;
 
+        //se valida que el usuario tenga permiso a ese formulario excepto las externas que se controlan por token y las de login
+        if (!state.url.includes("/login") &&
+            !state.url.includes("/CoordenadasLogin") &&
+            !state.url.includes("/tokenExpired") &&
+            state.url !== "/"
+            && !state.url.includes("/ext-")
+        ) {
+            var mn = localStorage.getItem(varMenuDT);
+            var pathName = state.url;
+            if (mn !== undefined && mn !== null) {
+                if (JSON.parse(mn).filter((c) => c.path == pathName).length === 0) {
+                    this.router.navigateByUrl('/login');
+                    return false;
+                }
+            } else {
+                this.router.navigateByUrl('/login');
+                return false;
+            }
+        }
+
+        /* if(state.url.includes("ext-AprobSolicitudVacaciones") ||
+           state.url.includes("ext-SolicitudVacaciones")){
+            return true;
+        } */
  
         if(params !== ""){
             let contra = this._login.Decrypt(decodeURIComponent(params.toString()), 2);

@@ -1,0 +1,214 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div class="row" style="padding: 2%">
+    <div class="form-group row margin-container">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+        <div style="padding: 5px">
+          <div class="row">
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+              <dx-button
+                icon="find"
+                type="default"
+                text="Consultar"
+                (onClick)="
+                     onClickConsultarVacaciones()
+                    "
+                style="width: 100%"
+              >
+              </dx-button>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+              <dx-button
+                icon="save"
+                type="success"
+                text="Aprobar"
+                (onClick)="onClickGuardarSolicitudVacaciones()"
+                style="width: 100%"
+              >
+              </dx-button>
+            </div>
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+              <dx-button
+                icon="remove"
+                type="danger"
+                text="Denegar"
+                (onClick)="onClickDenegarSolicitudVacaciones()"
+                style="width: 100%"
+              >
+              </dx-button>
+            </div>
+            
+          </div>
+          <div class="card">
+            <div
+              class="card-header"
+              style="
+                font-weight: bold;
+                border: 2px solid #d9dbdd;
+                border-radius: 4px;
+                color: #0087b9;
+              "
+            >
+              Aprobación de Solicitud Vacaciones
+            </div>
+            <div
+              class="card-body"
+              style="border: 2px solid #d9dbdd; border-radius: 4px"
+            >
+              <div class="row">
+               
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+                [innerHTML]="txtEmpleadoInfo" 
+                style="
+                font-weight: bold;
+                font-size: 22px;
+                color: #03335f;
+                margin-bottom: 0;
+                white-space: pre-line;">
+              </div>
+             
+                <div class="w-100 d-lg-block d-md-none"></div>
+                <div class="w-100 d-lg-none"></div>
+             
+
+                <div class="w-100 d-lg-block d-md-none"></div>
+                <div class="w-100 d-lg-none"></div>
+
+              </div>
+
+              <div class="row">
+                <div  class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                    <dx-data-grid
+                      #GridDataEmpleadoSolicitud
+                      keyExpr="sol_id"
+                      style="width: 100%; max-height: 40vh"
+                      [dataSource]="DataEmpleadoSolicitud"
+                      [showColumnLines]="true"
+                      [showRowLines]="true"
+                      [showBorders]="true"
+                      class="cssDetalleGrid"
+                      [rowAlternationEnabled]="true"
+                      [columnHidingEnabled]="false"
+                      [columnAutoWidth]="true"
+                      [hoverStateEnabled]="true"
+                      (onSelectionChanged)="onSelectionChangedDetalle($event)"
+                    >
+                    <dxo-search-panel
+                      [visible]="true"
+                      width="100%"
+                      placeholder="Buscar..."
+                    ></dxo-search-panel>
+
+                    <dxo-selection
+                        [selectAllMode]="allMode"
+                        [showCheckBoxesMode]="checkBoxesMode"
+                        mode="multiple"
+                    ></dxo-selection>
+
+
+                    <!-- <dxi-column
+                    dataField="Marcado"
+                    headerCellTemplate="selectAllSolTemplate"
+                    cellTemplate="cellTempCheckNominaDiurno"
+                    [dataType]="'boolean'"
+                    [caption]="'Seleccionar'"
+                    [allowEditing]="true"
+                  ></dxi-column>
+                  <div *dxTemplate="let cell of 'selectAllSolTemplate'">
+                    <div>
+                      <input
+                        class="cssCheckBox"
+                        type="checkbox"
+                        (click)="$event.stopPropagation()"
+                        [(ngModel)]="isAllSolSelected"
+                        (change)="onSelectAllDiurnoChanged($event)"
+                      />
+                    </div>
+                  </div> -->
+
+
+    <!--               <div *dxTemplate="let cell of 'cellTempCheckNominaDiurno'">
+                      <div>
+                          <input type="checkbox"
+                                class="cssCheckBox"
+                                (change)="onChangeCridTipoNomina(cell.value,cell,false)"
+                                [(ngModel)]="cell.value"
+                                style="
+                                  width: 100%;
+                                  border: 0px;
+                                  background-color: transparent;
+                                  text-align: right;
+                                "
+                              />
+                            </div>
+                          </div> -->
+                    <dxi-column
+                        dataField="sol_id"
+                        [visible]="false"
+                        [caption]="'sol_id'"
+                      ></dxi-column>
+                      <dxi-column
+                        dataField="trb_codigo"
+                        [visible]="false"
+                        [caption]="'Codigo'"
+                      ></dxi-column>
+                      <dxi-column
+                        dataField="empleado"
+                        [visible]="true"
+                        [caption]="'Empleado'"
+                      ></dxi-column>
+                      <dxi-column
+                        dataField="fechadesde"
+                        [visible]="true"
+                        [caption]="'Desde'"
+                      ></dxi-column>
+                      <dxi-column
+                      dataField="fechahasta"
+                      [visible]="true"
+                      [caption]="'Hasta'"
+                    ></dxi-column>
+                    <dxi-column
+                    dataField="dias_solicitado"
+                    [visible]="true"
+                    [caption]="'Dias Solicitados'"
+                  ></dxi-column>
+                      <dxo-summary>
+                        <dxi-total-item
+                          column="empleado"
+                          summaryType="count"
+                          displayFormat="Total Empleado: {0}"
+                        >
+                        </dxi-total-item>
+                      </dxo-summary>
+                    </dx-data-grid>
+                </div>
+                <div >
+               
+
+              </div>
+                
+              </div>
+              <div class="w-100 d-lg-block d-md-none"></div>
+              <div class="w-100 d-lg-none"></div>
+              
+                <div
+                  class="col-xs-12 col-sm-12 col-md-6 col-lg-11 pb-1"
+                  style="display: flex"
+                >
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
