@@ -71,7 +71,7 @@
   
 }
 
-::ng-deep #GridPedidosPaisDetail {
+::ng-deep #GridPedidosPaisDetail, ::ng-deep #GridPedidosPaisDetail2 {
   .dx-datagrid .dx-row > td {
     padding: 4px;
   }
@@ -108,6 +108,7 @@
   }
   .dx-toolbar .dx-toolbar-after {
     width: 100%;
+    padding-left: 0px;
   }
   
   .dx-datagrid-search-panel.dx-searchbox {
@@ -115,6 +116,15 @@
   }
   .dx-datagrid-search-panel {
     margin: 0px;
+  }
+  td.dx-group-cell {
+    font-size: larger;
+    color: black;
+  }
+
+  td.no-wrap {
+    white-space: nowrap !important;
+    word-break: break-word !important;
   }
 }
 
@@ -177,8 +187,8 @@
 ::ng-deep .cssModalPlanificarEmbarque {
   .modal-dialog {
       min-width: 750px;
-      max-width: 1200px;
-      width: 95%;
+      max-width: 1300px;
+      width: 98%;
       z-index: unset;
   }
   .control-label {
