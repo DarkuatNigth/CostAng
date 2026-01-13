@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, ActivatedRoute,NavigationEnd } from '@angular/router';
-import { varExpire, varMenu, varMenuDT, varToken, varUser, varUser2 } from '../config/url.servicios';
+import { varEmpresa, varExpire, varMenu, varMenuDT, varToken, varUser, varUser2 } from '../config/url.servicios';
 import {LoginService} from './../login/login.service'; 
 
 @Injectable()
@@ -16,6 +16,7 @@ export class AuthGuard {
         let params = (state.url.split('?').length > 1 ? state.url.split('?')[1] : "");
         let tokenuSr = "";
         let validaToken = true;
+        let empresa = "";
 
         //se valida que el usuario tenga permiso a ese formulario excepto las externas que se controlan por token y las de login
         if (!state.url.includes("/login") &&
@@ -56,6 +57,10 @@ export class AuthGuard {
                         if(colParam[0].toString() == "user"){
                             usr = colParam[1].toString();
                         }
+
+                        if(colParam[0].toString() == "empresa"){
+                            empresa = colParam[1].toString();
+                        }
                     }
                 }
                 if(state['root'].queryParams || state['root'].queryParams !== undefined){
@@ -83,6 +88,7 @@ export class AuthGuard {
                     localStorage.removeItem(varUser2);
                     localStorage.removeItem(varExpire);                    
                     localStorage.removeItem(varToken);
+                    localStorage.removeItem(varEmpresa);
                     this.router.navigateByUrl('/tokenExpired');
                     return true;
                 } else {
@@ -96,6 +102,7 @@ export class AuthGuard {
                 var now = Date.now();
                 var schedule = now + 60*1000*timeout; //60 seg por 1000 mileseg por 120 minutos = 2 horas 
                 localStorage.setItem(varExpire, schedule.toString());
+                localStorage.setItem(varEmpresa, empresa);
             }
 
         }
@@ -113,6 +120,7 @@ export class AuthGuard {
             localStorage.removeItem(varUser2);
             localStorage.removeItem(varExpire);
             localStorage.removeItem(varToken);
+            localStorage.removeItem(varEmpresa);
             this.router.navigateByUrl('/tokenExpired');
             return true;
         } 
@@ -143,6 +151,7 @@ export class AuthGuard {
                 localStorage.removeItem(varUser);
                 localStorage.removeItem(varMenu);
                 localStorage.removeItem(varMenuDT);
+                localStorage.removeItem(varEmpresa);
                 //this.router.navigateByUrl('/login');
                 
                 return false;
