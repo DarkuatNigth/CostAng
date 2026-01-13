@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { DxDataGridComponent } from 'devextreme-angular/ui/data-grid';
-import { DxTabPanelComponent } from 'devextreme-angular';
+import { DxPopoverComponent, DxTabPanelComponent } from 'devextreme-angular';
 import { FrmplanificacionvagService } from '../frmplanificacionvag/frmplanificacionvag.service';
 import { DxDataGridModule, DxDataGridTypes } from 'devextreme-angular/ui/data-grid';
 import { NotificationService } from 'src/app/shared/notify.service';
@@ -95,7 +95,9 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   title = 'Pre - Planificación de Embarque';
   loadingVisible: boolean = false;
   disabledGenerarMix: boolean = true;
+  disabledGenerarChina: boolean = true;
   planificacionMix = false;
+  planificacionChina = false;
 
   pedidosPorPais: PedidosPorPais[] = [];
   pedidosPaisDetail: any[] = [];
@@ -150,6 +152,12 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     this.popupInfoReqEspVisible = !this.popupInfoReqEspVisible;
   }
 
+  pedidoPopoverData: any = null;
+  showPopoverPedido(data: any, event: any) {
+    this.pedidoPopoverData = data;
+    this.popoverPedido.instance.show(event.target);
+  }
+
   @ViewChild('GridPedidosPorPais', { static: false }) GridPedidosPorPais: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetail', { static: false }) GridPedidosPaisDetail: DxDataGridComponent;
   @ViewChild('GridPedidosPaisDetailByProduct', { static: false }) GridPedidosPaisDetailByProduct: DxDataGridComponent;
@@ -163,12 +171,13 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
   @ViewChild(FrmplanificacionhorarioComponent, { static: false }) horarioComponent!: FrmplanificacionhorarioComponent;
 
+  @ViewChild('popoverPedido', { static: false }) popoverPedido: DxPopoverComponent;
+
   public socket = io.io(URL_SOCKET, {
     // transports: ['websocket'], 
     autoConnect: true, 
     path: '/AppSockets/socket/'
   });
-
   
   constructor(
     private _service: FrmplanificacionembarqueService,
@@ -177,6 +186,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
+    private cdr: ChangeDetectorRef,
   ) {
 
     
@@ -186,6 +196,15 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   async ngOnInit() {
     this.limpiarNuevo();
     this.onClickNuevo();
+    this.socketsConnect();
+    this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalPlanificarEmbarque',
+    });
+    this.modalReferenceItem.close();
+  }
+  
+  socketsConnect(){
     this.socket.on('connect', () => {
       console.log('Conectado al socket');
     });
@@ -213,10 +232,8 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       if (this.horarioComponent) {
         this.horarioComponent.updateReferenciasBreakdown(referencias);
       }
-    
     });
   }
-  
   
   async onClickNuevo() {
     this._service.getCatalogosPlanificacionEmbarque().subscribe((data) => {
@@ -287,7 +304,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               bloqueado: item.cuarentenaBloqueado,
   
               etiquetadoChina: item.etiquetadoChina,
-              mastersProgramados: item.mastersProgramados || item.mastersPlanificado,
+              mastersProgramados: parseInt(item.mastersProgramados) || parseInt(item.mastersPlanificado) || 0,
               cuarentenaSulfito: item.cuarentenaSulfito,
               cuarentena: item.cuarentena,
               cuarentenaBloqueado: item.cuarentenaBloqueado,
@@ -305,6 +322,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               agrupacionCodigo: item.OrdenAgrupacion,
               agrupacionDescri: item.Agrupacion,
               tallas: item.tallas,
+              productos: item.productos,
               referenciaPlanificada: item.referenciaPlanificada,
               permiteElegirDestino: item.permiteElegirDestino,
             };
@@ -348,7 +366,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
               bloqueado: item.cuarentenaBloqueado,
               
               etiquetadoChina: item.etiquetadoChina,
-              mastersProgramados: item.mastersProgramados || item.mastersPlanificado,
+              mastersProgramados: parseInt(item.mastersProgramados) || parseInt(item.mastersPlanificado) || 0,
               cuarentenaSulfito: item.cuarentenaSulfito,
               cuarentena: item.cuarentena,
               cuarentenaBloqueado: item.cuarentenaBloqueado,
@@ -418,7 +436,6 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   onInitializedPedidosPaisDetail(grid: any) {
     this.GridPedidosPaisDetail = grid;
   }
-
 
 
   onInitializedPedidosPaisDetailByProduct(grid: any) {
@@ -573,14 +590,18 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
   async onChangeGridCheckPlanificar(value: any, data: any) {
     this.loadingVisible = true;
+    this.cdr.detectChanges();
     this.planificacionMix = false;
+    this.planificacionChina = false;
     this.pedidosPaisDetail.find((x) => x.id == data.data.id).checkPlanificar = value;
-    if (value) {
-      this.pedidosPaisDetail.forEach(async (item) => {
-        if (item.id !== data.data.id) {
-          item.checkPlanificar = false;
-        }
-      });
+    this.disabledGenerarChina =  !this.pedidosPaisDetail.some((item) => item.checkPlanificar && item.agrupacionDescri === 'CHINA');
+    if (value && data.data.agrupacionDescri !== 'CHINA') {
+      // this.pedidosPaisDetail.forEach(async (item) => {
+      //   if (item.id !== data.data.id) {
+      //     item.checkPlanificar = false;
+      //   }
+      // });
+      // TODO: el metodo foreach se demora mucho
       this.limpiarPedidoSelected();
       this.pedidoSelectedForPlanificar = data.data;
       this.pedidoSelectedForPlanificar.tipoEmbarque = 'I';
@@ -615,17 +636,28 @@ export class FrmplanificacionembarqueComponent implements OnInit {
           console.log('Error al cargar los datos de requerimiento especial: ', error);
         }
       });
-
-      this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
-        ariaLabelledBy: 'modal-basic-title',
-        windowClass: 'cssModalPlanificarEmbarque',
-      });
+      // Reutilizar el modal precargado si existe
+      if (this.modalReferenceItem && this.modalReferenceItem.hasOwnProperty('componentInstance')) {
+        try {
+          this.modalReferenceItem.close();
+        } catch (e) {}
+        this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+          ariaLabelledBy: 'modal-basic-title',
+          windowClass: 'cssModalPlanificarEmbarque',
+        });
+      } else {
+        this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+          ariaLabelledBy: 'modal-basic-title',
+          windowClass: 'cssModalPlanificarEmbarque',
+        });
+      }
     }
-    await this.GridPedidosPaisDetail.instance.refresh();
+    if (this.GridPedidosPaisDetail) {
+      await this.GridPedidosPaisDetail.instance.refresh();
+    }
     this.loadingVisible = false;
   }
   
-
 
   async onChangeGridCheckPlanificarMix(value: any, data: any) {
     this.pedidosPaisDetailByProduct.find((x) => x.id == data.data.id).checkPlanificar = value;
@@ -675,7 +707,9 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
   async onClickGenerarMix() {
     this.loadingVisible = true;
+    this.planificacionChina = false;
     this.planificacionMix = true;
+    this.cdr.detectChanges();
     const pedidosSeleccionadosMix: any[] = this.pedidosPaisDetailByProduct.filter((x) => x.checkPlanificar);
     if (pedidosSeleccionadosMix.length === 0) {
       this.showAlert('','Seleccione al menos un pedido para generar el mix.','warning');
@@ -683,11 +717,17 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       return;
     }
     this.limpiarPedidoSelected();
-    this.pedidoSelectedForPlanificarDetalle = pedidosSeleccionadosMix;
-    this.pedidoSelectedForPlanificar = this.pedidoSelectedForPlanificarDetalle[0];
+    this.pedidoSelectedForPlanificar = pedidosSeleccionadosMix[0];
     this.pedidoSelectedForPlanificar.tipoEmbarque = 'M';
     this.pedidoSelectedForPlanificar.fechaPlanificacion = this.minFechaPlanificacion;
     this.pedidoSelectedForPlanificar.plantaEmbarque = 1; // planta de embarque por defecto es 1 (Songa)
+    this.pedidoSelectedForPlanificarDetalle = pedidosSeleccionadosMix;
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      this.totalPedidoPlanificar += item.saldoPedido;
+      this.totalStockPlanificar += item.stockTotal;
+      this.totalPalletsPlanificar += item.palletsTotMix;
+    });
+
     // si cliente es Gambastar
     if (this.pedidoSelectedForPlanificar.codCliente == 104) {
       const todosPeso1kg = this.pedidoSelectedForPlanificarDetalle.every((item) => item.pesoVta == 1);
@@ -724,11 +764,6 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       new Set(this.pedidoSelectedForPlanificarDetalle.map((item) => item.pedido))
     ).join(';');
 
-    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
-      this.totalPedidoPlanificar += item.saldoPedido;
-      this.totalStockPlanificar += item.stockTotal;
-      this.totalPalletsPlanificar += item.palletsTotMix;
-    });
 
     // si solo se selecciona una referencia, entonces no se debe de generar el mix. se generará una planificacion normal.
     let nRef = this.pedidoSelectedForPlanificar.referenciasMix.split(';').length;
@@ -787,7 +822,64 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     });
   }
 
+  pedidosSeleccionadosChina: any[] = [];
 
+  async onClickGenerarChina() {
+    this.loadingVisible = true;
+    this.planificacionMix = false;
+    this.planificacionChina = true;
+    this.cdr.detectChanges();
+    this.pedidosSeleccionadosChina = this.pedidosPaisDetail.filter((x) => x.checkPlanificar && x.agrupacionDescri === 'CHINA');
+    const pedidosSeleccionadosChinaDetalle: any[] = [];
+    if (this.pedidosSeleccionadosChina.length === 0) {
+      this.showAlert('','Seleccione al menos un pedido para generar la planificación.','warning');
+      this.loadingVisible = false;
+      return;
+    } 
+    this.pedidosSeleccionadosChina.forEach((pedido) => {
+      const detalles = this.pedidosPaisDetailByProduct.filter((x) => x.pedido === pedido.pedido);
+      pedidosSeleccionadosChinaDetalle.push(...detalles);
+    });
+    this.limpiarPedidoSelected();
+    this.pedidoSelectedForPlanificar = this.pedidosSeleccionadosChina[0];
+    this.pedidoSelectedForPlanificar.tipoEmbarque = 'I';
+    this.pedidoSelectedForPlanificar.fechaPlanificacion = this.minFechaPlanificacion;
+    this.pedidoSelectedForPlanificar.plantaEmbarque = 1; // planta de embarque por defecto es 1 (Songa)
+    this.pedidoSelectedForPlanificarDetalle = pedidosSeleccionadosChinaDetalle;
+    this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      this.totalPedidoPlanificar += item.saldoPedido;
+      this.totalStockPlanificar += item.stockTotal;
+      this.totalPalletsPlanificar += item.palletsCompletos;
+    });
+    this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios = this.pedidoSelectedForPlanificarDetalle[0].paletsMinAusenciaVibrios;
+    this.pedidoSelectedForPlanificar.paletsMaxSulfito = this.pedidoSelectedForPlanificarDetalle[0].paletsMaxSulfito;
+    this.pedidoSelectedForPlanificar.pedObservOrd = this.pedidoSelectedForPlanificarDetalle[0].pedObservOrd;
+    this.pedidoSelectedForPlanificar.numPallet = this.pedidoSelectedForPlanificarDetalle[0].numPallet;
+    this.pedidoSelectedForPlanificar.validaLoteRepresentativo = this.pedidoSelectedForPlanificarDetalle[0].validaLoteRepresentativo;
+    this.pedidoSelectedForPlanificar.loteRepresent = this.pedidoSelectedForPlanificarDetalle[0].loteRepresent;
+    this.pedidoSelectedForPlanificar.loteRepresentPallets = this.pedidoSelectedForPlanificarDetalle[0].loteRepresentPallets;
+
+    if (this.pedidoSelectedForPlanificar.permiteElegirDestino) {
+      this.cmbDestino = this.pedidoSelectedForPlanificar.codPuertoDestino;
+    }
+    // Obtener referencias únicas de los pedidos seleccionados
+    let referenciasSeleccionadas = Array.from(
+      new Set(this.pedidoSelectedForPlanificarDetalle.map((item) => item.pedido))
+    ).join(';');
+
+    // si solo se selecciona una referencia, entonces se generará una planificacion normal.
+    let nRef = referenciasSeleccionadas.split(';').length;
+    if (nRef === 1) {
+      this.planificacionChina = false;
+      this.pedidosSeleccionadosChina = [];
+    } 
+    
+    this.modalReferenceItem = await this.modalService.open(this.modalPlanificarEmbarque, {
+      ariaLabelledBy: 'modal-basic-title',
+      windowClass: 'cssModalPlanificarEmbarque',
+    });
+    this.loadingVisible = false;
+  }
 
   async onChangePalletsG1(value: any, rowData: any) {
     const { id } = rowData;
@@ -917,82 +1009,82 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   
 
 
-  async validarDatosPlaEmbarque() {
-    if (this.pedidoSelectedForPlanificar === null) {
+  async validarDatosPlaEmbarque(pedidoAPlanificar: any, pedidoAPlanificarDetalle: any[]): Promise<boolean> {
+    if (pedidoAPlanificar === null) {
       this.showAlert('','Seleccione un pedido para planificar.','warning');
       return false;
     }
-    if (this.pedidoSelectedForPlanificarDetalle.length === 0) {
+    if (pedidoAPlanificarDetalle.length === 0) {
       this.showAlert('','No existen pedidos seleccionados para planificar.','warning');
       return false;
     }
-    if (this.pedidoSelectedForPlanificar.fechaPlanificacion === null || this.pedidoSelectedForPlanificar.fechaPlanificacion === undefined) {
+    if (pedidoAPlanificar.fechaPlanificacion === null || pedidoAPlanificar.fechaPlanificacion === undefined) {
       this.showAlert('','Seleccione una fecha de planificación.','warning');
       return false;
     }
-    if (this.pedidoSelectedForPlanificar.fechaPlanificacion < this.minFechaPlanificacion) {
+    if (pedidoAPlanificar.fechaPlanificacion < this.minFechaPlanificacion) {
       this.showAlert('','La fecha de planificación no puede ser menor a la fecha actual.','warning');
       return false;
     }
-    if (!this.pedidoSelectedForPlanificar.plantaEmbarque) {
+    if (!pedidoAPlanificar.plantaEmbarque) {
       this.showAlert('','Seleccione una planta de embarque.','warning');
       return false;
     } else {
       // si la planta de embarque es 8 (Bodega Comin) ó 18 (Bodega Refristore) se valida que el pedido tenga stock en esas bodegas 
-      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 1) {
-        const tieneStockSonga = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockSonga > 0);
+      if (pedidoAPlanificar.plantaEmbarque == 1) {
+        const tieneStockSonga = pedidoAPlanificarDetalle.some((item) => item.stockSonga > 0);
         if (!tieneStockSonga) {
-          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          let resp = await this.showAlertConfirm('Advertencia',`El pedido ${pedidoAPlanificar.pedido} no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?`,'warning');
           if (!resp) {
-            return resp;
+            return false;
           }
         }
       }
-      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 8) {
-        const tieneStockComin = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockComin > 0);
+      if (pedidoAPlanificar.plantaEmbarque == 8) {
+        const tieneStockComin = pedidoAPlanificarDetalle.some((item) => item.stockComin > 0);
         if (!tieneStockComin) {
-          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          let resp = await this.showAlertConfirm('Advertencia',`El pedido ${pedidoAPlanificar.pedido} no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?`,'warning');
           if (!resp) {
-            return resp;
+            return false;
           }
         }
       }
-      if (this.pedidoSelectedForPlanificar.plantaEmbarque == 18) {
-        const tieneStockOtrasBodegas = this.pedidoSelectedForPlanificarDetalle.some((item) => item.stockOtrasBodegas > 0);
+      if (pedidoAPlanificar.plantaEmbarque == 18) {
+        const tieneStockOtrasBodegas = pedidoAPlanificarDetalle.some((item) => item.stockOtrasBodegas > 0);
         if (!tieneStockOtrasBodegas) {
-          let resp = await this.showAlertConfirm('Advertencia','El pedido no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?','warning');
+          let resp = await this.showAlertConfirm('Advertencia',`El pedido ${pedidoAPlanificar.pedido} no tiene stock en la planta de embarque seleccionada. ¿Está seguro de continuar?`,'warning');
           if (!resp) {
-            return resp;
+            return false;
           }
         }
       }
     }
 
-    if (this.pedidoSelectedForPlanificar.permiteElegirDestino && !this.cmbDestino) {
+    if (pedidoAPlanificar.permiteElegirDestino && !this.cmbDestino) {
       this.showAlert('','Seleccione un puerto de destino.','warning');
       return false;
     }
 
     // validar lote representativo si validaLoteRepresentativo = 1
-    if (this.pedidoSelectedForPlanificar.validaLoteRepresentativo === 1) {
-      if (!this.pedidoSelectedForPlanificar.loteRepresent) {
-        this.showAlert('','El pedido no tiene asignado lote representativo, por favor verifique.','warning');
+    if (pedidoAPlanificar.validaLoteRepresentativo === 1) {
+      if (!pedidoAPlanificar.loteRepresent) {
+        this.showAlert('',`El pedido ${pedidoAPlanificar.pedido} no tiene asignado lote representativo, por favor verifique.`,'warning');
         return false;
       }
     }
 
-    if (this.pedidoSelectedForPlanificar.tipoEmbarque === 'M') {
+    if (pedidoAPlanificar.tipoEmbarque === 'M') {
       if (!this.referenciaMix){
         this.showAlert('','Seleccione una referencia para el mix.','warning');
         return false;
       }
       // validar que todos los pedidos seleccionados tengan pallets disponibles (palletsTotMix) 
-      if (this.pedidoSelectedForPlanificarDetalle.some((item) => item.palletsTotMix <= 0)) {
+      if (pedidoAPlanificarDetalle.some((item) => item.palletsTotMix <= 0)) {
         this.showAlert('','Existen items que no cuentan con pallets disponibles, por favor verifique.','warning');
         return false;
       }
       // validar que el total de pallets no sea mayor al saldo pedido (item.ctsXPallet * item.palletsTotMix) > item.saldoPedido
-      for (let item of this.pedidoSelectedForPlanificarDetalle) {
+      for (let item of pedidoAPlanificarDetalle) {
         let saldoPlanificado = (item.ctsXPallet * item.palletsTotMix) + ((item.ctsXPallet2 * item.palletsTotMix2) || 0);
         if (saldoPlanificado > item.saldoPedido) {
           this.showAlert('Advertencia',`El total de pallets planificados para el producto (${item.codProducto}) es mayor al saldo pedido, por favor verifique.`,'warning');
@@ -1002,31 +1094,31 @@ export class FrmplanificacionembarqueComponent implements OnInit {
 
 
       // Para Mix solo debe dejarme programar si está completo el saldo pedido. con los pallets que esten disponibles.
-      if (this.totalPalletsPlanificar != this.pedidoSelectedForPlanificar.numPallet) {
-        let resp = await this.showAlertConfirm('Advertencia',`El total de pallets planificados es ${this.totalPalletsPlanificar > this.pedidoSelectedForPlanificar.numPallet ? 'mayor' : 'menor'} al número de pallets que debe de tener el mix. ¿Está seguro de continuar?`,'warning');
+      if (this.totalPalletsPlanificar != pedidoAPlanificar.numPallet) {
+        let resp = await this.showAlertConfirm('Advertencia',`El total de pallets planificados es ${this.totalPalletsPlanificar > pedidoAPlanificar.numPallet ? 'mayor' : 'menor'} al número de pallets que debe de tener el mix. ¿Está seguro de continuar?`,'warning');
         if (!resp) {
-          return resp;
+          return false;
         }
       }
     }
     
-    if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 || this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0) {
+    if (pedidoAPlanificar.paletsMaxSulfito > 0 || pedidoAPlanificar.paletsMinAusenciaVibrios > 0) {
       let totalPalletsG1 = 0;
       let totalPalletsG2 = 0;
-      this.pedidoSelectedForPlanificarDetalle.forEach((item) => {
+      pedidoAPlanificarDetalle.forEach((item) => {
         totalPalletsG1 += item.palletsG1;
         totalPalletsG2 += item.palletsG2;
       });
-      if (this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios > 0 && totalPalletsG1 < this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios) {
-        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un mínimo de (${this.pedidoSelectedForPlanificar.paletsMinAusenciaVibrios}) pallets con ausencia de vibrios. ¿Está seguro de continuar?.`,'warning');
+      if (pedidoAPlanificar.paletsMinAusenciaVibrios > 0 && totalPalletsG1 < pedidoAPlanificar.paletsMinAusenciaVibrios) {
+        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un mínimo de (${pedidoAPlanificar.paletsMinAusenciaVibrios}) pallets con ausencia de vibrios. ¿Está seguro de continuar?.`,'warning');
         if (!resp) {
-          return resp;
+          return false;
         }
       }
-      if (this.pedidoSelectedForPlanificar.paletsMaxSulfito > 0 && totalPalletsG2 > this.pedidoSelectedForPlanificar.paletsMaxSulfito) {
-        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un máximo de (${this.pedidoSelectedForPlanificar.paletsMaxSulfito}) pallets con sulfito. ¿Está seguro de continuar?.`,'warning');
+      if (pedidoAPlanificar.paletsMaxSulfito > 0 && totalPalletsG2 > pedidoAPlanificar.paletsMaxSulfito) {
+        let resp = await this.showAlertConfirm('Advertencia',`El cliente tiene parametrizado un máximo de (${pedidoAPlanificar.paletsMaxSulfito}) pallets con sulfito. ¿Está seguro de continuar?.`,'warning');
         if (!resp) {
-          return resp;
+          return false;
         }
       }
     }
@@ -1037,7 +1129,7 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       if (requerimientosNoAprobados.length > 0) {
         let resp = await this.showAlertConfirm('Advertencia',`Existen requerimientos especiales del pedido que no están aprobados. ¿Está seguro de continuar?.`,'warning');
         if (!resp) {
-          return resp;
+          return false;
         }
       }
     }
@@ -1045,11 +1137,122 @@ export class FrmplanificacionembarqueComponent implements OnInit {
     return true;
   }
 
+  async onClickGuardarPlaEmbarqueChina() {
+    this.loadingVisible = true;
+    this.cdr.detectChanges();
+    let fechaPlanificacion = this.pedidoSelectedForPlanificar.fechaPlanificacion;
+    let plantaEmbarque = this.pedidoSelectedForPlanificar.plantaEmbarque;
+    let observacion = this.pedidoSelectedForPlanificar.observacion;
+    
+    var validacion = false;
+    for (let pedido of this.pedidosSeleccionadosChina) {
+      // debugger;
+      let pedidoDetalle: any[] = this.pedidoSelectedForPlanificarDetalle.filter((x) => x.pedido === pedido.pedido);
+      pedido.tipoEmbarque = 'I';
+      pedido.fechaPlanificacion = fechaPlanificacion;
+      pedido.plantaEmbarque = plantaEmbarque;
+      pedido.observacion = observacion;
+      pedido.paletsMinAusenciaVibrios = pedidoDetalle[0].paletsMinAusenciaVibrios;
+      pedido.paletsMaxSulfito = pedidoDetalle[0].paletsMaxSulfito;
+      pedido.pedObservOrd = pedidoDetalle[0].pedObservOrd;
+      pedido.numPallet = pedidoDetalle[0].numPallet;
+      pedido.validaLoteRepresentativo = pedidoDetalle[0].validaLoteRepresentativo;
+      pedido.loteRepresent = pedidoDetalle[0].loteRepresent;
+      pedido.loteRepresentPallets = pedidoDetalle[0].loteRepresentPallets;
+      pedido.detalle = pedidoDetalle;
+
+      validacion = await this.validarDatosPlaEmbarque(pedido, pedidoDetalle);
+      if (!validacion) {
+        this.loadingVisible = false;
+        return;
+      }
+      // await this.onClickGuardarPlaEmbarque();
+    }
+
+    // guardar pedido por pedido una vez pasado la validación
+    if (validacion) {
+      var todosOk = true;
+      for (let i = 0; i < this.pedidosSeleccionadosChina.length; i++) {
+        let pedido = this.pedidosSeleccionadosChina[i];
+        let estado = 'PL'; // (Planificado)
+        // si todo el pedido está en 100% se cambia a 'PC' (Planificado Completado), y libPositiva = 0
+        if (pedido.detalle.every((item) => (item.porcentaje === 100 && item.libPositiva === 0))) {
+          estado = 'PC'; // (Planificado Completado)
+        }
+        let codPuertoDestino = pedido.codPuertoDestino;
+        if (this.cmbDestino) {
+          codPuertoDestino = this.cmbDestino;
+        }
+        const data = {      
+          pedido: pedido.pedido,
+          codCliente: pedido.codCliente,
+          codPuertoDestino: codPuertoDestino,
+          tipo: pedido.tipoEmbarque, // (Individual / Mix)
+          plantaEmbarque: pedido.plantaEmbarque,
+          fechaPlanificacion: pedido.fechaPlanificacion,
+          pedFechaEstimado: new Date(pedido.pedFechaEstimado),
+          estado: estado,
+          observacion: pedido.observacion,
+          referenciasMix: pedido.referenciasMix || null,
+          detalle: pedido.detalle.map((item: any) => {
+            return {
+              pedido: item.pedido,
+              dpeSectab: item.dpe_sectab,
+              codprod: item.codProducto,
+              codtalla: item.codTalla,
+              mPedido: item.saldoPedido,
+            };
+          }),
+          userAud: localStorage.getItem(varUser),
+        }; 
+        await this._service.postPlanificacionEmbarque(data).subscribe({
+          next: async (resp) => {
+            if (!resp.Codigo) {
+              throw new Error(resp.Description);
+            }            
+            // sincronizar con planificacion de exportaciones
+            let dataSync = [{
+              Codigo: pedido.pedNumero,
+              fechaestimada: formatDate(pedido.fechaPlanificacion, 'yyyy-MM-dd', 'en-US'),
+            }];
+            await this._service.postSincronizarPlanificacionExportaciones(dataSync, localStorage.getItem(varUser)).subscribe(data => {
+              if (data.Codigo) {
+                this.socket.emit('save-planificacion', { action: 'new', message: `Se creó una programación de embarque para la referencia: ${pedido.pedido}` });
+              } else {
+                throw new Error('Existió un error en la sincronización con la planificación de Exportaciones. \n' + data.Description);
+              }
+            });
+          },
+          error: (error) => {
+            todosOk = false;
+            this.showAlert('','Error al guardar el registro: ' + error ,'error');
+          },
+          complete: () => {
+            this.loadingVisible = false;
+          }
+        });
+      }
+
+      if (todosOk) {
+        this.showAlert('','Registros guardados correctamente.','success');
+        // ejecutar el metodo updateSelectedMonth que está en el componente hijo FrmplanificacionhorarioComponent
+        if (this.horarioComponent) {
+          this.horarioComponent.updateSelectedMonth();
+        }
+        // this.limpiarNuevo();
+        this.getPedidosPlanificacionEmbarque();
+        this.modalReferenceItem.close();
+      }
+    }
+    this.loadingVisible = false;
+  }
 
 
   async onClickGuardarPlaEmbarque() {
+    debugger;
     this.loadingVisible = true;
-    let validacion = await this.validarDatosPlaEmbarque();
+    this.cdr.detectChanges();
+    let validacion = await this.validarDatosPlaEmbarque(this.pedidoSelectedForPlanificar, this.pedidoSelectedForPlanificarDetalle);
     if (!validacion) {
       this.loadingVisible = false;
       return;
@@ -1152,9 +1355,11 @@ export class FrmplanificacionembarqueComponent implements OnInit {
   }
 
 
-  onClickCerrarModalPlaEmbarque() {
-    if (this.pedidoSelectedForPlanificar !== null) {
-      this.pedidosPaisDetail.find((x) => x.id == this.pedidoSelectedForPlanificar.id).checkPlanificar = false;
+  async onClickCerrarModalPlaEmbarque() {
+    for (let i = 0; i < this.pedidosPaisDetail.length; i++) {
+      if (this.pedidosPaisDetail[i].checkPlanificar) {
+        this.pedidosPaisDetail[i].checkPlanificar = false;
+      }
     }
   }
 
