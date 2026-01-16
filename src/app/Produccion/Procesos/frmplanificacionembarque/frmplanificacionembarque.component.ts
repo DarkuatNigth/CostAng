@@ -515,8 +515,19 @@ export class FrmplanificacionembarqueComponent implements OnInit {
       ariaLabelledBy: 'modal-basic-title',
       windowClass: 'cssModalStockBloqueado',
     });
-    
-    this._service.getDetalleStockBloqueado(rowData.codProducto, rowData.codTalla, tipoBloqueo).subscribe({
+    let codProducto = '';
+    let codTalla = 0;
+    if (rowData.agrupacionDescri && rowData.agrupacionDescri == "CHINA"){
+      let bloqueado = this.pedidosPaisDetailByProduct.find((x) => x.pedido == rowData.pedido && x.bloqueado > 0);
+      if (bloqueado){
+        codProducto = bloqueado.codProducto;
+        codTalla = bloqueado.codTalla;
+      }
+    } else {
+      codProducto = rowData.codProducto;
+      codTalla = rowData.codTalla;
+    }
+    this._service.getDetalleStockBloqueado(codProducto, codTalla, tipoBloqueo).subscribe({
       next: (data) => {
         if (data.Codigo) {
           if (data.Dt.Table && data.Dt.Table.length > 0) {
