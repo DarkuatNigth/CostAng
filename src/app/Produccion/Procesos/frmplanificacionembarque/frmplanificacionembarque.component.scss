@@ -72,6 +72,9 @@
 }
 
 ::ng-deep #GridPedidosPaisDetail, ::ng-deep #GridPedidosPaisDetail2 {
+  .dx-datagrid-table-fixed {
+    font-size: 11px !important;
+  }
   .dx-datagrid .dx-row > td {
     padding: 4px;
   }
@@ -129,6 +132,9 @@
 }
 
 ::ng-deep #GridPedidosPaisDetailByProduct {
+  .dx-datagrid-table-fixed {
+    font-size: 11px !important;
+  }
   .dx-datagrid .dx-row > td {
     padding: 4px;
     background-color: #daf1ff;
@@ -152,6 +158,9 @@
 }
 
 ::ng-deep #GridPedidosPaisDetailByProduct2 {
+  .dx-datagrid-table-fixed {
+    font-size: 11px !important;
+  }
   .dx-datagrid .dx-row > td {
     padding: 4px;
   }
