@@ -86,7 +86,7 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: FrmclasificadoraimpresoraModuleFactory
-      },
+      },//solicitud vacaciones
       { 
         path: 'ext-SolicitudVacaciones',
         loadChildren: () => import('./GestionPersonalRRHH/frmsolvacaciones/frmsolvacaciones.module').then((m) => m.FrmsolvacacionesModule),
@@ -94,6 +94,15 @@ const routes: Routes = [
       { 
         path: 'ext-AprobSolicitudVacaciones/:opcion',
         loadChildren: () => import('./GestionPersonalRRHH/frmaprobsolvacaciones/frmaprobsolvacaciones.module').then((m) => m.FrmaprobsolvacacionesModule),
+      }
+      ,//solicitud permisos
+      { 
+        path: 'ext-solictudPermisosEmp',
+        loadChildren: () => import('./GestionPersonalRRHH/frmsolpermisos/frmsolpermisos.module').then((m) => m.FrmsolpermisosModule),
+      },
+      { 
+        path: 'ext-aprobsolictudPermisosEmp',
+        loadChildren: () => import('./GestionPersonalRRHH/frmaprobpermisos/frmaprobpermisos.module').then((m) => m.FrmaprobpermisosModule),
       }
 		]
 	},

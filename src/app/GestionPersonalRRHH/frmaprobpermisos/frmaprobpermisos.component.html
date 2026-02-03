@@ -1,0 +1,254 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div class="row" style="padding-left: 1%; padding-right: 1%; padding-top: 2%;">
+  <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+    <dx-button icon="save" type="success"
+      text="Aprobar" (onClick)="onClickAprobarPermisoTrabajador()"
+      style="width: 100%">
+    </dx-button>
+  </div>
+    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1">
+      <dx-button icon="remove" type="danger"
+        text="Denegar" (onClick)="onClickDenegarPermisoTrabajador()"
+        style="width: 100%">
+      </dx-button>
+    </div>
+</div>
+<div style="padding-left: 1%; padding-right: 1%; padding-top: 1%;">
+  <div class="card">
+    <div class="card-header" style=" font-weight: bold;border: 2px solid #d9dbdd;border-radius: 4px;color: #0087b9;">
+      Aprobación de Solicitud de Permisos
+    </div>
+    <div class="card-body" style="border: 2px solid #d9dbdd; border-radius: 4px">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"
+          [innerHTML]="txtEmpleadoInfo" style="font-weight: bold;font-size: 22px;color: #03335f;margin-bottom: 0;white-space: pre-line;">
+        </div>
+      
+        <div class="w-100 d-lg-block d-md-none"></div>
+        <div class="w-100 d-lg-none"></div>
+
+        <label class="col-xs-12 col-sm-12 col-md-6 col-lg-1 pb-1 text-left control-label">Desde:</label>
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-2 pb-1">
+          <dx-date-box [(ngModel)]="FechaDesde" type="date" displayFormat="yyyy/MM/dd"
+              adaptivityEnabled="true" openOnFieldClick="true" [useMaskBehavior]="true"
+              style="width: 100%">
+          </dx-date-box>
+        </div>
+        <label class="col-xs-12 col-sm-12 col-md-6 col-lg-1 pb-1 text-left control-label">Hasta:</label>
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-2 pb-1">
+          <dx-date-box [(ngModel)]="FechaHasta" type="date" displayFormat="yyyy/MM/dd" adaptivityEnabled="true"
+                      openOnFieldClick="true" [useMaskBehavior]="true" 
+                      style="width: 100%">
+          </dx-date-box>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 pb-1">
+          <dx-button icon="find" type="default" text="Consultar"
+            (onClick)="onClickConsultarPermisos()"
+            style="width: 100%">
+          </dx-button>
+        </div>
+        <div class="w-100 d-lg-block d-md-none"></div>
+        <div class="w-100 d-lg-none"></div>
+
+      </div>
+
+      <div class="row">
+        <div  class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+          <dx-data-grid #GridDataEmpleadoSolicitud
+            style="width: 100%; max-height: 40vh"
+            [dataSource]="DataEmpleadoSolicitudPermiso"
+            [showColumnLines]="true"
+            [showRowLines]="true"
+            [showBorders]="true"
+            class="cssDetalleGrid"
+            [rowAlternationEnabled]="true"
+            [columnHidingEnabled]="false"
+            [columnAutoWidth]="true"
+            [hoverStateEnabled]="true"
+            (onSelectionChanged)="onSelectionChangedDetalle($event)"
+          >
+            <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar..."></dxo-search-panel>
+            <dxo-selection [selectAllMode]="allMode" [showCheckBoxesMode]="checkBoxesMode"
+                mode="multiple"></dxo-selection>
+            <dxi-column dataField="ID" [visible]="false" [caption]="'ID'"></dxi-column>
+            <dxi-column dataField="CODTRA" [visible]="false" [caption]="'Codigo'"></dxi-column>
+            <dxi-column dataField="EMPLEADO" [visible]="true" [caption]="'Empleado'"></dxi-column>
+            <dxi-column dataField="DESDE" [visible]="true" [caption]="'Desde'"></dxi-column>
+            <dxi-column dataField="HASTA" [visible]="true" [caption]="'Hasta'"></dxi-column>
+            <dxi-column dataField="Hora_Entrada" [visible]="true" [caption]="'Hora Entrada'"></dxi-column>
+            <dxi-column dataField="Hora_Salida" [visible]="true" [caption]="'Hora Salida'"></dxi-column>
+            <dxi-column dataField="TIPO" [visible]="true" [caption]="'Tipo'"></dxi-column>
+            <dxi-column dataField="MOTIVO" [visible]="true" [caption]="'Motivo'"></dxi-column>
+            <dxi-column  dataField="ELABORADO" [visible]="true" [caption]="'Elaborado'"></dxi-column>
+            <dxi-column cellTemplate="cellTempBusqueda" width="50">
+            </dxi-column>
+            <div *dxTemplate="let cell of 'cellTempBusqueda'">
+              <dx-button style="width: 35px; height: 30px"
+                (click)="onClickConsultar(modalConsultaPermisos,cell.data)">...</dx-button>
+            </div>
+            <dxo-summary>
+              <dxi-total-item column="EMPLEADO" summaryType="count"
+                displayFormat="Total Empleado: {0}">
+              </dxi-total-item>
+            </dxo-summary>
+          </dx-data-grid>
+        </div>
+        
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<ng-template #modalConsultaPermisos let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Consulta Permiso Empleado</h4>
+    
+  </div>
+  <div
+    class="modal-body mostly-customized-scrollbar"
+    style="max-height: 70vh; overflow: auto"
+  >
+    <div class="col-lg-12">
+      <div class="row" style="padding-left: 2%; padding-right: 2%">
+        <label
+          class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+          >Empleado:</label
+        >
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-9 pb-1">
+          <input
+                            type="text"
+                            class="form-control"
+                            [readOnly]="true"
+                            [(ngModel)]="txtEmpleado"/>
+        </div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 pb-1 text-left control-label">Regresa:</label>
+        <div class="col-xs-12 col-sm-12 col-md-12 ml-auto col-lg-1 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtRegresa"/>
+        </div>
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Estado:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtEstado"/>
+        </div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+          >Genero:</label>
+
+        <div
+          class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtGenero"/>
+        </div>
+      
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+        <label
+          class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+          
+          >Cargo:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-5 pb-1">
+          <input
+                            type="text"
+                            class="form-control"
+                            [readOnly]="true"
+                            [(ngModel)]="txtCargo"/>
+        </div>
+        
+        
+        
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Permiso:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          [readOnly]="true"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtPermiso"/>
+        </div>
+        
+       
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+        
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Fecha Desde:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtFechaDesde"/>
+        </div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Fecha Hasta:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtFechaHasta"/>
+        </div>
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Hora Salida:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtHoraSalida"/>
+        </div>
+        <label class="col-xs-12 col-sm-12 col-md-2 col-lg-1 pb-1 text-left control-label"
+        >Hora Llegada:</label>
+        <div class="col-xs-12 col-sm-12 col-md-4 ml-auto col-lg-5 col-3 pb-1">
+          <input
+          type="text"
+          class="form-control"
+          [readOnly]="true"
+          [(ngModel)]="txtHoraEntrada"/>
+        </div>
+        <div class="w-100 d-lg-none d-md-block"></div>
+        <div class="w-100 d-lg-block"></div>
+        <label class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1 text-left control-label">Motivo:</label>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+          <textarea class="form-control" [(ngModel)]="txtMotivo" rows="20"
+          [readOnly]="true"
+          style="resize: none; font-size: 12px;white-space: pre-line !important;"
+          name="txtEmpleadoInfo" rows="4"></textarea>
+        </div> 
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="modal.close()">
+      Cancelar
+    </button>
+  </div>
+</ng-template>

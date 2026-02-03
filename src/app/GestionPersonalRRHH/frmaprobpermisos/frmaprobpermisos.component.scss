@@ -1,0 +1,52 @@
+
+::ng-deep .cssDetalleGrid{
+    /* min-width: 70%; */
+    .dx-toolbar .dx-toolbar-after{
+        width: 100%;
+        padding-left: 0px;
+    }
+    .dx-datagrid-search-panel{
+        margin: 0px;
+    } 
+
+    .dx-datagrid .dx-select-checkbox {
+      transform: scale(1.3); /* Escala el checkbox */
+      width: 20px !important; /* Ajusta el ancho */
+      height: 20px !important; /* Ajusta la altura */
+    }
+  }
+
+  ::ng-deep .cssModalConsulProgEmbarque {
+    .modal-dialog {
+      max-width: 60%;
+      width: 60%;
+      z-index: unset;
+    }
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+  }
+  
+
+  .cssCheckBox{
+    width: 1.2rem; height: 1.2rem;top:0.5rem
+}
+
+::ng-deep .cssModalConsultaSolicitudes {
+  .modal-dialog {
+    max-width: 80%;
+    width: 80%;
+    z-index: unset;
+  }
+  .dx-toolbar .dx-toolbar-after {
+    width: 100%;
+    padding-left: 0px;
+  }
+  .dx-datagrid-search-panel {
+    margin: 0px;
+  }
+}
