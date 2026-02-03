@@ -1,0 +1,133 @@
+.grid-titulo {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y limpia */
+    font-size: 1.2em; /* Tamaño de fuente grande y legible */
+    font-weight: 600; /* Peso de fuente ligeramente en negrita */
+    color: #333; /* Color gris oscuro para el texto */
+    text-align: center; /* Centra el texto */
+    text-transform: uppercase; /* Transforma el texto a mayúsculas */
+    letter-spacing: 1px; /* Espacio entre letras para un efecto más moderno */
+    margin-bottom: 20px; /* Espacio debajo del párrafo */
+    padding: 10px; /* Espacio interno alrededor del texto */
+    border-bottom: 2px solid #007bff; /* Línea inferior moderna en azul */
+    background-color: #f9f9f9; /* Color de fondo suave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto elevado */
+  }
+
+  .highlighted-row {
+    background-color: #DFF0D8 !important; /* Cambia el color de fondo de la fila seleccionada */
+  }
+
+  
+.file-input {
+    display: none; /* Ocultar el input original */
+  }
+  
+  .file-input + label {
+    display: inline-block;
+    padding: 8px 12px; /* Espaciado reducido */
+    background-color: #007bff; /* Color de fondo */
+    color: white; /* Color del texto */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar cursor al pasar el ratón */
+    font-size: 14px; /* Tamaño de la fuente reducido */
+    transition: background-color 0.3s ease; /* Transición suave */
+    font-weight: bold;
+  }
+  
+  .file-input + label:hover {
+    background-color: #0056b3; /* Color al pasar el ratón */
+  }
+  
+  /* Estilo opcional para el texto del archivo seleccionado */
+  .file-input:focus + label {
+    outline: none; /* Sin contorno */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Sombra al enfocar */
+  }
+::ng-deep .cssDetalleGrid{
+    /* min-width: 70%; */
+    .dx-toolbar .dx-toolbar-after{
+        width: 100%;
+        padding-left: 0px;
+    }
+    .dx-datagrid-search-panel{
+        margin: 0px;
+    } 
+  }
+  ::ng-deep .cssModalConsultaSolicitudes {
+    .modal-dialog {
+      max-width: 80%;
+      width: 80%;
+      z-index: unset;
+    }
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+  }
+  .btn-custom {
+    background-color: white; /* Fondo blanco */
+    color: black; /* Color del texto negro */
+    border: 1px solid #6c757d; /* Borde gris */
+    padding: 0.25rem 0.75rem; /* Espaciado interno reducido para un botón más pequeño */
+    font-size: 1rem; /* Tamaño del texto por defecto */
+  }
+
+  .seleccionada {
+    background-color: #32a6b1 !important; /* Cambia el color según tus preferencias */
+  }
+
+  .selected-row {
+    background-color: #32a6b1; /* Color de fondo para la fila seleccionada */
+  }
+  ::ng-deep .cssDetalleGrid {
+    /* min-width: 70%; */
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+  }
+
+  .row-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    
+  }
+  
+  .fila-seleccionada {
+    background-color: #2196F3 !important; /* Azul */
+    color: white !important;
+  }
+
+  .employee-label {
+    position: absolute;
+    right: 0; /* Alineado al lado derecho */
+    top: 0; /* Alineado al nivel superior del DataGrid */
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%); /* Oculto inicialmente */
+  }
+  
+  .employee-label.ng-animating {
+    transform: translateX(0); /* Moverse al lado derecho */
+  }
+
+  .campos-adicionales-abajo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .campos-adicionales-lado {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+  }
