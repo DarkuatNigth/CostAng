@@ -162,8 +162,12 @@
                       'col-xs-12 col-sm-12 col-md-2 col-lg-1 col-6 pb-1 text-left control-label'">Hora Salida:</label>
                   <div [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-4 col-6 pb-1':
                           'col-xs-12 col-sm-12 col-md-4 col-lg-5 col-6 pb-1'">
-                    <dx-date-box [(ngModel)]="horasalida"  type="time" adaptivityEnabled="true"
-                                openOnFieldClick="true" [useMaskBehavior]="true"  [displayFormat]="'HH:mm'"
+                    <dx-date-box [(ngModel)]="horasalida"  type="time"
+                                [displayFormat]="'HH:mm'"
+                                [useMaskBehavior]="true"
+                                [openOnFieldClick]="false"
+                                [showDropDownButton]="false"
+                                [focusStateEnabled]="true"
                                 style="width: 100%">
                     </dx-date-box>
                   </div>
@@ -171,10 +175,12 @@
                       'col-xs-12 col-sm-12 col-md-2 col-lg-1 col-6 pb-1 text-left control-label'">Hora Llegada:</label>
                   <div [ngClass]="jefearea ? 'col-xs-12 col-sm-12 col-md-6 col-lg-4 col-6 pb-1':
                           'col-xs-12 col-sm-12 col-md-4 col-lg-5 col-6 pb-1'">
-                    <dx-date-box [(ngModel)]="horallegada"  type="time" adaptivityEnabled="true"
-                                openOnFieldClick="true" [useMaskBehavior]="true"
-                                [disabled]="habilitallegada"
+                    <dx-date-box [(ngModel)]="horallegada"  type="time" 
                                 [displayFormat]="'HH:mm'"
+                                [useMaskBehavior]="true"
+                                [openOnFieldClick]="false"
+                                [showDropDownButton]="false"
+                                [focusStateEnabled]="true"
                                 style="width: 100%">
                     </dx-date-box>
                   </div>

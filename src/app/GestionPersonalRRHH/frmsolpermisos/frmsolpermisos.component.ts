@@ -278,6 +278,7 @@ export class FrmsolpermisosComponent implements OnInit {
               this.listaEstados = res.Dt.Table3;
 
              if (empleado.length>0) {
+
               this.txtEmpleadoDetalleInfo = 'Empleado: '+empleado[0].nombre_trabajador;
               this.txtnumeroPermiso = empleado[0].Cantidad_Permiso;
               this.vltrbCodigo = empleado[0].trb_Codigo;
@@ -399,7 +400,6 @@ export class FrmsolpermisosComponent implements OnInit {
     
     this.txtEmpleadoDetalleInfo = '';
     this.txtnumeroPermiso = '';
-    this.vltrbCodigo = "";
     this.vltrbCodigo = e.data.Codigo;
     this.txtSolicitudInfo='';
     this.vlsol_id = 0;
