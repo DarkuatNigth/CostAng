@@ -3,12 +3,10 @@ import { Injectable } from '@angular/core';
 import {
   CONNECTION_PROD,
   CONNECTION_PROD2,
-  CONNECTION_RRHH,
+  CONNECTION_BETAPRORRHH,
   URL_REPORTES,
   URL_CONSULT,
-  URL_TRANSACIMAGEN,
-  URL_CONSULTRRHH,
-  URL_TRANSACIMAGENRRHH,
+  URL_TRANSACIMAGEN
 } from 'src/app/config/url.servicios';
 import { ResultReportes, ResultWS } from 'src/app/Interfaces/interfaces';
 import { datarpt } from 'src/app/Interfaces/dataRpt';
@@ -28,10 +26,10 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: 'nomina.spr_TrabajadoresConsulta',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
   getSolicitudVacaciones(
@@ -62,40 +60,14 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: 'nomina.spr_datosInicialesAprobacionSolVacaciones',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
   
-  getPermisosUser(user, tipo) {
-    const ListParam = [
-      { Name: 'USUARIO', Type: 'VarChar', Value: user.toString() },
-      { Name: 'tipo', Type: 'VarChar', Value: tipo.toString() },
-    ];
+ 
 
-    const base = {
-      sp: 'SP_PERMISO_MOD_PLANIEMB',
-      param: ListParam,
-      conexion: CONNECTION_PROD,
-    };
-
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
-  }
-
-  getDataUser(user) {
-    const ListParam = [
-      { Name: 'codigo', Type: 'NVarChar', Value: user.toString() },
-    ];
-
-    const base = {
-      sp: 'maestros.spr_TrabajadorConsultaDatos',
-      param: ListParam,
-      conexion: CONNECTION_RRHH,
-    };
-
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
-  }
 
   SetVacacionesGrabar(listSolicitud, codtra, user, empresa,listaVacaciones,opcion, estado) {
     const ListParam = [
@@ -111,13 +83,13 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: 'nomina.spr_ActualizarAprobacionVacaciones',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
     var formdata = new FormData();
     formdata.append('param', JSON.stringify(base));
     formdata.append('paramImagen', '{}');
-    return this.http.post<ResultWS>(URL_TRANSACIMAGENRRHH, formdata);
+    return this.http.post<ResultWS>(URL_TRANSACIMAGEN, formdata);
   }
   SetVacacionesDist(listDet, codtra, user, empresa) {
     const ListParam = [
@@ -135,13 +107,13 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: 'nomina.sp_vacacionesGrabar',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
     var formdata = new FormData();
     formdata.append('param', JSON.stringify(base));
     formdata.append('paramImagen', '{}');
-    return this.http.post<ResultWS>(URL_TRANSACIMAGENRRHH, formdata);
+    return this.http.post<ResultWS>(URL_TRANSACIMAGEN, formdata);
   } 
   consultarDatosImprimir(
     empresa: number,
@@ -158,9 +130,9 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: `trabajador.spr_trabajadorConsultar`,
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
   callReports(datarpt: datarpt) {
     const httpOptions = {
@@ -179,21 +151,7 @@ export class FrmaprobsolvacacionesService {
     debugger;
     return this.http.post<ResultReportes>(URL_REPORTES, param, httpOptions);
   }
-  validaDatosNovedades(idEmpresa: number, json: string) {
-    this.ListParam = [
-      { Name: 'i_accion', Type: 'Varchar', Value: 'V' },
-      { Name: 'i_empresa', Type: 'Int', Value: idEmpresa.toString() },
-      { Name: 'i_json', Type: 'Varchar', Value: json },
-    ];
-
-    const base = {
-      sp: 'nomina.spr_datosInicialesVacacionesConsultar',
-      param: this.ListParam,
-      conexion: CONNECTION_RRHH,
-    };
-
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
-  }
+  
 
   getVacacionesTrabajador(
     empresa,
@@ -231,9 +189,9 @@ export class FrmaprobsolvacacionesService {
     const base = {
       sp: 'nomina.spr_datosInicialesVacacionesConsultar',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 }
