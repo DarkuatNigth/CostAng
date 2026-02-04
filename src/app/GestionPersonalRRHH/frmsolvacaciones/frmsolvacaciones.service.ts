@@ -3,12 +3,10 @@ import { Injectable } from '@angular/core';
 import {
   CONNECTION_PROD,
   CONNECTION_PROD2,
-  CONNECTION_RRHH,
+  CONNECTION_BETAPRORRHH,
   URL_REPORTES,
   URL_CONSULT,
-  URL_TRANSACIMAGEN,
-  URL_CONSULTRRHH,
-  URL_TRANSACIMAGENRRHH,
+  URL_TRANSACIMAGEN
 } from 'src/app/config/url.servicios';
 import { ResultReportes, ResultWS } from 'src/app/Interfaces/interfaces';
 import { datarpt } from 'src/app/Interfaces/dataRpt';
@@ -28,10 +26,10 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'nomina.spr_TrabajadoresConsulta',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
   getesJefeArea(user) {
@@ -42,10 +40,10 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'seguridad.sp_UsuarioJefeArea',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
   
@@ -92,26 +90,12 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'nomina.spr_datosInicialesSolicitudVacaciones',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
   
-  getPermisosUser(user, tipo) {
-    const ListParam = [
-      { Name: 'USUARIO', Type: 'VarChar', Value: user.toString() },
-      { Name: 'tipo', Type: 'VarChar', Value: tipo.toString() },
-    ];
-
-    const base = {
-      sp: 'SP_PERMISO_MOD_PLANIEMB',
-      param: ListParam,
-      conexion: CONNECTION_PROD,
-    };
-
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
-  }
 
   getDataUser(user) {
     const ListParam = [
@@ -121,10 +105,10 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'maestros.spr_TrabajadorConsultaDatos',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
   SetVacacionesGrabar(listDet,  user, empresa) {
@@ -141,13 +125,13 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'nomina.spr_GrabarSolicitudVacaciones',
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
     var formdata = new FormData();
     formdata.append('param', JSON.stringify(base));
     formdata.append('paramImagen', '{}');
-    return this.http.post<ResultWS>(URL_TRANSACIMAGENRRHH, formdata);
+    return this.http.post<ResultWS>(URL_TRANSACIMAGEN, formdata);
   }
     
   consultarDatosImprimir(
@@ -165,9 +149,9 @@ export class FrmsolvacacionesService {
     const base = {
       sp: `trabajador.spr_trabajadorConsultar`,
       param: ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
   callReports(datarpt: datarpt) {
     const httpOptions = {
@@ -195,9 +179,9 @@ export class FrmsolvacacionesService {
     const base = {
       sp: 'nomina.spr_datosInicialesVacacionesConsultar',
       param: this.ListParam,
-      conexion: CONNECTION_RRHH,
+      conexion: CONNECTION_BETAPRORRHH,
     };
 
-    return this.http.post<ResultWS>(URL_CONSULTRRHH, base);
+    return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 }

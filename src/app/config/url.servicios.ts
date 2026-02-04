@@ -53,5 +53,6 @@ export const CONNECTION_PROD_SA = "PREPRO";
 export const CONNECTION_SONG = "SONG";
 export const CONNECTION_PROYECTO = "PROYECTO";
 export const CONNECTION_RRHH = 'RRHH';
+export const CONNECTION_BETAPRORRHH = "BETAPRORRHH";
 
 
