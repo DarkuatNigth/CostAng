@@ -257,7 +257,6 @@ export class FrmsolvacacionesComponent implements OnInit {
         .getSolicitudVacaciones(empresa, codigo, accion,jefeporarea,'','','')
         .subscribe(async (res) => {
           if (res.Codigo) {
-            debugger;
             if (Object.keys(res.Dt).length > 0) {
               let empleado: any = res.Dt.Table;
 
@@ -345,7 +344,6 @@ export class FrmsolvacacionesComponent implements OnInit {
   }
 
   async onClickGuardarSolicitudVacaciones() {
-    //debugger;
     let d = this.diasPendientes;
     let da = this.txtdiassolicitado;
     if(this.diasPendientes < Number(this.txtdiassolicitado)){
