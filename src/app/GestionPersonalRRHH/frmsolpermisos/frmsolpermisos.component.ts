@@ -181,6 +181,9 @@ export class FrmsolpermisosComponent implements OnInit {
     this.SSNuevo();
     this.vlsol_id = 0;
 
+    await localStorage.setItem(varEmpresa,"1");
+    await localStorage.setItem(varUser,"JMERO");
+
     this.idEmpresa = await Number(localStorage.getItem(varEmpresa));
     this.usuarioEmpresa = await localStorage.getItem(varUser);
     
@@ -428,10 +431,7 @@ export class FrmsolpermisosComponent implements OnInit {
     if (!this.validarFechas(this.FechaDesde, this.FechaHasta)){
       return;
     }
-    if(!await await this.showAlertConfirm('',`¿Estás seguro de que desea guardar el registro?`,'')) 
-    {
-      return;
-    }
+    
     if (this.cmbPermisos === '' || this.cmbPermisos === '0') {
       await this.showAlert('', 'Debe seleccionar un tipo de permiso', 'warning');
       return;
@@ -448,22 +448,39 @@ export class FrmsolpermisosComponent implements OnInit {
       return;
       
     }
+    if(this.txtMotivo?.trim() === ''){
+      await this.showAlert('', 'Debe ingresar el motivo del permiso', 'warning');
+      return;
+    }
     /* if ((this.horasalida.getHours() >= this.horallegada.getHours()) && this.cmbRegresa === '1' &&
         (moment(this.FechaDesde).format('yyyy/MM/DD') ===moment(this.FechaHasta).format('yyyy/MM/DD'))) {
       await this.showAlert('', 'La Hora Salida no debe ser mayor o igual a la Hora Llegada', 'warning');
       return;
       
     } */
-      if ((this.horasalida.getTime() >= this.horallegada.getTime()) && this.cmbRegresa === '1' &&
+    if ((this.horasalida.getTime() >= this.horallegada.getTime()) && this.cmbRegresa === '1' &&
       (moment(this.FechaDesde).format('yyyy/MM/DD') ===moment(this.FechaHasta).format('yyyy/MM/DD'))) {
     await this.showAlert('', 'La Hora Salida no debe ser mayor o igual a la Hora Llegada', 'warning');
     return;
     
-  }
+    }
     const resp = await this.verificarMarcacionesPlanta();
     if (resp) {
       return;
     }
+
+    let msgConfirm = 'Estás seguro de que desea guardar el siguiente permiso?\n' + 
+    '<b>Permiso:</b> ' + this.DataPermisos.find(p => p.CODIGO === this.cmbPermisos)?.DESCRIPCION + '\n' + 
+      '<b>Regresa:</b> ' + this.DataRegresa.find(p => p.CODIGO === this.cmbRegresa)?.DESCRIPCION + '\n' +
+      '<b>Desde:</b> ' + moment(this.FechaDesde).format("YYYY/MM/DD") + '\n' +
+      '<b>Hasta:</b> ' + moment(this.FechaHasta).format("YYYY/MM/DD") + '\n' +
+      '<b>Hora Salida:</b> ' + moment(this.horasalida).format('HH:mm') + '\n' +
+      '<b>Hora Llegada:</b> ' + moment(this.horallegada).format('HH:mm') + '\n';
+    if(!await await this.showAlertConfirm('',msgConfirm,'')) 
+    {
+      return;
+    }
+
     await this.Guardar();
     
   }
