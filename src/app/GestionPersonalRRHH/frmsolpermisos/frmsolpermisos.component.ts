@@ -181,8 +181,6 @@ export class FrmsolpermisosComponent implements OnInit {
     this.SSNuevo();
     this.vlsol_id = 0;
 
-    await localStorage.setItem(varEmpresa,"1");
-    await localStorage.setItem(varUser,"JMERO");
 
     this.idEmpresa = await Number(localStorage.getItem(varEmpresa));
     this.usuarioEmpresa = await localStorage.getItem(varUser);
