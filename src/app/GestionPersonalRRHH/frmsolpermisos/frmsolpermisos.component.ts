@@ -97,6 +97,7 @@ export class FrmsolpermisosComponent implements OnInit {
   minFechaHasta: Date = new Date(); 
 
   vlsol_id: number = 0;
+  i_opcionPermisos: string = 'USAP';
 
   constructor(
     private router: Router,
@@ -181,7 +182,6 @@ export class FrmsolpermisosComponent implements OnInit {
     this.SSNuevo();
     this.vlsol_id = 0;
 
-
     this.idEmpresa = await Number(localStorage.getItem(varEmpresa));
     this.usuarioEmpresa = await localStorage.getItem(varUser);
     
@@ -207,7 +207,7 @@ export class FrmsolpermisosComponent implements OnInit {
   async ObtenerEsJefeArea(){
     this.jefearea = false;
     const valorMenu = await new Promise(async (resolve) => {
-      await this._service.getesJefeArea(this.usuarioEmpresa).subscribe(async (resp) => {
+      await this._service.getesJefeArea(this.usuarioEmpresa,this.idEmpresa,this.i_opcionPermisos).subscribe(async (resp) => {
         if (resp.Codigo) {
           if (Object.keys(resp.Dt).length > 0) {
             let dt:[][] = resp.Dt.Table;
@@ -280,7 +280,7 @@ export class FrmsolpermisosComponent implements OnInit {
 
              if (empleado.length>0) {
 
-              this.txtEmpleadoDetalleInfo = 'Empleado: '+empleado[0].nombre_trabajador;
+              this.txtEmpleadoDetalleInfo = 'Empleado: '+empleado[0].trb_Codigo + ' - ' +empleado[0].nombre_trabajador;
               this.txtnumeroPermiso = empleado[0].Cantidad_Permiso;
               this.vltrbCodigo = empleado[0].trb_Codigo;
              }
@@ -399,6 +399,10 @@ export class FrmsolpermisosComponent implements OnInit {
 
   async onRowMostrarDetalleEmpleado(e: any) {
     
+    if (e.data === undefined) {
+      return;
+    }
+    
     this.txtEmpleadoDetalleInfo = '';
     this.txtnumeroPermiso = '';
     this.vltrbCodigo = e.data.Codigo;
@@ -414,7 +418,7 @@ export class FrmsolpermisosComponent implements OnInit {
     this.horasalida = new Date();
     this.horallegada.setHours(0, 0, 0, 0);
     this.horasalida.setHours(0, 0, 0, 0);
-    this.txtEmpleadoDetalleInfo= 'Empleado: ' + e.data.Nombre;
+    this.txtEmpleadoDetalleInfo= 'Empleado: ' + e.data.Codigo + ' - ' + e.data.Nombre;
     //this.txtnumeroPermiso =  e.data.Cantidad_Permiso;
     this.txtMotivo=e.data.Motivo;
     await this.GetPermisoTrabajadorEspecifica2(this.idEmpresa, this.usuarioEmpresa, 'ES', e.data.Codigo)
@@ -468,6 +472,7 @@ export class FrmsolpermisosComponent implements OnInit {
     }
 
     let msgConfirm = 'Estás seguro de que desea guardar el siguiente permiso?\n' + 
+      this.txtEmpleadoDetalleInfo.replace('Empleado:', '<b>Empleado:</b>') + '\n' +
     '<b>Permiso:</b> ' + this.DataPermisos.find(p => p.CODIGO === this.cmbPermisos)?.DESCRIPCION + '\n' + 
       '<b>Regresa:</b> ' + this.DataRegresa.find(p => p.CODIGO === this.cmbRegresa)?.DESCRIPCION + '\n' +
       '<b>Desde:</b> ' + moment(this.FechaDesde).format("YYYY/MM/DD") + '\n' +
@@ -594,6 +599,10 @@ export class FrmsolpermisosComponent implements OnInit {
   }
   async onRowPermisosDoubleClick(e: any, modal: any) {
 
+    if (e.data === undefined) {
+      return;
+    }
+    
     this.loadingVisible = true;
    
     this.txtEmpleadoDetalleInfo= 'Empleado: ' + e.data.Empleado;

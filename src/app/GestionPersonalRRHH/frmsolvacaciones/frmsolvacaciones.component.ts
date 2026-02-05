@@ -87,7 +87,7 @@ export class FrmsolvacacionesComponent implements OnInit {
   vlsol_id: number = 0;
 
   selectedSolicitud: ISolicitud|null = null;
-
+  i_opcionPermisos: string = 'USVA';
 
 
   constructor(
@@ -199,7 +199,7 @@ export class FrmsolvacacionesComponent implements OnInit {
   async ObtenerEsJefeArea(){
     this.jefearea = false;
     const valorMenu = await new Promise(async (resolve) => {
-      await this._service.getesJefeArea(this.usuarioEmpresa).subscribe(async (resp) => {
+      await this._service.getesJefeArea(this.usuarioEmpresa,this.idEmpresa,this.i_opcionPermisos).subscribe(async (resp) => {
         if (resp.Codigo) {
           if (Object.keys(resp.Dt).length > 0) {
             let dt:[][] = resp.Dt.Table;
@@ -334,6 +334,10 @@ export class FrmsolvacacionesComponent implements OnInit {
 
   onRowMostrarDetalleEmpleado(e: any): void {
     
+    if (e.data === undefined) {
+      return;
+    }
+
     this.txtEmpleadoDetalleInfo = '';
     this.vltrbCodigo = "";
     this.diasPendientes = e.data.diaspendiente;//lcepeda
@@ -473,6 +477,10 @@ export class FrmsolvacacionesComponent implements OnInit {
   }
   async onRowVacacionesDoubleClick(e: any, modal: any) {
 
+    if (e.data === undefined) {
+      return;
+    }
+    
     this.loadingVisible = true;
     
     this.txtEmpleadoDetalleInfo = e.data.nombre_trabajador;
