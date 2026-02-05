@@ -32,9 +32,11 @@ export class FrmsolvacacionesService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
-  getesJefeArea(user) {
+  getesJefeArea(user,empresa,opcion) {
     const ListParam = [
-      { Name: 'User', Type: 'VarChar', Value: user.toString() }
+      { Name: 'User', Type: 'VarChar', Value: user.toString() },
+      { Name: 'i_empresa', Type: 'Int', Value: empresa.toString() },
+      { Name: 'i_opcion', Type: 'VarChar', Value: opcion.toString() }
     ];
 
     const base = {
