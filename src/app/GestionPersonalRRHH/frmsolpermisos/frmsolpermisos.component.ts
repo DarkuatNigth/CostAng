@@ -379,13 +379,14 @@ export class FrmsolpermisosComponent implements OnInit {
 
   calcularDias(): void {
     if (this.FechaDesde && this.FechaHasta) {
+
       this.minFechaHasta = new Date(this.FechaDesde);
-      const tiempoDesde = moment(new Date(this.FechaDesde)).format('yyyy/MM/D');//new Date(this.FechaDesde).getTime();
-      const tiempoHasta = moment(new Date(this.FechaHasta)).format('yyyy/MM/D');//new Date(this.FechaHasta).getTime();
+      const tiempoDesde = moment(new Date(this.FechaDesde)).format('yyyy/MM/DD');//new Date(this.FechaDesde).getTime();
+      const tiempoHasta = moment(new Date(this.FechaHasta)).format('yyyy/MM/DD');//new Date(this.FechaHasta).getTime();
       const diffDays = moment(tiempoHasta).diff(moment(tiempoDesde), 'days');
       let diastomados: number =0;
 
-      if (moment(new Date(this.FechaDesde)).format('yyyy/MM/D') > moment(new Date(this.FechaHasta)).format('yyyy/MM/D')) {
+      if (moment(new Date(this.FechaDesde)).format('yyyy/MM/DD') > moment(new Date(this.FechaHasta)).format('yyyy/MM/DD')) {
         this.txtdiassolicitado = '0';
       } else {
        
@@ -602,7 +603,7 @@ export class FrmsolpermisosComponent implements OnInit {
     if (e.data === undefined) {
       return;
     }
-    
+
     this.loadingVisible = true;
    
     this.txtEmpleadoDetalleInfo= 'Empleado: ' + e.data.Empleado;
