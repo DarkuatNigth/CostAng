@@ -315,12 +315,12 @@ export class FrmsolvacacionesComponent implements OnInit {
   calcularDias(): void {
     if (this.FechaDesde && this.FechaHasta) {
       this.minFechaHasta = new Date(this.FechaDesde);
-      const tiempoDesde = moment(new Date(this.FechaDesde)).format('yyyy/MM/D');//new Date(this.FechaDesde).getTime();
-      const tiempoHasta = moment(new Date(this.FechaHasta)).format('yyyy/MM/D');//new Date(this.FechaHasta).getTime();
+      const tiempoDesde = moment(new Date(this.FechaDesde)).format('yyyy/MM/DD');//new Date(this.FechaDesde).getTime();
+      const tiempoHasta = moment(new Date(this.FechaHasta)).format('yyyy/MM/DD');//new Date(this.FechaHasta).getTime();
       const diffDays = moment(tiempoHasta).diff(moment(tiempoDesde), 'days');
       let diastomados: number =0;
 
-      if (moment(new Date(this.FechaDesde)).format('yyyy/MM/D') > moment(new Date(this.FechaHasta)).format('yyyy/MM/D')) {
+      if (moment(new Date(this.FechaDesde)).format('yyyy/MM/DD') > moment(new Date(this.FechaHasta)).format('yyyy/MM/DD')) {
         this.txtdiassolicitado = '0';
       } else {
        
@@ -480,7 +480,7 @@ export class FrmsolvacacionesComponent implements OnInit {
     if (e.data === undefined) {
       return;
     }
-    
+
     this.loadingVisible = true;
     
     this.txtEmpleadoDetalleInfo = e.data.nombre_trabajador;
@@ -521,7 +521,7 @@ export class FrmsolvacacionesComponent implements OnInit {
   }
   async ConsultaVacaciones() {
    
-    await this.ConsultaGeneralSolicitud(await localStorage.getItem(varEmpresa),'LCEPEDA','GEN',(this.jefearea?1:0),'','','');
+    await this.ConsultaGeneralSolicitud(this.idEmpresa,this.usuarioEmpresa,'GEN',(this.jefearea?1:0),'','','');
   }
  async ConsultaGeneralSolicitud(empresa,usuario,accion,jefeporarea,estado,desde,hasta){
   
@@ -565,7 +565,7 @@ export class FrmsolvacacionesComponent implements OnInit {
    
     const fechaDesdeString = moment(this.dtpFechaDesde).format('YYYY/MM/DD');
     const fechaHastaString = moment(this.dtpFechaHasta).format('YYYY/MM/DD');
-    await this.ConsultaGeneralSolicitud(await localStorage.getItem(varEmpresa),'LCEPEDA','GEN',(this.jefearea?1:0),vlestado,fechaDesdeString,fechaHastaString);
+    await this.ConsultaGeneralSolicitud(this.idEmpresa,this.usuarioEmpresa,'GEN',(this.jefearea?1:0),vlestado,fechaDesdeString,fechaHastaString);
   }
  
 }
