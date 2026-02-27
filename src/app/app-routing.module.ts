@@ -104,6 +104,11 @@ const routes: Routes = [
         path: 'ext-aprobsolictudPermisosEmp',
         loadChildren: () => import('./GestionPersonalRRHH/frmaprobpermisos/frmaprobpermisos.module').then((m) => m.FrmaprobpermisosModule),
       }
+      ,
+      { 
+        path: 'ext-PermisosEmpleadosPlanta',
+        loadChildren: () => import('./GestionPersonalRRHH/frmpermisosempleadoplanta/frmpermisosempleadoplanta.module').then((m) => m.FrmPermisosEmpleadoModule),
+      }
 		]
 	},
   

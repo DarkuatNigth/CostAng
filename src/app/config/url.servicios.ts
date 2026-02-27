@@ -21,6 +21,8 @@ export const URL_SOCKET = 'https://sites.songa.com';
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";
 export const URL_CONSULT = DomainSite + "/api/Consult";
+export const URL_APIPRODUCCION = DomainSite + "/api/Consult";
+
 export const URL_TRANSACIMAGEN = DomainSite + "/api/TransacImagen";
 export const URL_TRANSACIMAGEN2 = DomainSite + "/api/TransacImagen";
 export const URL_REPORTES = DomainSite + "/SiteReports/Api/Reportes";
