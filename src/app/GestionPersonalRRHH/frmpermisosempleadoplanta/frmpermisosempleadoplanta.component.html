@@ -1,0 +1,777 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [hideOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div style="padding-top: 2%">
+  <div class="row w-full px-4">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-12 pb-1">
+      <dx-tab-panel
+        #tabPanel
+        style="width: 100%; height: auto; overflow-x: auto; white-space: nowrap"
+        [selectedIndex]="0"
+        [loop]="false"
+        [animationEnabled]="true"
+        [swipeEnabled]="true"
+        [width]="'100%'"
+        [scrollingEnabled]="true"
+        (onSelectionChanged)="onTabChange($event)"
+      >
+        <dxi-item title="Registrar Permiso" icon="description">
+          <div class="row row-buttons-inside-tab">
+            <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="file"
+                type="outlined"
+                text="Nuevo"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickNuevo()"
+              >
+              </dx-button>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="save"
+                type="success"
+                text="Guardar"
+                [disabled]="idPermisoCabecera || deshabilitaBotonGuardar"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickGuardar()"
+              >
+              </dx-button>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="find"
+                type="default"
+                text="Consultar"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickConsultar(modalPermisosEmpleados)"
+              >
+              </dx-button>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="trash"
+                type="danger"
+                text="Eliminar"
+                [disabled]="!idPermisoCabecera"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickEliminar()"
+              >
+              </dx-button>
+            </div>
+          </div>
+
+          <div class="row px-4">
+            <div class="col-md-9">
+              <div class="card">
+                <div class="card-body p-4">
+                  @if(this.idPermisoCabecera){
+                  <div class="row">
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                    >
+                      ID:
+                    </label>
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="idPermisoCabecera"
+                      />
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                    >
+                      Fecha Permiso:
+                    </label>
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="txtFechaPermiso"
+                      />
+                    </div>
+                  </div>
+                  }
+                  <div class="row mb-3">
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Supervisor:</label
+                    >
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="registroPermisoEmpleado.nombreSupervisor"
+                      />
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Turno:</label
+                    >
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="registroPermisoEmpleado.turnoSupervisor"
+                      />
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Grupo:</label
+                    >
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <ng-select
+                        id="buscadorGruposSupervisor"
+                        style="width: 100%"
+                        appendTo="body"
+                        searchable="true"
+                        placeholder="Seleccione grupo"
+                        [disabled]="idPermisoCabecera"
+                        clearable="false"
+                        (change)="onSelectorFormularioChange($event, 'grupo')"
+                        [(ngModel)]="registroPermisoEmpleado.grupoSupervisor"
+                      >
+                        <ng-option
+                          *ngFor="let data of listaGruposSupervisor"
+                          [value]="data"
+                        >
+                          <div
+                            title="{{ data.nombreGrupo }}"
+                            style="font-size: 14px"
+                          >
+                            {{ data.nombreGrupo }}
+                          </div>
+                        </ng-option>
+                      </ng-select>
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Permiso:</label
+                    >
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <ng-select
+                        id="buscadorTipoPermiso"
+                        style="width: 100%"
+                        appendTo="body"
+                        searchable="true"
+                        clearable="false"
+                        [disabled]="idPermisoCabecera"
+                        [placeholder]="'Seleccione el tipo de permiso'"
+                        (change)="
+                          onSelectorFormularioChange($event, 'permiso', true)
+                        "
+                        [(ngModel)]="
+                          registroPermisoEmpleado.tipoPermisoSeleccionado
+                        "
+                      >
+                        <ng-option
+                          *ngFor="let data of ListaTipoPermisosEmpleados"
+                          [value]="data"
+                        >
+                          <div
+                            title="{{ data.nombrePermiso }}"
+                            style="font-size: 14px"
+                          >
+                            {{ data.nombrePermiso }}
+                          </div>
+                        </ng-option>
+                      </ng-select>
+                    </div>
+
+                    @if(this.registroPermisoEmpleado.tipoPermisoSeleccionado &&
+                    this.registroPermisoEmpleado.tipoPermisoSeleccionado?.nombrePermiso
+                    == 'PERMISO DISPENSARIO' && !this.idPermisoCabecera){
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-2 col-lg-2 pb-1 text-left control-label"
+                    >
+                      Generar Cita:
+                    </label>
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <ng-select
+                        id="buscadorHoraDispensario"
+                        style="width: 100%"
+                        [disabled]="
+                          this.registroPermisoEmpleado.listaEmpleados.length ==
+                          0
+                        "
+                        [placeholder]="
+                          this.registroPermisoEmpleado.listaEmpleados.length > 0
+                            ? ''
+                            : 'debe escoger un empleado'
+                        "
+                        appendTo="body"
+                        searchable="true"
+                        clearable="false"
+                        [(ngModel)]="
+                          registroPermisoEmpleado.horaCitaDispensario
+                        "
+                      >
+                        <ng-option
+                          *ngFor="let data of listaHorasDisponiblesDispensario"
+                          [value]="data"
+                          [disabled]="data.trbCodigo"
+                        >
+                          <div
+                            title="{{ data.horasdisponibles }}"
+                            style="font-size: 14px"
+                          >
+                            {{ data.horasdisponibles }}
+                          </div>
+                        </ng-option>
+                      </ng-select>
+                    </div>
+                    }
+                  </div>
+
+                  @if(this.registroPermisoEmpleado.grupoSupervisor &&
+                  this.registroPermisoEmpleado.grupoSupervisor.codigoGrupo){
+                  <div class="row" style="padding-left: 2%; padding-right: 2%">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                      <dx-data-grid
+                        #GridEmpleadosGrupo
+                        id="GridEmpleadosGrupo"
+                        keyExpr="codigoEmpleado"
+                        style="width: 100%; max-height: 50vh"
+                        class="cssGrid"
+                        [dataSource]="ListaEmpleadosPermiso"
+                        noDataText="No se registran Empleados ingresados para ese grupo"
+                        [showColumnLines]="true"
+                        [showRowLines]="true"
+                        [showBorders]="true"
+                        [columnHidingEnabled]="false"
+                        [columnAutoWidth]="true"
+                        [repaintChangesOnly]="true"
+                        (onSelectionChanged)="onSeleccionarEmpleado($event)"
+                        (onCellPrepared)="onCellPrepared($event)"
+                        (onRowPrepared)="onRowPrepared($event)"
+                        (onContentReady)="onContentReady($event)"
+                      >
+                        <dxo-search-panel
+                          [visible]="true"
+                          width="100%"
+                          placeholder="Buscar..."
+                        ></dxo-search-panel>
+
+                        @if(this.habilitarSeleccionGrid){
+                        <dxo-selection
+                          [mode]="modeGridEmpleados"
+                          showCheckBoxesMode="always"
+                          [className]="'template'"
+                          cssClass="template"
+                        ></dxo-selection>
+                        }
+
+                        <dxi-column
+                          dataField="codigoEmpleado"
+                          [caption]="'Codigo Empleado'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="nombreEmpleado"
+                          [caption]="'Nombre de Empleado'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="turnoEmpleado"
+                          [caption]="'Turno Empleado'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="centroCosto"
+                          [dataType]="'string'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="grupo"
+                          [caption]="'Grupo'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="tipoPermisoAnterior"
+                          [caption]="'Tipo Permiso Anterior'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="horaSalida"
+                          [caption]="'Hora Salida'"
+                        ></dxi-column>
+
+                        <dxo-paging
+                          [enabled]="true"
+                          [pageSize]="10"
+                          [pageIndex]="0"
+                        >
+                        </dxo-paging>
+                      </dx-data-grid>
+                      <div class="p-1 text-count-datagrid">
+                        Total de Registros:
+                        {{ this.ListaEmpleadosPermiso.length }}
+                      </div>
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+              <div class="form-group row">
+                <div class="col-12">
+                  <label class="text-left control-label">Seleccionado(s)</label>
+                  @if(this.registroPermisoEmpleado.listaEmpleados.length > 0){
+                  <div class="p-1 text-count-datagrid">
+                    Total Seleccionados:
+                    {{ this.registroPermisoEmpleado.listaEmpleados.length }}
+                  </div>
+                  }
+                </div>
+                <div class="col-12">
+                  <dx-list
+                    class="list"
+                    search
+                    noDataText="No hay empleados seleccionados"
+                    [height]="200"
+                    selectionMode="none"
+                    selectByClick="false"
+                    focusStateEnabled="false"
+                    [dataSource]="registroPermisoEmpleado.listaEmpleados"
+                    [searchEnabled]="true"
+                    [searchExpr]="['nombreEmpleado', 'codigoEmpleado']"
+                    searchMode="contains"
+                  >
+                    <div *dxTemplate="let item of 'item'">
+                      <div class="cssLabelEmpleado">
+                        {{ item.codigoEmpleado }} -
+                        {{ item.nombreEmpleado }}
+                      </div>
+                    </div>
+                  </dx-list>
+                </div>
+              </div>
+            </div>
+          </div>
+        </dxi-item>
+
+        <dxi-item title="Registrar Permiso con Credenciales" icon="card">
+          <div class="row row-buttons-inside-tab">
+            <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="file"
+                type="outlined"
+                text="Nuevo"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickNuevo()"
+              >
+              </dx-button>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 col-12 pb-1">
+              <dx-button
+                icon="save"
+                type="success"
+                text="Guardar"
+                [disabled]="deshabilitaBotonGuardar"
+                style="width: 100%; font-size: 0.72rem"
+                (onClick)="onClickGuardarCredencialesMasivo()"
+              >
+              </dx-button>
+            </div>
+          </div>
+
+          <div class="row px-4">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-body p-4">
+                  <div class="row mb-3">
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Supervisor:</label
+                    >
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="registroPermisoEmpleado.nombreSupervisor"
+                      />
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Turno:</label
+                    >
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <input
+                        type="text"
+                        class="form-control"
+                        disabled="true"
+                        [(ngModel)]="registroPermisoEmpleado.turnoSupervisor"
+                      />
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                    >
+                      Empleado:
+                    </label>
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          class="form-control"
+                          [disabled]="
+                            !registroPermisoEmpleado.tipoPermisoSeleccionado
+                          "
+                          [placeholder]="
+                            !registroPermisoEmpleado.tipoPermisoSeleccionado
+                              ? 'Debe escoger un permiso'
+                              : 'Codigo de Credencial'
+                          "
+                          id="codEmpleado"
+                          (keydown)="onKeyPressCodEmpleado($event)"
+                          name="codEmpleado"
+                          [(ngModel)]="txtCodigoEmpleado"
+                        />
+                      </div>
+                    </div>
+
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-1 col-lg-2 pb-1 text-left control-label"
+                      >Permiso:</label
+                    >
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <ng-select
+                        id="buscadorTipoPermiso"
+                        style="width: 100%"
+                        appendTo="body"
+                        searchable="true"
+                        clearable="false"
+                        [disabled]="idPermisoCabecera"
+                        [placeholder]="'Seleccione el tipo de permiso'"
+                        (change)="onSelectorFormularioChange($event, 'permiso')"
+                        [(ngModel)]="
+                          registroPermisoEmpleado.tipoPermisoSeleccionado
+                        "
+                      >
+                        <ng-option
+                          *ngFor="let data of ListaTipoPermisosEmpleados"
+                          [value]="data"
+                        >
+                          <div
+                            title="{{ data.nombrePermiso }}"
+                            style="font-size: 14px"
+                          >
+                            {{ data.nombrePermiso }}
+                          </div>
+                        </ng-option>
+                      </ng-select>
+                    </div>
+
+                    @if(this.registroPermisoEmpleado.tipoPermisoSeleccionado &&
+                    this.registroPermisoEmpleado.tipoPermisoSeleccionado?.nombrePermiso
+                    == 'PERMISO DISPENSARIO' && !this.idPermisoCabecera){
+                    <label
+                      class="col-xs-12 col-sm-12 col-md-2 col-lg-2 pb-1 text-left control-label"
+                    >
+                      Generar Cita:
+                    </label>
+
+                    <div
+                      class="col-xs-12 col-sm-12 col-md-4 col-lg-4 pb-1"
+                      style="display: flex"
+                    >
+                      <ng-select
+                        id="buscadorHoraDispensario"
+                        style="width: 100%"
+                        [disabled]="
+                          ListaEmpleadosCredencialSeleccionados.length == 0
+                        "
+                        [placeholder]="
+                          ListaEmpleadosCredencialSeleccionados.length > 0
+                            ? ''
+                            : 'debe escoger un empleado'
+                        "
+                        appendTo="body"
+                        searchable="true"
+                        clearable="false"
+                        [(ngModel)]="
+                          registroPermisoEmpleado.horaCitaDispensario
+                        "
+                      >
+                        <ng-option
+                          *ngFor="let data of listaHorasDisponiblesDispensario"
+                          [value]="data"
+                          [disabled]="data.trbCodigo"
+                        >
+                          <div
+                            title="{{ data.horasdisponibles }}"
+                            style="font-size: 14px"
+                          >
+                            {{ data.horasdisponibles }}
+                          </div>
+                        </ng-option>
+                      </ng-select>
+                    </div>
+                    }
+                  </div>
+
+                  <div class="row" style="padding-left: 2%; padding-right: 2%">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+                      <p class="grid-titulo mt-1">Empleados Seleccionados</p>
+                      <dx-data-grid
+                        #GridEmpleadosGrupoCredencial
+                        id="GridEmpleadosGrupoCredencial"
+                        keyExpr="codigoEmpleado"
+                        style="width: 100%; max-height: 50vh"
+                        class="cssGrid"
+                        [dataSource]="ListaEmpleadosCredencialSeleccionados"
+                        noDataText="No ha ingresado ningun empleado"
+                        [showColumnLines]="true"
+                        [showRowLines]="true"
+                        [showBorders]="true"
+                        [columnHidingEnabled]="false"
+                        [columnAutoWidth]="true"
+                        [repaintChangesOnly]="true"
+                      >
+                        <dxo-search-panel
+                          [visible]="true"
+                          width="100%"
+                          placeholder="Buscar..."
+                        ></dxo-search-panel>
+
+                        <dxo-editing
+                          mode="row"
+                          [allowDeleting]="true"
+                          [useIcons]="true"
+                          [texts]="{
+                          saveRowChanges: 'Aceptar',
+                          cancelRowChanges: 'Cancelar',
+                        }"
+                        >
+                          <dxo-texts
+                            confirmDeleteMessage="¿Está seguro de eliminar el registro?"
+                          ></dxo-texts>
+                        </dxo-editing>
+
+                        <dxi-column type="buttons" [width]="110">
+                          <dxi-button style="color:darkred" name="delete" hint="Quitar empleado"></dxi-button>
+                        </dxi-column>
+
+                        <dxi-column
+                          dataField="codigoEmpleado"
+                          [caption]="'Codigo Empleado'"
+                          [dataType]="'int'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="credencialEmpleado"
+                          [caption]="'Credencial Empleado'"
+                          [dataType]="'int'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="nombreEmpleado"
+                          [caption]="'Nombre de Empleado'"
+                          [dataType]="'int'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="turnoEmpleado"
+                          [caption]="'Turno Empleado'"
+                          [dataType]="'string'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="centroCosto"
+                          [caption]="'Centro de Costo'"
+                          [dataType]="'string'"
+                        ></dxi-column>
+
+                        <dxi-column
+                          dataField="grupo"
+                          [caption]="'Grupo'"
+                          [dataType]="'string'"
+                        ></dxi-column>
+
+                        <dxo-paging
+                          [enabled]="true"
+                          [pageSize]="10"
+                          [pageIndex]="0"
+                        >
+                        </dxo-paging>
+                      </dx-data-grid>
+                      <div class="p-1 text-count-datagrid">
+                        Total de Empleados:
+                        {{ this.ListaEmpleadosCredencialSeleccionados.length }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </dxi-item>
+      </dx-tab-panel>
+    </div>
+
+    <ng-template #modalPermisosEmpleados let-modal>
+      <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">
+          Permisos de Empleados Registrados
+        </h4>
+        <button
+          type="button"
+          class="close"
+          aria-label="Close"
+          (click)="onClickCerrar(modal)"
+        >
+          <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+
+      <div
+        class="modal-body mostly-customized-scrollbar"
+        style="max-height: 70vh; overflow: auto"
+      >
+        <div class="row mb-3" style="padding-left: 2%; padding-right: 2%">
+          <label
+            class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1 text-left control-label"
+            >Fecha:</label
+          >
+          <div
+            class="col-xs-12 col-sm-12 col-md-2 col-lg-2 pb-1"
+            style="display: flex"
+          >
+            <dx-date-box
+              [(ngModel)]="txtFechaBusqueda"
+              type="date"
+              displayFormat="dd/MM/yyyy"
+              style="width: 100%"
+              [useMaskBehavior]="true"
+            >
+            </dx-date-box>
+          </div>
+
+          <div class="col-xs-12 col-sm-12 col-md-2 col-lg-2 pb-1">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="onClickBuscar()"
+            >
+              Buscar
+            </button>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="row" style="padding-left: 2%; padding-right: 2%">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+              <dx-data-grid
+                keyExpr="id"
+                #visitaComidaRegistrados
+                style="width: 100%; max-height: 50vh"
+                class="cssGrid"
+                [dataSource]="listaPermisosRegistrados"
+                noDataText="No se cuentan con permisos registrados"
+                [showColumnLines]="true"
+                [showRowLines]="true"
+                [showBorders]="true"
+                [columnHidingEnabled]="false"
+                [columnAutoWidth]="true"
+                [repaintChangesOnly]="true"
+                (onRowDblClick)="
+                  onRowPermisoEmpleadosDoubleClick($event, modal)
+                "
+              >
+                <dxo-search-panel
+                  [visible]="true"
+                  width="100%"
+                  placeholder="Buscar..."
+                ></dxo-search-panel>
+
+                <dxo-selection mode="single"></dxo-selection>
+
+                <dxo-paging [enabled]="true" [pageSize]="10" [pageIndex]="0">
+                </dxo-paging>
+              </dx-data-grid>
+              <div class="p-1 text-count-datagrid">
+                Total de Empleados:
+                {{ this.listaPermisosRegistrados.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-dark"
+          (click)="onClickCerrar(modal)"
+        >
+          Cancelar
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,214 @@
+.bordered{
+    border: 2px solid #d9dbdd;
+    border-radius: 4px;
+}
+
+.songaHeader{
+    font-weight: bold;
+    border-bottom: 2px solid #d9dbdd;
+    color: #0087B9;
+}
+
+.table-container {
+    margin-top: 20px;
+  }
+  
+  .table {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    overflow: hidden;
+  }
+  
+  .table thead th {
+    color: rgba(0, 0, 0, 0.466);
+    text-align: center;
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+  }
+  
+  .table td {
+    vertical-align: middle;
+  }
+
+  .grid-titulo {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y limpia */
+    font-size: 1.2em; /* Tamaño de fuente grande y legible */
+    font-weight: 600; /* Peso de fuente ligeramente en negrita */
+    color: #333; /* Color gris oscuro para el texto */
+    text-align: center; /* Centra el texto */
+    text-transform: uppercase; /* Transforma el texto a mayúsculas */
+    letter-spacing: 1px; /* Espacio entre letras para un efecto más moderno */
+    margin-bottom: 20px; /* Espacio debajo del párrafo */
+    padding: 10px; /* Espacio interno alrededor del texto */
+    border-bottom: 2px solid #007bff; /* Línea inferior moderna en azul */
+    background-color: #f9f9f9; /* Color de fondo suave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto elevado */
+  }
+
+
+  /* Estilo personalizado para la tabla */
+.custom-table {
+    font-size: 14px; /* Tamaño de fuente más grande */
+    line-height: 1.5; /* Espaciado de línea ajustado */
+  }
+  
+  .custom-table th,
+  .custom-table td {
+    padding: 0.75rem; /* Espaciado interno ajustado */
+    vertical-align: middle; /* Alineación vertical central */
+  }
+  
+  .custom-table thead th {
+    background-color: #f8f9fa; /* Color de fondo para el encabezado */
+    color: #495057; /* Color del texto del encabezado */
+    font-weight: bold; /* Texto en negrita */
+    text-align: left    ;
+  }
+  
+  .custom-table tbody tr {
+    transition: background-color 0.3s; /* Transición suave para el fondo */
+  }
+  
+  .custom-table tbody tr:hover {
+    background-color: #e9ecef; /* Color de fondo al pasar el cursor */
+  }
+  
+  .custom-table i {
+    font-size: 18px; /* Tamaño del icono ajustado */
+    color: #6c757d; /* Color del icono */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el icono */
+    transition: color 0.3s; /* Transición suave para el color del icono */
+  }
+  
+  .custom-table i:hover {
+    color: #007bff; /* Color del icono al pasar el cursor */
+  }
+
+  .table th, .table td {
+    white-space: nowrap; /* Evita el wrap de texto */
+  }
+  
+  .descripcion-column {
+    min-width: 350px; /* Establecer un ancho mínimo */
+  }
+  
+  .fecha-column {
+    min-width: 150px; /* Mantiene un ancho mínimo */
+  }
+
+  .dx-datagrid-content .dx-datagrid-table .dx-row > td{
+    vertical-align: middle;
+  }
+
+  /* En pantallas grandes, reduce el ancho de la columna */
+@media (min-width: 992px) { /* Para pantallas grandes */
+    .fecha-column {
+      width: 120px; /* Ancho deseado para pantallas grandes */
+    }
+  }
+  
+
+  input[type="number"] {
+    appearance: none; /* Propiedad estándar */
+    -moz-appearance: textfield; /* Firefox */
+  }
+  
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+}
+
+::ng-deep .cssGrid{
+  .dx-toolbar .dx-toolbar-after{
+    width: 100%;
+    padding-left: 0px;
+  }
+
+  .dx-datagrid-search-panel{
+    margin: 0px;
+    
+  }
+
+  .text-count-datagrid{
+    font-weight: 600;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1em;
+    color: #333;
+
+  }
+
+  .dx-datagrid-checkbox-size .dx-checkbox-icon {
+    height: 20px;
+    width: 20px;
+  }
+}
+
+
+::ng-deep .row-disabled {
+  background-color: #f6b2b9 !important; /* rojo claro */
+  font-weight: bold;
+
+}
+
+/* Evitar hover azul de selección */
+::ng-deep .row-disabled .dx-datagrid-content .dx-datagrid-table .dx-row:hover {
+  background-color: #f5c6cb !important;
+}
+
+/* Evitar selección por keyboard */
+::ng-deep .row-disabled .dx-selection {
+  background-color: #f5c6cb !important;
+}
+
+::ng-deep .checkboxes-mode {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+  }
+
+
+::ng-deep .dx-select-checkbox.dx-state-disabled {
+  opacity: 0.1 !important;
+}
+
+::ng-deep .dx-checkbox-icon-disabled {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+::ng-deep .row-disabled.dx-selection,
+.row-disabled.dx-row-selected,
+.row-disabled.dx-row-focused {
+  background: #ffe0e0 !important;
+  color: #b30000 !important;
+}
+
+::ng-deep .cssModalConsultaSolicitudes {
+  .modal-dialog {
+    max-width: 80%;
+    width: 80%;
+    z-index: unset;
+  }
+  .dx-toolbar .dx-toolbar-after {
+    width: 100%;
+    padding-left: 0px;
+  }
+  .dx-datagrid-search-panel {
+    margin: 0px;
+  }
+}
+
+
+.row-buttons-inside-tab{
+    margin-left: 2%; 
+    margin-right: 2%;
+    margin-top:0.5%;
+    margin-bottom: 1%;
+  }
