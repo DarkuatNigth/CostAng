@@ -103,7 +103,7 @@
                       style="width: 100%"
                       [(ngModel)]="cmbPermisos"
                       appendTo="body"
-                      [searchable]="true"
+                      [searchable]="false"
                       [clearable]="false">
                       <ng-option
                         *ngFor="let data of DataPermisos"
@@ -123,7 +123,7 @@
                       style="width: 100%"
                       [(ngModel)]="cmbRegresa"
                       appendTo="body"
-                      [searchable]="true"
+                      [searchable]="false"
                       (change)="onRegresaChange($event)"
                       [clearable]="false">
                       <ng-option
