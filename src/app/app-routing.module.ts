@@ -13,6 +13,7 @@ import { FrmdiasparadaplantaModuleFactory } from './Produccion/Mantenimiento/frm
 import { FrmenvioxmlnatModuleFactory } from './Produccion/Procesos/frmenvioxmlnat/frmenvioxmlnat.module';
 import { FrmtransaccionusuarioModuleFactory } from './Produccion/Mantenimiento/frmtransaccionusuario/frmtransaccionusuario.module';
 import { FrmclasificadoraimpresoraModuleFactory } from './Produccion/Mantenimiento/frmclasificadoraimpresora/frmclasificadoraimpresora.module';
+import { FrmenviadatosempagranModuleFactory } from './Produccion/Procesos/frmenviadatosempagran/frmenviadatosempagran.module';
 
 const routes: Routes = [
   {
@@ -86,7 +87,11 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: FrmclasificadoraimpresoraModuleFactory
-      },//solicitud vacaciones
+      },
+      {
+        path: '',
+        loadChildren: FrmenviadatosempagranModuleFactory
+      },
       { 
         path: 'ext-SolicitudVacaciones',
         loadChildren: () => import('./GestionPersonalRRHH/frmsolvacaciones/frmsolvacaciones.module').then((m) => m.FrmsolvacacionesModule),
