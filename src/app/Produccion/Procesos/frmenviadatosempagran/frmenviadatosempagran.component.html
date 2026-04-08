@@ -1,0 +1,91 @@
+
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Consultar" icon="find" type="default" (onClick)="onClickConsultar()">
+            </dx-button>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Enviar" icon="save" type="success" (onClick)="onClickEnviar()">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="card sng-card">
+        <div class="card-header"> {{title}} </div>
+        <div class="card-body">
+            <div class="form-group row" id="row-fechas">
+                <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
+                    Fecha Desde:
+                </label>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display: flex">
+                  <dx-date-box
+                    [(ngModel)]="fechaDesde"
+                    type="date"
+                    displayFormat="yyyy/MM/dd"
+                    adaptivityEnabled="true"
+                    openOnFieldClick="true"
+                    width="100%"
+                    name="fechaDesde"
+                  >
+                  </dx-date-box>
+                </div>
+
+                <label class="col-xs-12 col-sm-12 col-md-2 col-lg-2" style="font-size: 12px; height: 28px; white-space: wrap">
+                    Fecha Hasta:
+                </label>
+                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-2 pb-1" style="display: flex">
+                  <dx-date-box
+                    [(ngModel)]="fechaHasta"
+                    type="date"
+                    displayFormat="yyyy/MM/dd"
+                    adaptivityEnabled="true"
+                    openOnFieldClick="true"
+                    width="100%"
+                    name="fechaHasta"
+                  >
+                  </dx-date-box>
+                </div>
+            </div>
+
+            
+            <div class="form-group row">
+                <dx-data-grid #gridLotes
+                    id="gridLotes"
+                    style="width: 100%; max-height: 100vh"
+                    [dataSource]="listaLotes" 
+                    [columns]="columnasTitulo"
+                    [showColumnLines]="true" 
+                    [showRowLines]="true" 
+                    [showBorders]="true"
+                    [rowAlternationEnabled]="true" 
+                    [columnHidingEnabled]="false" 
+                    [columnAutoWidth]="true"
+                    (onInitialized)="onInitializedGridLotes(gridLotes)"
+                >
+                    <dxo-search-panel [visible]="true" placeholder="Buscar..." width="100%" > </dxo-search-panel>
+                    <dxo-selection mode="multiple" showCheckBoxesMode="always"></dxo-selection>
+                    <!-- <dxi-column dataField="rlo_numero" caption="Lote" width="100" selectedFilterOperation="contains"></dxi-column>
+                    <dxi-column dataField="clp_nomcom" caption="Proveedor" selectedFilterOperation="contains"></dxi-column>
+                    <dxi-column dataField="gtr_piscin" caption="Piscina" width="100" selectedFilterOperation="contains"></dxi-column>
+                    <dxi-column dataField="rlo_fecha" caption="Fecha" width="100" dataType="date" format="yyyy/MM/dd"></dxi-column> -->
+                    <dxo-paging [pageSize]="10" [pageIndex]="0"> </dxo-paging>
+                </dx-data-grid>
+            </div>
+        </div>
+    </div>
+
+
+</div>
