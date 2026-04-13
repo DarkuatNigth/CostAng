@@ -1,0 +1,252 @@
+/* Recreación del Panel de Bootstrap 3 */
+.panel-custom {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd; /* Color de borde solicitado */
+  border-radius: 4px;
+  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+  box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+
+/* Encabezado con el azul #0087B9 */
+.panel-custom > .panel-heading {
+  color: #0087B9; /* Color de título solicitado */
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 14px; /* Tamaño estándar de ASPX */
+  font-weight: bold;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.panel-body {
+  padding: 15px;
+}
+
+/* Labels estilo ASPX clásico */
+.control-label-aspx {
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+
+/* Ajuste de ng-select para encajar en el panel */
+::ng-deep .ng-select .ng-select-container {
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  align-items: center;
+}
+
+
+
+/* Simulación de Fuente 11px y Tema Metropolis */
+.grid-metropolis-style ::ng-deep {
+    .dx-datagrid {
+        font-size: 11px !important;
+        font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    /* Estilo de encabezados Metropolis */
+    .dx-datagrid-headers {
+        color: #333;
+        background-color: #f2f2f2;
+        font-weight: normal;
+    }
+
+    /* Quitar padding excesivo para compactar como en ASPX */
+    .dx-datagrid-rowsview .dx-data-row .dx-command-edit {
+        padding: 2px;
+    }
+
+    .dx-datagrid-content .dx-datagrid-table .dx-row > td {
+        padding: 4px 7px;
+        vertical-align: middle;
+    }
+}
+
+/* Estilo para el input dentro de la celda */
+.input-grid-aspx {
+    font-size: 11px;
+    padding: 0px 5px;
+    height: 24px;
+    outline: none;
+}
+
+// .input-grid-aspx:focus {
+//     background-color: #fffbe6 !important; /* Efecto focus claro */
+//     box-shadow: none;
+// }
+.input-grid-aspx:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: #fffbe6 !important; /* Color amarillento clásico de edición en DevEx */
+}
+
+/* ========================================
+   WRAPPER COMPACTO PARA NG-SELECT
+   ======================================== */
+
+.select-wrapper-compact {
+    display: inline-block;
+    width: auto;
+    min-width: 80px;
+    max-width: 100%;
+}
+
+/* ========================================
+   ESTILOS NG-SELECT COMPACTO
+   ======================================== */
+
+.aspx-select-compact {
+    width: auto !important;
+    display: inline-block !important;
+    min-width: 100px !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-select {
+    width: auto !important;
+    display: inline-block !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-select-container {
+    width: auto !important;
+    min-width: 90px !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 0px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-value-container {
+    display: flex !important;
+    flex: 0 1 auto !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-value {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+    white-space: nowrap !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-value-label {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+    white-space: nowrap !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-placeholder {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-input {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+    padding: 0 5px !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-input > input {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+.aspx-select-compact ::ng-deep .ng-arrow-wrapper {
+    padding: 0 5px !important;
+    width: auto !important;
+    flex-shrink: 0 !important;
+}
+
+/* ========================================
+   ESTILOS PARA EL DIV DENTRO DE NG-OPTION
+   ======================================== */
+
+/* Sobrescribir el estilo inline del div dentro de las opciones */
+.option-text {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+/* ========================================
+   PANEL DROPDOWN (SE RENDERIZA FUERA)
+   ======================================== */
+
+::ng-deep .ng-dropdown-panel {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+    min-width: 80px !important;
+    width: auto !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items {
+    font-size: 11px !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+    padding: 5px 10px !important;
+    white-space: nowrap !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option-label {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+/* CRÍTICO: Sobrescribir TODOS los divs dentro de las opciones */
+::ng-deep .ng-dropdown-panel .ng-option div {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option span {
+    font-size: 11px !important;
+    font-family: Tahoma, Geneva, sans-serif !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option-selected {
+    background-color: #f5f5f5 !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option-marked {
+    background-color: #e9ecef !important;
+}
+
+
+/* Asegura que el contenedor del tab y sus hijos directos ocupen el 100% */
+.flex-height-container {
+    height: calc(100vh - 150px); /* Ajusta según tu cabecera principal */
+}
+
+/* Forzar a que los contenedores intermedios de Bootstrap no corten el flujo */
+.full-height-row, .full-height-col {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+::ng-deep .dx-multiview-wrapper, 
+::ng-deep .dx-multiview-item-container,
+::ng-deep .dx-multiview-item-content {
+    height: 100% !important;
+}

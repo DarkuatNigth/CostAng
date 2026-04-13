@@ -1,0 +1,41 @@
+::ng-deep .cssGrid {
+    .modal-dialog {
+      max-width: 60%;
+      width: 60%;
+      z-index: unset;
+    }
+  
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+  
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+
+    .dx-datagrid-checkbox-size .dx-checkbox-icon {
+        height: 25px;
+        width: 25px;
+      }
+
+      .dx-datagrid-checkbox-size .dx-checkbox-container .dx-checkbox-icon {
+        height: 25px;
+        width: 25px;
+      }
+}
+
+.grid-titulo {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y limpia */
+    font-size: 1.2em; /* Tamaño de fuente grande y legible */
+    font-weight: 600; /* Peso de fuente ligeramente en negrita */
+    color: #333; /* Color gris oscuro para el texto */
+    text-align: center; /* Centra el texto */
+    text-transform: uppercase; /* Transforma el texto a mayúsculas */
+    letter-spacing: 1px; /* Espacio entre letras para un efecto más moderno */
+    margin-bottom: 20px; /* Espacio debajo del párrafo */
+    padding: 10px; /* Espacio interno alrededor del texto */
+    border-bottom: 2px solid #007bff; /* Línea inferior moderna en azul */
+    background-color: #f9f9f9; /* Color de fondo suave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto elevado */
+}

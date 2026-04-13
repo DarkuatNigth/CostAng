@@ -1,0 +1,176 @@
+<dx-load-panel #loadPanel shadingColor="rgba(0,0,0,0.4)" [(visible)]="loadingVisible" [showIndicator]="true"
+    [showPane]="true" [shading]="true" [closeOnOutsideClick]="false">
+</dx-load-panel>
+
+<div style="padding: 10px 2%">
+    <div class="row justify-content-center">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button text="Seleccionar Archivo" icon="upload" type="default" (onClick)="onClickCargarExcel()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-6 pb-1 sng-dbtn">
+            <dx-button [hidden]="blVerBtnGuardar" text="Guardar" icon="save" type="success"
+                (onClick)="onClickGuardar()">
+                <!-- [disabled]="disabledBtnGuardar"> -->
+            </dx-button>
+        </div>
+
+    </div>
+
+    <div class="row justify-content-center mt-2 mb-1" *ngIf="tbInvVal && tbInvVal.length > 0">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-10">
+            <div class="card">
+                <div class="card-header"
+                    style="font-weight:bold; border:2px solid #d9dbdd; border-radius:4px; color:#0087b9;">
+                    Período de Inventario
+                </div>
+                <div class="card-body" style="border:2px solid #d9dbdd; border-radius:4px;">
+                    <div class="row align-items-end">
+
+                        <!-- COMBO AÑO -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-2">
+                            <label style="font-weight:600; font-size:13px; color:#444;">
+                                Año <span style="color:red">*</span>
+                            </label>
+                            <select class="form-control" [(ngModel)]="selectedAnio"
+                                (ngModelChange)="onAnioChanged($event)">
+                                <option [ngValue]="null" disabled hidden>Seleccione el año...</option>
+                                <option *ngFor="let anio of lstAnio" [ngValue]="anio.codigo">
+                                    {{ anio.descripcion }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- COMBO MES -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-2">
+                            <label style="font-weight:600; font-size:13px; color:#444;">
+                                Mes <span style="color:red">*</span>
+                            </label>
+                            <select class="form-control" [(ngModel)]="selectedMes"
+                                (ngModelChange)="onMesChanged($event)" [attr.disabled]="!selectedAnio ? true : null">
+                                <option [ngValue]="null" disabled hidden>Seleccione el mes...</option>
+                                <option *ngFor="let mes of lstMes" [ngValue]="mes.codigo">
+                                    {{ mes.descripcion }}
+                                </option>
+                            </select>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-10 pb-1 sng-dbtn">
+
+            <div class="card">
+                <!-- <div class="card sng-card mx-auto" style="float:none;"> -->
+                <div class="card-header"
+                    style="font-weight: bold;border: 2px solid #d9dbdd; border-radius: 4px;color: #0087b9;">
+                    {{title}}
+                </div>
+                <div class="card-body" style="border: 2px solid #d9dbdd; border-radius: 4px">
+                    <div class="form-group" style="padding: 5px; margin-right: 2px">
+                        <div class="row margin-container">
+                            <!-- <p class="grid-titulo" style="width:100%;font-weight: bold;border: 2px solid #d9dbdd; border-radius: 4px;color: #0087b9;text-align:center;margin-bottom:4px;padding:8px 0 8px 0;font-size:15px;text-transform:uppercase;background:#fff;">Previo antes de actualizar</p> -->
+                            <p class="grid-titulo"
+                                style="width:100%; margin:auto; font-weight:bold; border-bottom:2px solid #0087b9; color:#222; text-align:center; margin-bottom:8px; padding:8px 32px 8px 32px; font-size:12px; text-transform:uppercase; background:#fff;">
+
+
+                                <span *ngIf="accionActual === AccionInventario.Ninguna">
+                                    📋 {{ TitAccion }}
+                                </span>
+
+                                <span *ngIf="accionActual === AccionInventario.Crear">
+                                    ✅ {{ TitAccion }}
+                                </span>
+
+                                <span *ngIf="accionActual === AccionInventario.Actualizar">
+                                    ♻️ {{ TitAccion }}
+                                </span>
+                            </p>
+                            <div class="pb-1 w-100 d-flex justify-content-center"
+                                *ngIf="tbInvVal && tbInvVal.length > 0"></div>
+                            <!-- <div class="pb-1 d-flex justify-content-center" style="width:100%;"> -->
+                            <div class="w-100">
+                                <!-- <div style="width:fit-content; max-width: 100%; min-width: 0;"> -->
+                                <!-- <div style="width:100%; max-width: 100%; min-width: 0;"> 
+                            <div style="width:fit-content; margin:auto;"> -->
+                                <dx-data-grid #GridInvVal id="GridInvVal"
+                                    style="width:100%; max-width: 100%; min-width: 0; max-height: 75vh"
+                                    [wordWrapEnabled]="true" [dataSource]="tbInvVal" [showColumnLines]="true"
+                                    [showRowLines]="true" [showBorders]="true" [columnAutoWidth]="true"
+                                    [allowColumnResizing]="true" columnResizingMode="widget"
+                                    (onInitialized)="onInitializedDeudas(GridInvVal)">
+                                    <dxo-scrolling columnRenderingMode="virtual"></dxo-scrolling>
+
+                                    <dxo-filter-row [visible]="true"></dxo-filter-row>
+
+                                    <ng-container *ngFor="let col of getDynamicColumns(tbInvVal)">
+                                        <dxi-column *ngIf="col !== 'COSTO' && col !== 'TOTAL'" [dataField]="col"
+                                            [caption]="col" [alignment]="'left'"></dxi-column>
+
+                                        <dxi-column *ngIf="col === 'COSTO'" [dataField]="col" [caption]="col"
+                                            dataType="number" [format]="{ type: 'currency', precision: 4 }"
+                                            [alignment]="'left'"></dxi-column>
+
+                                        <dxi-column *ngIf="col === 'TOTAL'" [dataField]="col" [caption]="col"
+                                            dataType="number" [format]="{ type: 'currency', precision: 4 }"
+                                            [alignment]="'left'"></dxi-column>
+                                    </ng-container>
+
+                                    <dxo-paging [enabled]="true" [pageSize]="20" [pageIndex]="0"></dxo-paging>
+                                    <dxo-pager [showPageSizeSelector]="true"
+                                        [allowedPageSizes]="[10, 20, 50, 100]"></dxo-pager>
+
+                                </dx-data-grid>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row margin-container">
+                        <p class="grid-titulo"
+                            style="width:100%; margin:auto; font-weight:bold; border-bottom:2px solid #0087b9; color:#222; text-align:center; margin-bottom:8px; padding:8px 32px 8px 32px; font-size:12px; text-transform:uppercase; background:#fff;"
+                            *ngIf="tbErrores && tbErrores.length > 0">Errores o Inconsistencias</p>
+                        <div class="pb-1 w-100 d-flex justify-content-center" *ngIf="tbErrores && tbErrores.length > 0">
+                            <div style="width:fit-content; max-width: 500px; min-width: 280px;">
+                                <dx-data-grid #GridErrores id="GridErrores"
+                                    style="width:100%; max-width: 100%; min-width: 0; max-height: 75vh"
+                                    [dataSource]="tbErrores" [showColumnLines]="true" [showRowLines]="true"
+                                    [showBorders]="true" [rowAlternationEnabled]="true" [columnHidingEnabled]="false"
+                                    [columnAutoWidth]="false" (onInitialized)="onInitializedError(GridErrores)">
+                                    <!-- <dxo-filter-row [visible]="true" [applyFilter]="currentFilter" ></dxo-filter-row> -->
+                                    <!-- <dxi-column dataField="id_deuda" caption="Deuda" [visible]="true" [width]="90"></dxi-column>
+                                <dxi-column dataField="error" caption="Errores" [visible]="true" [width]="90"></dxi-column>
+                                <div *dxTemplate="let cell of 'cellTempValor'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorCorte($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div>
+                                <div *dxTemplate="let cell of 'cellTempValorAut'">
+                                    <div>
+                                        <input type="text" class="form-control"
+                                            (change)=" onChangeValorAutCorte($event.target.value, cell) " [(ngModel)]="cell.value"
+                                            style=" width: 100%; border: 0px; background-color: transparent; text-align: left; " />
+                                    </div>
+                                </div> -->
+                                    <dxo-paging [pageSize]="50" [enabled]="false"></dxo-paging>
+                                </dx-data-grid>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

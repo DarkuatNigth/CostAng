@@ -37,6 +37,7 @@ export const URL_OTHERAPI = DomainSite + "/ApiBackend/Signature";
 export const URL_CONSULTRRHH = DomainSiteRRHH + '/api/Consult';
 export const URL_TRANSACIMAGENRRHH = DomainSiteRRHH + '/api/TransacImagen';
 
+export const URL_APICOSTOS = DomainSite +'/apiCostos/';
 
 /*CONEXION MARINA*/
 /* export const BaseConexion = "MARINA";
@@ -56,5 +57,5 @@ export const CONNECTION_SONG = "SONG";
 export const CONNECTION_PROYECTO = "PROYECTO";
 export const CONNECTION_RRHH = 'RRHH';
 export const CONNECTION_BETAPRORRHH = "BETAPRORRHH";
-
+export const CONNECTION_COSTOS = "COSTOS";
 
