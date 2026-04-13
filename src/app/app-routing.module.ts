@@ -14,6 +14,9 @@ import { FrmenvioxmlnatModuleFactory } from './Produccion/Procesos/frmenvioxmlna
 import { FrmtransaccionusuarioModuleFactory } from './Produccion/Mantenimiento/frmtransaccionusuario/frmtransaccionusuario.module';
 import { FrmclasificadoraimpresoraModuleFactory } from './Produccion/Mantenimiento/frmclasificadoraimpresora/frmclasificadoraimpresora.module';
 import { FrmenviadatosempagranModuleFactory } from './Produccion/Procesos/frmenviadatosempagran/frmenviadatosempagran.module';
+import { FrmconsultageneralModuleFactory } from './Costos/Consultas/frmconsultageneral/frmconsultageneral.module';
+import { FrmparametrizacionprocesoModuleFactory } from './Costos/Procesos/frmparametrizacionproceso/frmparametrizacionproceso.module';
+import { FrmregistrarinventariovaloradoModuleFactory } from './Costos/Procesos/frmregistrarinventariovalorado/frmregistrarinventariovalorado.module';
 
 const routes: Routes = [
   {
@@ -51,6 +54,18 @@ const routes: Routes = [
       { 
         path: '', 
         loadChildren: () => import('./Produccion/Procesos/frmasignacionlotes/frmasignacionlotes.module').then(m => m.FrmasignacionlotesModule) 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmconsultageneralModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmparametrizacionprocesoModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmregistrarinventariovaloradoModuleFactory 
       },
       { 
         path: '', 

@@ -1,0 +1,142 @@
+.dx-dropdown-content {
+    min-width: 300px; /* Evita que el contenido sea muy estrecho */
+    width: auto !important; /* Permite expansión dinámica */
+    max-width: 100%; /* Asegura que no sobrepase el contenedor */
+}
+
+::ng-deep .cssGrid {
+    .dx-toolbar .dx-toolbar-after {
+        width: 100%;
+        padding-left: 0px;
+    }
+
+    .dx-datagrid-search-panel {
+        margin: 0px;
+
+    }
+    .dx-datagrid-checkbox-size .dx-checkbox-icon {
+      height: 20px;
+      width: 20px;
+      border-color: #a3a2a2;
+    }
+
+    .dx-datagrid-rowsview .dx-select-checkboxes-hidden > tbody > tr > td > .dx-select-checkbox {
+      display: inline-block;
+      
+    }
+}
+
+::ng-deep #ListReportes {
+    .dx-list .dx-empty-message,
+    .dx-list-item-content {
+        padding: 0.5em;
+        display: inline list-item;
+    }
+
+    .dx-list-item {
+      padding: 0.5em;
+      font-size: 1.1em;
+  }
+}
+
+::ng-deep #GridResultados {
+    .dx-toolbar-after .dx-toolbar-item:first-child {
+        width: 0px;
+    }
+}
+
+.sng-grid-title {
+	margin-bottom: 10px;
+	padding: 0px;
+}
+
+
+.sng-dbtn{
+    padding: 0px 4px !important;
+  }
+  
+  .sng-dbtn dx-button{
+    width: 100%; font-size: 0.72rem;
+  }
+  
+  .sng-grid-title {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y limpia */
+    font-size: 1.2em; /* Tamaño de fuente grande y legible */
+    font-weight: 600; /* Peso de fuente ligeramente en negrita */
+    color: #333; /* Color gris oscuro para el texto */
+    text-align: center; /* Centra el texto */
+    text-transform: uppercase; /* Transforma el texto a mayúsculas */
+    letter-spacing: 1px; /* Espacio entre letras para un efecto más moderno */
+    margin-bottom: 20px; /* Espacio debajo del párrafo */
+    padding: 10px; /* Espacio interno alrededor del texto */
+    border-bottom: 2px solid #007bff; /* Línea inferior moderna en azul */
+    background-color: #f9f9f9; /* Color de fondo suave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto elevado */
+  }
+  
+  .sng-card .card-header {
+    font-weight: bold;
+    border: 2px solid #d9dbdd;
+    border-radius: 4px;
+    color: #0087b9;
+  }
+  
+  .sng-card .card-body {
+    border: 2px solid #d9dbdd; 
+    border-radius: 4px
+  }
+
+  ::ng-deep .cssModalConsultas {
+    .modal-dialog {
+      max-width: 80%;
+      width: 80%;
+      z-index: unset;
+    }
+  
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+  
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+  }
+
+  ::ng-deep .cssGridSearch {
+    .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+    }
+  
+    .dx-datagrid-search-panel {
+      margin: 0px;
+    }
+  }
+
+
+  .cssCheckBox {
+    width: 1.2rem;
+    height: 1.2rem;
+    top: 0.5rem;
+  }
+
+
+/* Centra el texto de todos los encabezados del grid */
+::ng-deep .dx-datagrid-headers .dx-header-row > td {
+    text-align: middle !important;
+    vertical-align: middle !important;
+}
+
+// /* Centrado horizontal y vertical de todos los encabezados */
+// ::ng-deep .dx-datagrid-headers .dx-header-row > td {
+//     vertical-align: middle !important; /* Centrado vertical estándar */
+// }
+
+// ::ng-deep .dx-datagrid-text-content {
+//     display: flex !important;
+//     justify-content: center !important; /* Centrado horizontal */
+//     align-items: center !important;     /* Centrado vertical */
+//     text-align: center !important;
+//     height: 100%;
+// }
