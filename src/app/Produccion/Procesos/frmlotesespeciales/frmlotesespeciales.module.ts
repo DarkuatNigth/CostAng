@@ -32,7 +32,7 @@ import { FrmlotesespecialesComponent } from './frmlotesespeciales.component';
       DxFileUploaderModule,
       DxContextMenuModule,
       RouterModule.forChild([
-          { path: 'ext-loteespeciales', canActivate: [], component: FrmlotesespecialesComponent },
+          { path: 'ext-loteespeciales', canActivate: [AuthGuard], component: FrmlotesespecialesComponent },
         ]) ,
     ],
     exports: [

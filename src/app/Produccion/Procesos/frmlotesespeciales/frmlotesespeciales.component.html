@@ -22,12 +22,16 @@
     <div class="col-lg-8 col-8 col-md-8 col-sm-6 col-xs-6">
         
         <div class="row" id="r0">
+            <div id="r-nuevo" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn d-flex justify-content-start">
+                <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+                </dx-button>
+            </div>
             <div id="r1" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn">
                 <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()">
                 </dx-button>
             </div>
             <div id="r1" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn">
-                <dx-button text="Exportar Excel" icon="print" type="success" (onClick)="onClickRptExcel()">
+                <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickRptExcel()">
                 </dx-button>
             </div>
         </div>

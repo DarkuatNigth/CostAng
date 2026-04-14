@@ -34,7 +34,18 @@ constructor(private _service: FrmlotesespecialesService) {}
     this.loadingVisible = false;
   }
 
+  onClickNuevo() {
+    this.le_fecha = new Date();
+    this.le_numerolotes = 0;
+    this.le_tipoSeleccionado = 'AMBAS';
+    this.tbLotesEspeciales = null;
+  }
+
+
   async onClickGuardar() {
+
+    this.loadingVisible = true;
+
     //Validar
     if (this.le_numerolotes <= 0) {
       await this.showAlert('Validación', 'El número de lotes debe ser mayor a 0', 'warning');
@@ -66,7 +77,7 @@ constructor(private _service: FrmlotesespecialesService) {}
         tipoCCSC = '';
     }
 
-    let fechaFormateada = moment.default(this.le_fecha).format('YYYY/MM/DD');
+    let fechaFormateada = moment(this.le_fecha).format('YYYY/MM/DD');
 
     console.log('Lotes a crear:', this.le_numerolotes);
     console.log('Fecha seleccionada:', this.le_fecha);
@@ -93,19 +104,12 @@ constructor(private _service: FrmlotesespecialesService) {}
         }
       });
     });
+
+    this.loadingVisible = false;
     
   }
 
   async onClickRptExcel() {
-
-    //add sample data to tbLotesEspeciales
-    if (!this.tbLotesEspeciales || this.tbLotesEspeciales.length === 0) {
-      this.tbLotesEspeciales = [
-        { Lote: 'Lote1', Proveedor: 'Proveedor1', Piscina: 'CC' },
-        { Lote: 'Lote2', Proveedor: 'Proveedor2', Piscina: 'SC' },
-        { Lote: 'Lote3', Proveedor: 'Proveedor3', Piscina: 'CC' }
-      ];
-    }
 
     // Export tbLotesEspeciales to Excel
     if (!this.tbLotesEspeciales || this.tbLotesEspeciales.length === 0) {
@@ -114,7 +118,7 @@ constructor(private _service: FrmlotesespecialesService) {}
     }
 
     // Format date for filename (YYYYMMDD)
-    const fecha = this.le_fecha ? moment.default(this.le_fecha).format('YYYYMMDD') : moment.default().format('YYYYMMDD');
+    const fecha = this.le_fecha ? moment(this.le_fecha).format('YYYYMMDD') : moment(this.le_fecha).format('YYYYMMDD');
     const fileName = `MacroLotes_${fecha}.xlsx`;
 
     // Convert data to worksheet
