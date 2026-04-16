@@ -22,22 +22,40 @@ export class FrmlotesespecialesComponent {
   loadingVisible: boolean = false;
   le_fecha : Date = new Date();
   le_numerolotes : number = 0;
-  le_tipoSeleccionado = 'AMBAS';
+  // le_tipoSeleccionado = 'ENTERO';
   tbLotesEspeciales: any;
   usuario?: string;
+  le_claseSeleccionada?: string = undefined;
+
+  //add claseDt table with fields clase and claseDesc without data
+  claseDT: { clase: string; claseDesc: string }[] = [];
+
 
 constructor(private _service: FrmlotesespecialesService) {}
 
   async ngOnInit() {
     this.loadingVisible = true;
     this.usuario = localStorage.getItem(varUser) ?? undefined;
+
+
+    //fill claseDT with service call to obtenerCatalogoTCA
+    (await this._service.obtenerCatalogoTCA()).subscribe((data) => {
+      if (data.Codigo) {
+        console.log('Respuesta del servicio obtenerCatalogoTCA:', data);
+        this.claseDT = data.Dt.Table.map((item: any) => ({
+          clase: item.codigoDet,
+          claseDesc: item.descripcionDet,
+        }));
+      }
+    });
+
     this.loadingVisible = false;
   }
 
   onClickNuevo() {
     this.le_fecha = new Date();
     this.le_numerolotes = 0;
-    this.le_tipoSeleccionado = 'AMBAS';
+    this.le_claseSeleccionada = undefined;
     this.tbLotesEspeciales = null;
   }
 
@@ -56,25 +74,10 @@ constructor(private _service: FrmlotesespecialesService) {}
       await this.showAlert('Validación', 'Debe seleccionar una fecha', 'warning');
       return;
     }
-    //validar radio btutton selected
-    if (!this.le_tipoSeleccionado) {
+    //validar combo clase selection
+    if (!this.le_claseSeleccionada) {
       await this.showAlert('Validación', 'Debe seleccionar un tipo de lote', 'warning');
       return;
-    }
-
-    let tipoCCSC = '';
-    switch (this.le_tipoSeleccionado) {
-      case 'ENTERO':
-        tipoCCSC = 'CC';
-        break;
-      case 'COLA':
-        tipoCCSC = 'SC';
-        break;
-      case 'AMBAS':
-        tipoCCSC = '';
-        break;
-      default:
-        tipoCCSC = '';
     }
 
     let fechaFormateada = moment(this.le_fecha).format('YYYY/MM/DD');
@@ -82,12 +85,11 @@ constructor(private _service: FrmlotesespecialesService) {}
     console.log('Lotes a crear:', this.le_numerolotes);
     console.log('Fecha seleccionada:', this.le_fecha);
     console.log('Fecha formateada:', fechaFormateada);
-    console.log('Tipo seleccionado:', this.le_tipoSeleccionado);  
-    console.log('Tipo CCSC:', tipoCCSC);
+    console.log('Clase seleccionada:', this.le_claseSeleccionada);
 
 
     await new Promise(async (resolve) => {
-      const observable = await this._service.lotesEspecialesGrabar(this.le_numerolotes, fechaFormateada, tipoCCSC, this.usuario || '');
+      const observable = await this._service.lotesEspecialesGrabar(this.le_numerolotes, fechaFormateada, this.le_claseSeleccionada, this.usuario || '');
 
       console.log('Respuesta del servicio (observable):', observable);
 

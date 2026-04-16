@@ -30,4 +30,20 @@ export class FrmlotesespecialesService {
     return this.http.post<ResultWS>(URL_CONSULT, base);
     };
 
+    async obtenerCatalogoTCA() {
+
+      const ListParam = [
+        { Name: 'cat_codigo', Type: 'Varchar', Value: 'tca' },
+        { Name: 'incluirCampoVacio', Type: 'Int', Value: '0' },
+      ];
+  
+      const base = {
+        sp: 'general.sp_obtenerCatalogo',
+        param: ListParam,
+        conexion: CONNECTION_PROD,
+      };
+  
+      return this.http.post<ResultWS>(URL_CONSULT, base);
+      }
+
 }

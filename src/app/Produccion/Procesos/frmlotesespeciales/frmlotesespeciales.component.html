@@ -76,38 +76,37 @@
                         style="font-size: 13px; min-width: 120px; text-align: right;"
                         >Número de Lotes:</label>
 
+                        <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1" style="min-width: 180px;">
+                            <input
+                                    id="input-numerolotes"
+                                    type="number"
+                                    [(ngModel)]="le_numerolotes"
+                                    class="form-control"
+                                    min="0"
+                                    step="1"
+                                    placeholder="Ingrese el número de lotes a crear"
+                                    name="input-lotes"
+                                    maxlength="2"
+                            />
+                        </div>
 
-                                                <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1" style="min-width: 180px;">
-                                                        <input
-                                                                id="input-numerolotes"
-                                                                type="number"
-                                                                [(ngModel)]="le_numerolotes"
-                                                                class="form-control"
-                                                                min="0"
-                                                                step="1"
-                                                                placeholder="Ingrese el número de lotes a crear"
-                                                                name="input-lotes"
-                                                                maxlength="2"
-                                                        />
-                                                </div>
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-1 col-lg-1 text-left control-label"
+                        style="font-size: 13px; min-width: 120px; text-align: right;"
+                        >Tipo:</label>
 
-                                                <!-- Radio buttons row -->
-                                                <div class="w-100"></div>
-                                                <div class="form-group d-flex justify-content-start align-items-center" style="gap: 16px; padding-top: 8px;">
-                                                    <label class="mb-0">
-                                                        <input type="radio" name="tipo" [(ngModel)]="le_tipoSeleccionado" value="ENTERO"> Entero
-                                                    </label>
-                                                    <label class="mb-0">
-                                                        <input type="radio" name="tipo" [(ngModel)]="le_tipoSeleccionado" value="COLA"> Cola
-                                                    </label>
-                                                    <label class="mb-0">
-                                                        <input type="radio" name="tipo" [(ngModel)]="le_tipoSeleccionado" value="AMBAS"> Ambas
-                                                    </label>
-                                                </div>
-
-
-
+                        <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1" style="min-width: 180px;">
+                            <ng-select style="min-width: 120px; width: 100%;" [(ngModel)]="le_claseSeleccionada" appendTo="body" [searchable]="true" [clearable]="false">
+                                <ng-option *ngFor="let data of claseDT" [value]="data.clase">
+                                    <div title="{{ data.claseDesc }}" style="font-size: 12px">
+                                        {{ data.claseDesc }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
                     </div>
+
+                    <br>
 
 
                     <!-- Grid ini -->
