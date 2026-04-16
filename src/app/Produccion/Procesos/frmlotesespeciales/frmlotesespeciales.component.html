@@ -1,0 +1,158 @@
+
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+<div style="padding-left: 5px; padding-right: 5px; padding-top: 10px">
+
+<div class="row" style="justify-content: center;">
+    <div class="col-lg-8 col-8 col-md-8 col-sm-6 col-xs-6">
+        
+        <div class="row" id="r0">
+            <div id="r-nuevo" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn d-flex justify-content-start">
+                <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+                </dx-button>
+            </div>
+            <div id="r1" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn">
+                <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()">
+                </dx-button>
+            </div>
+            <div id="r1" class="col-12 col-sm-6 col-md-3 col-lg-3 pb-1 sng-dbtn">
+                <dx-button text="Exportar Excel" icon="print" type="outlined" (onClick)="onClickRptExcel()">
+                </dx-button>
+            </div>
+        </div>
+
+        <div id="r2">
+
+            <div class="card">
+
+                <div class="card-header"
+                style="
+                font-weight: bold;
+                border: 2px solid #d9dbdd;
+                border-radius: 4px;
+                color: #0087b9;
+                ">
+                    Creación de Macro Lotes
+                </div>
+
+                <div
+                class="card-body"
+                style="border: 2px solid #d9dbdd; border-radius: 4px">
+
+                    <div class="form-group row justify-content-center align-items-center" id="row-fecha-lotes" style="display: flex;  justify-content: center; align-items: center; width: 100%;">
+
+
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-2 col-lg-1 text-left control-label"
+                        style="font-size: 13px; min-width: 80px; text-align: right;"
+                        >Fecha:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-2 pb-1" style="min-width: 150px;">
+                            <dx-date-box
+                            [(ngModel)]="le_fecha"
+                            type="date"
+                            [width]="'100%'"
+                            displayFormat="yyyy/MM/dd"
+                            adaptivityEnabled="true"
+                            openOnFieldClick="true"
+                            name="dx-date-box-fecha"
+                            (onValueChanged)="onChangeFecha($event)"
+                            >
+                            </dx-date-box>
+                        </div>
+
+
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-1 col-lg-1 text-left control-label"
+                        style="font-size: 13px; min-width: 120px; text-align: right;"
+                        >Número de Lotes:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1" style="min-width: 180px;">
+                            <input
+                                    id="input-numerolotes"
+                                    type="number"
+                                    [(ngModel)]="le_numerolotes"
+                                    class="form-control"
+                                    min="0"
+                                    step="1"
+                                    placeholder="Ingrese el número de lotes a crear"
+                                    name="input-lotes"
+                                    maxlength="2"
+                            />
+                        </div>
+
+                        <label
+                        class="col-xs-12 col-sm-12 col-md-1 col-lg-1 text-left control-label"
+                        style="font-size: 13px; min-width: 120px; text-align: right;"
+                        >Tipo:</label>
+
+                        <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1 pb-1" style="min-width: 180px;">
+                            <ng-select style="min-width: 120px; width: 100%;" [(ngModel)]="le_claseSeleccionada" appendTo="body" [searchable]="true" [clearable]="false">
+                                <ng-option *ngFor="let data of claseDT" [value]="data.clase">
+                                    <div title="{{ data.claseDesc }}" style="font-size: 12px">
+                                        {{ data.claseDesc }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                    </div>
+
+                    <br>
+
+
+                    <!-- Grid ini -->
+                     <div class="form-group">
+                    <div class="row justify-content-center margin-container">
+                        <div class="col-12 pb-1" style="margin-left:auto;margin-right:auto;">
+                            <dx-data-grid   #dataGridLotesEspeciales
+                                key="Lote"
+                                [dataSource]="tbLotesEspeciales"
+                                [showBorders]="true"
+                                [allowColumnResizing]="true"
+                                [columnAutoWidth]="true"
+                                [height]="400"
+                            >
+                                
+
+                                
+                                <dxo-paging [pageSize]="10"></dxo-paging>
+                                <dxo-pager
+                                    [showPageSizeSelector]="true"
+                                    [allowedPageSizes]="[5, 10, 20]"
+                                    [showInfo]="true"
+                                    [infoText]="'Página {0} de {1} ({2} registros)'"
+                                >
+                                </dxo-pager>
+
+
+                                <dxi-column dataField="Lote" caption="Lote" dataType="string">
+                                </dxi-column>
+                                <dxi-column dataField="Proveedor" caption="Proveedor" dataType="string">
+                                </dxi-column>
+                                <dxi-column dataField="Piscina" caption="Piscina" dataType="string">
+                                </dxi-column>
+                                
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+                    <!-- Grid fin -->
+            
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
