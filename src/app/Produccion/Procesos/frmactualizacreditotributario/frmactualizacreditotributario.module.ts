@@ -30,8 +30,8 @@ import { FrmactualizacreditotributarioComponent } from './frmactualizacreditotri
       DxFileUploaderModule,
   
       RouterModule.forChild([
-        { path: 'ext-actualizacreditotributario', component: FrmactualizacreditotributarioComponent },
-        // { path: 'ext-actualizacreditotributario', canActivate: [AuthGuard], component: FrmactualizacreditotributarioComponent },
+        //{ path: 'ext-actualizacreditotributario', component: FrmactualizacreditotributarioComponent },
+         { path: 'ext-actualizacreditotributario', canActivate: [AuthGuard], component: FrmactualizacreditotributarioComponent },
       ]) 
     ],
     exports: [
