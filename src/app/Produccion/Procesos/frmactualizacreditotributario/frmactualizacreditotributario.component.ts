@@ -13,7 +13,11 @@ import { URL_CONSULT } from 'src/app/config/url.servicios';
 import { varUser } from 'src/app/config/url.servicios';
 //import { varEmpresa } from 'src/app/config/url.servicios';
 declare var $: any;
-declare var window;
+declare global {
+  interface Window {
+    home: any;
+  }
+}
 
 interface Catalogo {
   codigoDeuda: any;
@@ -28,6 +32,9 @@ interface Catalogo {
   styleUrls: ['./frmactualizacreditotributario.component.scss']
 })
 export class FrmactualizacreditotributarioComponent implements OnInit {
+  
+  usuarioempresa: string | null = null;   
+  
       getDynamicWidth(col: string): number {
         // Todo dinámico: ancho fijo para todas las columnas, sin lógica quemada
         return 180;
@@ -60,11 +67,10 @@ export class FrmactualizacreditotributarioComponent implements OnInit {
 
   async ngOnInit() {
     //debugger;
-    const data = {
-      //idEmpresa: localStorage.getItem(varEmpresa),
-      usuarioempresa: localStorage.getItem(varUser)
-    };
-    if (data.usuarioempresa === null) {
+    window.home = this;
+    this.usuarioempresa = await localStorage.getItem(varUser);
+    
+    if (this.usuarioempresa === null) {
         await this.showAlert('', 'Se terminó el tiempo de su session, volver a ingresar al sistema, ', 'warning');
         return; 
     } 
@@ -132,15 +138,15 @@ export class FrmactualizacreditotributarioComponent implements OnInit {
     await this.actualizarDeudasMasivas();       
   } 
   async actualizarDeudasMasivas() {
-    //debugger;
+    debugger;
     // Construir el JSON para el SP
     const detalle = this.tbDeudas.map(d => ({
       Deuda: d.Deuda,
       CodTributario: d.CodTributario,
       CodTributarioAnterior: d.CodTributarioAnterior
     }));
-    const usuario = localStorage.getItem(varUser);  // método que retorna el usuario logueado
-    const jsonDetalle = { i_detalle: detalle, userAud: usuario }; // Reemplaza con el usuario real
+    //const usuario = await localStorage.getItem(varUser);  // método que retorna el usuario logueado
+    const jsonDetalle = { i_detalle: detalle, userAud: this.usuarioempresa }; // Reemplaza con el usuario real
     this.loadingVisible = true;
 
     try {
