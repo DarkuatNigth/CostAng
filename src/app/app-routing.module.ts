@@ -18,6 +18,7 @@ import { FrmconsultageneralModuleFactory } from './Costos/Consultas/frmconsultag
 import { FrmparametrizacionprocesoModuleFactory } from './Costos/Procesos/frmparametrizacionproceso/frmparametrizacionproceso.module';
 import { FrmregistrarinventariovaloradoModuleFactory } from './Costos/Procesos/frmregistrarinventariovalorado/frmregistrarinventariovalorado.module';
 import { FrmlotesespecialesModuleFactory } from './Produccion/Procesos/frmlotesespeciales/frmlotesespeciales.module';
+import { FrmactualizacreditotributarioModuleFactory } from './Produccion/Procesos/frmactualizacreditotributario/frmactualizacreditotributario.module';
 
 const routes: Routes = [
   {
@@ -111,6 +112,10 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: FrmlotesespecialesModuleFactory
+      },
+      {
+        path: '',
+        loadChildren: FrmactualizacreditotributarioModuleFactory
       },
       { 
         path: 'ext-SolicitudVacaciones',
