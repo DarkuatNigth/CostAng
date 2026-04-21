@@ -10,9 +10,10 @@ import * as XLSX from 'xlsx';
 import { error } from 'pdf-lib';
 import { ResultWS } from 'src/app/Interfaces/interfaces';
 import { URL_CONSULT } from 'src/app/config/url.servicios';
-
+import { varUser } from 'src/app/config/url.servicios';
+//import { varEmpresa } from 'src/app/config/url.servicios';
 declare var $: any;
-//declare var window;
+declare var window;
 
 interface Catalogo {
   codigoDeuda: any;
@@ -57,9 +58,20 @@ export class FrmactualizacreditotributarioComponent implements OnInit {
     private _notificationService: NotificationService,
   ) {}
 
-  ngOnInit() {
-    this.onClickNuevo();
-    
+  async ngOnInit() {
+    //debugger;
+    const data = {
+      //idEmpresa: localStorage.getItem(varEmpresa),
+      usuarioempresa: localStorage.getItem(varUser)
+    };
+    if (data.usuarioempresa === null) {
+        await this.showAlert('', 'Se terminó el tiempo de su session, volver a ingresar al sistema, ', 'warning');
+        return; 
+    } 
+    else {
+      this.onClickNuevo();
+    } 
+  
   }
 
  async showAlert(title, mensaje, tipo) {
@@ -127,7 +139,7 @@ export class FrmactualizacreditotributarioComponent implements OnInit {
       CodTributario: d.CodTributario,
       CodTributarioAnterior: d.CodTributarioAnterior
     }));
-    const usuario = localStorage.getItem('UserPROD');  // método que retorna el usuario logueado
+    const usuario = localStorage.getItem(varUser);  // método que retorna el usuario logueado
     const jsonDetalle = { i_detalle: detalle, userAud: usuario }; // Reemplaza con el usuario real
     this.loadingVisible = true;
 
