@@ -17,9 +17,9 @@ export class FrmactualizacreditotributarioService {
       { "Name": "@usuario", "Type": "varchar", "Value": jsonDetalle.userAud }
     ];
     const base = {
-      sp: 'dbo.spr_ActualizaCreditoTributarioDeudasGrabar',
+      sp: 'PRODIMAGENES.dbo.spr_ActualizaCreditoTributarioDeudasGrabar',
       param: listParam,
-      conexion: CONNECTION_PRODIMG
+      conexion: CONNECTION_PROD
     };
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
@@ -30,18 +30,18 @@ debugger;
     { "Name": "@jsonDetalle", "Type": "nvarchar", "Value": JSON.stringify(jsonDetalle) }
   ];
   const base = {
-    sp: 'dbo.spr_DeudasConsultar',
+    sp: 'PRODIMAGENES.dbo.spr_DeudasConsultar',
     param: listParam,
-    conexion: CONNECTION_PRODIMG  
+    conexion: CONNECTION_PROD  
   };
   return this.http.post<ResultWS>(URL_CONSULT, base);
 }
  
   getPlantillaDeudas() {
     const base = {
-      sp: 'dbo.spr_PlantillaDeudasConsultar',
+      sp: 'PRODIMAGENES.dbo.spr_PlantillaDeudasConsultar',
       param: [],
-      conexion: CONNECTION_PRODIMG
+      conexion: CONNECTION_PROD
     };
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
