@@ -19,6 +19,7 @@ import { FrmparametrizacionprocesoModuleFactory } from './Costos/Procesos/frmpar
 import { FrmregistrarinventariovaloradoModuleFactory } from './Costos/Procesos/frmregistrarinventariovalorado/frmregistrarinventariovalorado.module';
 import { FrmlotesespecialesModuleFactory } from './Produccion/Procesos/frmlotesespeciales/frmlotesespeciales.module';
 import { FrmactualizacreditotributarioModuleFactory } from './Produccion/Procesos/frmactualizacreditotributario/frmactualizacreditotributario.module';
+import { FrmconsgenperModuleFactory } from './Costos/Mantenimiento/frmconsgenper/frmconsgenper.module';
 
 const routes: Routes = [
   {
@@ -56,6 +57,10 @@ const routes: Routes = [
       { 
         path: '', 
         loadChildren: () => import('./Produccion/Procesos/frmasignacionlotes/frmasignacionlotes.module').then(m => m.FrmasignacionlotesModule) 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmconsgenperModuleFactory 
       },
       { 
         path: '', 

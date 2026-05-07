@@ -10,6 +10,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { RouterModule } from '@angular/router';
 import { FrmparametrizacionprocesoComponent } from './frmparametrizacionproceso.component';
 import { AuthGuard } from 'src/app/_guards';
+import { TabGridComponent } from 'src/app/shared/tab-grid/tab-grid.component';
 
 
 @NgModule({
@@ -30,8 +31,9 @@ import { AuthGuard } from 'src/app/_guards';
       DxListModule,
       NgSelectModule,
       DxCalendarModule,
+      TabGridComponent,
       RouterModule.forChild([
-            { path: 'ext-parametrizacionprocesos', canActivate: [AuthGuard],  component: FrmparametrizacionprocesoComponent },
+            { path: 'ext-parametrizacionprocesos',  component: FrmparametrizacionprocesoComponent },
       ]) 
     ],
       exports: [

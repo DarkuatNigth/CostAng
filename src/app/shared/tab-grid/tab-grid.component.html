@@ -1,0 +1,137 @@
+<dx-tab-panel [dataSource]="tabsFiltrados" [selectedIndex]="0">
+
+    <div *dxTemplate="let mainTab of 'title'">
+        <i class="dx-icon-{{mainTab.icon}}"></i> <span>{{mainTab.title}}</span>
+    </div>
+
+    <div *dxTemplate="let mainTab of 'item'" >
+
+        <!-- ══════════════════════════════════════════════════════════════════════
+         TAB: PROCESOS GENERALES (Costos Directos + Costos Indirectos)
+         Libras = FRS + RPC | Costo Unitario = Valor / Libras Totales
+    ══════════════════════════════════════════════════════════════════════ -->
+        <div *ngIf="mainTab.id === 'PG'" class="p-3">
+            <dx-tab-panel [dataSource]="subTabsGenerales" [loop]="false" class="subtab-custom">
+
+                <div *dxTemplate="let subTab of 'title'">
+                    <i class="dx-icon-{{subTab.icon}}"></i> <span>{{subTab.titulo}}</span>
+                </div>
+
+                <div *dxTemplate="let subTab of 'item'">
+                    <div class="p-2">
+                        <dx-data-grid [dataSource]="subTab.datos" keyExpr="Codigo" [showBorders]="true"
+                            [repaintChangesOnly]="true" (onRowUpdated)="onValueChange($event, 'PG')">
+
+                            <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+
+                            <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false">
+                            </dxi-column>
+                            <dxi-column dataField="Valor" caption="Dólares Totales"
+                                [format]="{type:'currency', precision: 2}">
+                            </dxi-column>
+                            <dxi-column dataField="Libras_Proceso" caption="Libras Totales (FRS+RPC)"
+                                [allowEditing]="false" format="#,##0.00">
+                            </dxi-column>
+                            <dxi-column dataField="Costo_Unitario" caption="C. Unitario General" [allowEditing]="false"
+                                [format]="{type:'currency', precision: 4}">
+                            </dxi-column>
+
+                            <dxo-summary [calculateCustomSummary]="summaryFnPG">
+                                <dxi-total-item column="Valor" summaryType="sum"
+                                    [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
+                                </dxi-total-item>
+                                <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
+                                    displayFormat="{0}">
+                                </dxi-total-item>
+                                <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
+                                    [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
+                                </dxi-total-item>
+                            </dxo-summary>
+                        </dx-data-grid>
+                    </div>
+                </div>
+
+            </dx-tab-panel>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════════
+         TAB: FRS y RPC  (excluyen Costos Directos/Indirectos, ya en PG)
+    ══════════════════════════════════════════════════════════════════════ -->
+        <div *ngIf="mainTab.id === 'FRS' || mainTab.id === 'RPC'" class="p-3">
+            <dx-tab-panel [dataSource]="mainTab.id === 'FRS' ? subTabsFresco : subTabsSecundario" [loop]="false"
+                class="subtab-custom">
+
+                <div *dxTemplate="let subTab of 'title'">
+                    <i class="dx-icon-{{subTab.icon}}"></i> <span>{{subTab.titulo}}</span>
+                </div>
+
+                <div *dxTemplate="let subTab of 'item'">
+                    <div class="p-2">
+                        <dx-data-grid [dataSource]="subTab.datos" keyExpr="Codigo" [showBorders]="true"
+                            (onEditorPreparing)="onEditorPreparing($event)" [repaintChangesOnly]="true"
+                            (onRowUpdated)="onValueChange($event, mainTab.id)">
+
+                            <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+
+                            <dxi-column dataField="Descripcion" [allowEditing]="false"></dxi-column>
+                            <dxi-column dataField="Valor" caption="Costo ($)"
+                                [format]="{type:'currency', precision: 2}">
+                            </dxi-column>
+                            <dxi-column dataField="Libras_Proceso" caption="Libras" [allowEditing]="false"
+                                format="#,##0.00">
+                            </dxi-column>
+                            <dxi-column dataField="Costo_Unitario" caption="C. Unitario" [allowEditing]="false"
+                                [format]="{type:'currency', precision: 4}">
+                            </dxi-column>
+
+                            <dxo-summary [calculateCustomSummary]="mainTab.id === 'FRS' ? summaryFnFRS : summaryFnRPC">
+                                <dxi-total-item column="Valor" summaryType="sum"
+                                    [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
+                                </dxi-total-item>
+                                <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
+                                    displayFormat="{0}">
+                                </dxi-total-item> 
+                                <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
+                                    [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
+                                </dxi-total-item>
+                            </dxo-summary>
+                        </dx-data-grid>
+                    </div>
+                </div>
+            </dx-tab-panel>
+        </div>
+        <!-- ══════════════════════════════════════════════════════════════════════
+         TAB: TARIFAS / ADICIONALES
+    ══════════════════════════════════════════════════════════════════════ -->
+        <div *ngIf="mainTab.id === 'TAR'" class="p-3">
+            <dx-data-grid [dataSource]="dataTarifas" keyExpr="Codigo" [showBorders]="true" [repaintChangesOnly]="true"
+                (onRowUpdated)="onValueChange($event, 'TAR')">
+
+                <dxo-filter-row [visible]="true"></dxo-filter-row>
+                <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+
+                <dxi-column dataField="Descripcion" [allowEditing]="false"></dxi-column>
+                <dxi-column dataField="Valor" caption="Tarifa ($)" [format]="{type:'currency', precision: 4}">
+                </dxi-column>
+                <dxi-column dataField="Libras_Proceso" caption="Libras" [allowEditing]="false" format="#,##0.00">
+                </dxi-column>
+                <dxi-column dataField="Costo_Unitario" caption="Costo Total" [allowEditing]="false"
+                    [format]="{type:'currency', precision: 2}">
+                </dxi-column>
+
+                <dxo-summary [calculateCustomSummary]="summaryFnTAR">
+                    <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
+                        displayFormat="{0}">
+                    </dxi-total-item>
+                    <dxi-total-item column="Costo_Unitario" summaryType="sum"
+                        [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
+                    </dxi-total-item>
+                    <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Valor"
+                        [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
+                    </dxi-total-item>
+                </dxo-summary>
+            </dx-data-grid>
+        </div>
+
+    </div>
+</dx-tab-panel>

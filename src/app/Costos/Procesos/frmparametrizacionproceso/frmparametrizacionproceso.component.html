@@ -1,19 +1,12 @@
-<dx-load-panel
-  #loadPanel
-  shadingColor="rgba(0,0,0,0.4)"
-  [(visible)]="loadingVisible"
-  [showIndicator]="true"
-  [showPane]="true"
-  [shading]="true"
-  [closeOnOutsideClick]="false"
->
+<dx-load-panel #loadPanel shadingColor="rgba(0,0,0,0.4)" [(visible)]="loadingVisible" [showIndicator]="true"
+    [showPane]="true" [shading]="true" [closeOnOutsideClick]="false">
 </dx-load-panel>
 
 <div class="container-fluid mt-3">
     <div class="panel panel-custom">
 
         <div class="panel-heading">
-            <h3 class="panel-title">Parámetros Procesos Costeo Estandar </h3>
+            <h3 class="panel-title">Distribución de Costos</h3>
         </div>
 
         <div class="panel-body">
@@ -22,17 +15,12 @@
                 <div class="col-md-2 mb-2">
                     <label class="control-label-aspx">Año:</label>
                     <div class="select-wrapper-compact">
-                        <ng-select 
-                            bindLabel="DESCRIPCION"
-                            [(ngModel)]="cmbAnio" 
-                            [searchable]="true"
+                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbAnio" [searchable]="true"
                             [clearable]="false">
-                            <ng-option 
-                              *ngFor="let data of listAnios"
-                              [value]="data.CODIGO">
-                              <div class="option-text" title="{{ data.DESCRIPCION }}">
-                                {{ data.DESCRIPCION }}
-                              </div>
+                            <ng-option *ngFor="let data of listAnios" [value]="data.CODIGO">
+                                <div class="option-text" title="{{ data.DESCRIPCION }}">
+                                    {{ data.DESCRIPCION }}
+                                </div>
                             </ng-option>
                         </ng-select>
                     </div>
@@ -41,20 +29,13 @@
                 <div class="col-md-3 mb-2">
                     <label class="control-label-aspx">Mes:</label>
                     <div class="select-wrapper-compact">
-                    <ng-select bindLabel="Mes" [(ngModel)]="cmbMes"
-                        [searchable]="true" [clearable]="false"
- >
-                        <ng-option
-                          *ngFor="let data of listMeses"
-                          [value]="data.CODIGO" >
-                          <div
-                            title="{{ data.DESCRIPCION }}"
-                            style="font-size: 14px"
-                          >
-                            {{ data.DESCRIPCION }}
-                          </div>
-                        </ng-option>
-                    </ng-select>
+                        <ng-select bindLabel="Mes" [(ngModel)]="cmbMes" [searchable]="true" [clearable]="false">
+                            <ng-option *ngFor="let data of listMeses" [value]="data.CODIGO">
+                                <div title="{{ data.DESCRIPCION }}" style="font-size: 14px">
+                                    {{ data.DESCRIPCION }}
+                                </div>
+                            </ng-option>
+                        </ng-select>
                     </div>
                 </div>
 
@@ -63,157 +44,25 @@
                         <dx-button text="Consultar" type="default" icon="search"
                             (onClick)="onClickConsultar('Consultar')">
                         </dx-button>
-                                      
-      <dx-button  
-      class="ml-2" 
-        icon="save"
-        type="success"
-        (onClick)="onGrabarCostosClick()"
-        text="Guardar"
-      >
-      </dx-button>
+
+                        <dx-button class="ml-2" icon="save" type="success" (onClick)="onGrabarCostosClick()"
+                            text="Guardar">
+                        </dx-button>
                     </div>
                 </div>
 
             </div>
-            <div class="row" style="padding: 5px; margin-right: 2px" >
-                <dx-tab-panel #tabPanel style="width: 100%; height: auto; overflow-x: auto; white-space: nowrap"
-                    [selectedIndex]="0" [loop]="false" [animationEnabled]="true" [swipeEnabled]="true" [width]="'100%'"
-                    [scrollingEnabled]="true">
-                    <dxi-item title="Procesos Fresco" icon="description" >
+            <div class="row" style="padding: 5px; margin-right: 2px">
+                    <div class="row" style="padding: 5px; margin-right: 2px">
+                        
+                        <app-tab-grid 
+                        style="width: 100%"
+                        [dataSource]="(listadoTotal$ | async)!" 
+                        (onDataChanged)="handleDataChange($event)">
+                        </app-tab-grid>
 
-                        <div class="row full-height-row" >
-                            <div class="col-lg-12 full-height-col">
-                                <div class="p-2">
-                                    <dx-data-grid #GridCostos id="GridCostos" [dataSource]="lstCostProcesoFrs"
-                                        keyExpr="Codigo" [showBorders]="true" [showColumnLines]="true"
-                                        [showRowLines]="true" [columnAutoWidth]="true" [height]="'calc(100vh - 250px)'"
-                                  
-                                        (onRowUpdated)="onRowUpdated($event)" *ngIf="lstCostProcesoFrs && lstCostProcesoFrs.length > 0"
-                                        >
-                                        <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
-                                        <dxo-filter-row [visible]="true" [showOperationChooser]="true"></dxo-filter-row>
-
-                                        <dxo-paging [enabled]="false"></dxo-paging>
-                                        <dxo-scrolling mode="vertical"></dxo-scrolling>
-
-                                        <dxi-column dataField="TipLote" [visible]="false"></dxi-column>
-                                        <dxi-column dataField="Codigo" [visible]="false"></dxi-column>
-                                        <dxi-column dataField="Descripcion" [allowEditing]="false" caption="Descripcion"></dxi-column>
-                                        <dxi-column dataField="Valor" dataType="number"
-                                            [format]="{ type: 'currency', precision: 4 }"
-                                        caption="Costo Dolares" alignment="center" [width]="'20%'"
-                                            cellTemplate="valorTemplate">
-                                        </dxi-column>
-                                        <dxi-column dataField="Libras_Proceso"  [allowEditing]="false" 
-                                        alignment="right" format="#,##0.00"
-                                        caption="Libras X Proceso"></dxi-column>
-                                        <dxi-column dataField="Costo_Unitario"  [allowEditing]="false"
-                                        [allowEditing]="false" 
-                                        alignment="right" 
-                                            [format]="{ type: 'currency', precision: 4 }"
-                                        caption="Costo Unitario"></dxi-column>
-
-                                        <div *dxTemplate="let cell of 'valorTemplate'">
-                                            <!-- <input type="text" class="form-control input-grid-aspx"
-                                                [(ngModel)]="cell.value " 
-                                                 [type]="number"
-                                                style="width:100%; text-align:right; border: none; background: transparent;"
-                                                
-                                                placeholder="0.0000" /> -->
-                                                <!-- <app-currency-input 
-                                                   [value]="cell.value"
-                                                    (valueChange)="cell.setValue($event)">
-                                                </app-currency-input> -->
-                                                <div class="grid-currency-wrapper" [style.color]="cell.value < 0 ? 'red' : 'inherit'">
-        <input type="text" 
-               class="form-control"
-               style="width:100%; text-align:right; border: none; background: transparent;"
-               [value]="formatValue(cell.value)" 
-               (blur)="onInputBlur($event, cell)"
-               (keydown.enter)="$event.target.blur()"
-               placeholder="0.0000" />
-    </div>
-                                        </div>
-                                    </dx-data-grid>
-                                </div>
-                            </div>
-                        </div>
-                    </dxi-item>
-                    <dxi-item title="Procesos Reproceso" icon="description" >
-                        <div class="row full-height-row" >
-                            <div class="col-lg-12 full-height-col">
-                                <div class="p-2">
-                                    <dx-data-grid #GridCostos id="GridCostos" [dataSource]="lstCostProcesoRpc"
-                                        keyExpr="Codigo" [showBorders]="true" [showColumnLines]="true"
-                                        [showRowLines]="true" [columnAutoWidth]="true" [height]="'calc(100vh - 250px)'"
-                                  
-                                        (onRowUpdated)="onRowUpdated($event)" *ngIf="lstCostProcesoRpc && lstCostProcesoRpc.length > 0"
-                                        >
-                                        <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
-                                        <dxo-filter-row [visible]="true" [showOperationChooser]="true"></dxo-filter-row>
-
-                                        <dxo-paging [enabled]="false"></dxo-paging>
-                                        <dxo-scrolling mode="vertical"></dxo-scrolling>
-                                        <dxi-column dataField="TipLote" [visible]="false"></dxi-column>
-                                        <dxi-column dataField="Codigo" [visible]="false"></dxi-column>
-                                        <dxi-column dataField="Descripcion" [allowEditing]="false" caption="Descripcion"></dxi-column>
-                                        <dxi-column dataField="Valor" dataType="number"
-                                            [format]="{ type: 'currency', precision: 4 }"
-                                        caption="Costo Dolares" alignment="center" [width]="'20%'"
-                                            cellTemplate="valorTemplate">
-                                        </dxi-column>
-                                        <dxi-column dataField="Libras_Proceso"  [allowEditing]="false" 
-                                        alignment="right" format="#,##0.00"
-                                        caption="Libras X Proceso"></dxi-column>
-                                        <dxi-column dataField="Costo_Unitario"  [allowEditing]="false"
-                                        [allowEditing]="false" 
-                                        alignment="right" 
-                                            [format]="{ type: 'currency', precision: 4 }"
-                                        caption="Costo Unitario"></dxi-column>
-
-                                        <div *dxTemplate="let cell of 'valorTemplate'">
-                                            <!-- <input type="text" class="form-control input-grid-aspx"
-                                                [(ngModel)]="cell.value " 
-                                                 [type]="number"
-                                                style="width:100%; text-align:right; border: none; background: transparent;"
-                                                
-                                                placeholder="0.0000" /> -->
-                                                <!-- <app-currency-input 
-                                                   [value]="cell.value"
-                                                    (valueChange)="cell.setValue($event)">
-                                                </app-currency-input> -->
-                                                <div class="grid-currency-wrapper" [style.color]="cell.value < 0 ? 'red' : 'inherit'">
-        <input type="text" 
-               class="form-control"
-               style="width:100%; text-align:right; border: none; background: transparent;"
-               [value]="formatValue(cell.value)" 
-               (blur)="onInputBlur($event, cell)"
-               (keydown.enter)="$event.target.blur()"
-               placeholder="0.0000" />
-    </div>
-                                        </div>
-                                    </dx-data-grid>
-                                </div>
-                            </div>
-                        </div>
-                    </dxi-item>
-                </dx-tab-panel>
+                    </div>
             </div>
-            <div class="row mt-3">
-    <!-- <div class="col-lg-2 offset-lg-10 col-md-3 offset-md-9 col-sm-4 offset-sm-8 col-6 offset-6 text-right">
-        
-        <dx-button
-            id="btnGrabarCostos"
-            text="Grabar"
-            type="default"
-            icon="save" 
-            [width]="'95%'"
-            (onClick)="onGrabarCostosClick()">
-        </dx-button>
-
-    </div> -->
-</div>
         </div>
     </div>
 </div>

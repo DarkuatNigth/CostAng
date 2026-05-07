@@ -115,10 +115,10 @@
     (onCellDblClick)="onCellDblClick($event)">
     
     <dxo-selection mode="single"></dxo-selection>
-    
-    <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar...">
-    </dxo-search-panel>
-
+    <dxo-filter-row [visible]="true"></dxo-filter-row>
+    <!-- <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar...">
+    </dxo-search-panel> -->
+ 
     <dxo-paging [enabled]="true" 
         [pageSize]="20"
         [pageIndex]="0">
