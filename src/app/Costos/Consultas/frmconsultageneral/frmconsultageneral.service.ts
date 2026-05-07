@@ -1,7 +1,7 @@
 import { HttpClient,HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { varUser } from 'src/app/config/url.servicios';
-import { CONNECTION_COSTOS, URL_APICOSTOS, URL_CONSULT } from 'src/app/config/url.servicios';
+import { CONNECTION_SGCAM, URL_APICOSTOS, URL_CONSULT } from 'src/app/config/url.servicios';
 import { ResultWS } from 'src/app/Interfaces/interfaces';
 
 @Injectable({
@@ -19,9 +19,9 @@ export class FrmconsultageneralService {
     const base = {
       sp: 'general.sp_dataConsultaGeneral',
       param: ListParam,
-      conexion: CONNECTION_COSTOS
+      conexion: CONNECTION_SGCAM
     };
-    console.log(base);
+    //console.log(base);
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
@@ -34,9 +34,9 @@ export class FrmconsultageneralService {
     const base = {
       sp: sp,
       param: ListParam,
-      conexion: CONNECTION_COSTOS
+      conexion: CONNECTION_SGCAM
     };
-    console.log('getDataListaParametros',base);
+    //console.log('getDataListaParametros',base);
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
@@ -48,29 +48,26 @@ export class FrmconsultageneralService {
     const base = {
       sp: 'general.sp_getConsultasGeneralByUser',
       param: ListParam,
-      conexion: CONNECTION_COSTOS
+      conexion: CONNECTION_SGCAM
     };
-    console.log('getConsultasByUser',base);
+    //console.log('getConsultasByUser',base);
     return this.http.post<ResultWS>(URL_CONSULT, base);
   }
 
   getConsultaDatosByFilters(ListParam, sp: string){
-    console.log('getConsultaDatosByFilters',ListParam);
+    //console.log('getConsultaDatosByFilters',ListParam);
     let strFechaIn = ListParam.find(item => item.Name == "fecInicio");
     let strFechaFin = ListParam.find(item => item.Name == "fecFin");
     sp = sp.replace("[dtFechaIn]",strFechaIn.Value).replace("[dtFechaFi]", strFechaFin.Value);
-    console.log('getConsultaDatosByFilters',sp);
+    //console.log('getConsultaDatosByFilters',sp);
     return this.http.get<ResultWS>(URL_APICOSTOS.concat(sp));
   }
 
 
     postGrabarDatos(ListParam, sp: string){
-    console.log('getConsultaDatosByFilters',ListParam);
-    // let strFechaIn = ListParam.find(item => item.Name == "fecInicio");
-    // let strFechaFin = ListParam.find(item => item.Name == "fecFin");
-    // let strSentenciaUsuario = `&strUsuarioCrea=${varUser}`;
+    //console.log('getConsultaDatosByFilters',ListParam);
     sp = URL_APICOSTOS.concat("Reporting/"+sp);
-    console.log('URL_APICOSTOS',sp, 'paramas: ', ListParam);
+    //console.log('URL_APICOSTOS',sp, 'paramas: ', ListParam);
     return this.http.post<ResultWS>(sp, ListParam);
   }
 
@@ -79,9 +76,6 @@ export class FrmconsultageneralService {
     var request = JSON.stringify(data);
 
     var url = URL_APICOSTOS+"Reporting/exportar-excel?";
-    // if(consolidadoNomina === 1){
-    //   url = URL_APIMICROSERVICERRHH+"/micro/exportar-excelNomina";
-    // }
 
     return this.http.post(url, request,{
       headers: { 'Content-Type': 'application/json' },

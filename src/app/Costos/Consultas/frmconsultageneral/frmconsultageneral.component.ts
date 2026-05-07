@@ -16,7 +16,7 @@ declare var window;
 })
 export class FrmconsultageneralComponent {
   modificacionesCosto: any[] = [];
-  blPoderEditar : boolean | null= false;
+  blPoderEditar: boolean | null = false;
   @ViewChild('Griddata', { static: false }) Griddata: DxDataGridComponent;
   @ViewChild(DxPivotGridComponent, { static: false }) pivotGrid!: DxPivotGridComponent;
   loadingVisible = false;
@@ -82,20 +82,20 @@ export class FrmconsultageneralComponent {
 
   isColumnFixed(dataField: string): boolean {
     if (!dataField) return false;
-  
-  // Ponemos los nombres EXACTOS de los dataFields que quieres congelar (todo en minúsculas).
-  // He incluido las variaciones (con y sin los prefijos str/int) para que no falle.
-  const camposFijosExactos = [
-    // 'intlote', 'strprod',  'prod',
-    // 'strnomtal', 'nomtal', 
-    'lote',  'codprod', 'descripcion',  'talla',
-    'lot_numero', 'loteunificado', 'descriproduc', 'tal_descri'
-  ]; 
-  
-  const campoLimpio = dataField.toLowerCase();
 
-  // En lugar de includes de texto, verificamos si el campo exacto existe en nuestro arreglo
-  return camposFijosExactos.includes(campoLimpio);
+    // Ponemos los nombres EXACTOS de los dataFields que quieres congelar (todo en minúsculas).
+    // He incluido las variaciones (con y sin los prefijos str/int) para que no falle.
+    const camposFijosExactos = [
+      // 'intlote', 'strprod',  'prod',
+      // 'strnomtal', 'nomtal', 
+      'lote', 'codprod', 'descripcion', 'talla',
+      'lot_numero', 'loteunificado', 'rld_prodcod', 'descriproduc', 'tal_descri'
+    ];
+
+    const campoLimpio = dataField.toLowerCase();
+
+    // En lugar de includes de texto, verificamos si el campo exacto existe en nuestro arreglo
+    return camposFijosExactos.includes(campoLimpio);
   }
   async onCellDblClick(e: any) {
     if (e.column.caption === 'Costo X Libra' || e.column.dataField === 'costo_x_libra') {
@@ -130,25 +130,25 @@ export class FrmconsultageneralComponent {
         // // C. Actualizar visualmente la celda en el Grid
         // this.Griddata.instance.cellValue(e.rowIndex, e.column.dataField, nuevoCosto);
 
-    // Llamamos a la nueva ventana personalizada de SweetAlert2
+        // Llamamos a la nueva ventana personalizada de SweetAlert2
         const datosModificados = await showEditCostoModal(Lote, e.value);
 
         // Si el usuario canceló, datosModificados será null
         if (datosModificados) {
           const { nuevoCosto, razon } = datosModificados;
           this.Griddata.instance.cellValue(e.rowIndex, e.column.dataField, nuevoCosto);
-        // D. Almacenar en la estructura
-        this.modificacionesCosto.push({
-          Lote: rowData.Lote || rowData.lot_numero,
-          CodProd: rowData.rld_prodcod || rowData.CodProd,
-          Talla: rowData.tal_descri || rowData.Talla,
-          Libras: rowData.libras || rowData.Libras,
-          valorNuevo: nuevoCosto,
-          razon: razon.trim()
-        });
+          // D. Almacenar en la estructura
+          this.modificacionesCosto.push({
+            Lote: rowData.Lote || rowData.lot_numero,
+            CodProd: rowData.rld_prodcod || rowData.CodProd,
+            Talla: rowData.tal_descri || rowData.Talla,
+            Libras: rowData.libras || rowData.Libras,
+            valorNuevo: nuevoCosto,
+            razon: razon.trim()
+          });
 
-        await showAlert('Completado', 'Costo actualizado correctamente.', 'success');
-        console.log('Modificaciones:', this.modificacionesCosto);
+          await showAlert('Completado', 'Costo actualizado correctamente.', 'success');
+          //console.log('Modificaciones:', this.modificacionesCosto);
         }
       }
     }
@@ -267,7 +267,7 @@ export class FrmconsultageneralComponent {
           }, 1000);
 
           if (resp.Codigo) {
-            console.log("objeto => ", resp.Codigo);
+            //console.log("objeto => ", resp.Codigo);
             if (Object.keys(resp.Dt).length > 0) {
 
               if (this.selectedItemConsulta.esHtml) {
@@ -286,15 +286,23 @@ export class FrmconsultageneralComponent {
 
               this.resultados = resp.Dt.Table;
               // this.blPoderEditar = resp.Dt.Table1;
-              // console.log('consultar: ', resp.Dt.Table1);
+              //console.log('consultar: ', resp.Dt.Table1);
               this.detalleGrupos = [];
 
-              if (Object.keys(resp.Dt).length > 0) {
-                for (let i = 0; i < Object.keys(resp.Dt).length; i++) {
-                  if (Object.values(resp.Dt)[i].length > 0) {
-                    if (Object.keys(Object.values(resp.Dt)[i][0])[0].toString().trim() === "AgruparData") {
-                      this.detalleGrupos = Object.values(resp.Dt)[i];
-                    }
+              // 3. Obtenemos las llaves de las tablas disponibles (Table, Table1, etc.)
+              const tableKeys = Object.keys(resp.Dt);
+
+              if (tableKeys.length > 0) {
+                // Tomamos solo la PRIMERA tabla que aparezca en el objeto Dt
+                const primeraTabla = resp.Dt[tableKeys[0]];
+
+                if (Array.isArray(primeraTabla) && primeraTabla.length > 0) {
+                  const primeraFila = primeraTabla[0];
+
+                  if (primeraFila.hasOwnProperty("AgruparData") ||
+                    Object.keys(primeraFila)[0]?.trim() === "AgruparData") {
+
+                    this.detalleGrupos = primeraTabla;
                   }
                 }
               }
@@ -302,6 +310,7 @@ export class FrmconsultageneralComponent {
               let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
 
               if (this.resultados.length > 0) {
+                console.log(tipoConsulta, this.resultados);
                 // 1. Generar la estructura de columnas con soporte para bandas (recursivo)
                 // Pasamos 'keysToGroup' para mantener tu lógica de agrupación de filas
                 this.resultadosColumnsNames = this.generarEstructuraColumnas(this.resultados[0], '', keysToGroup);
@@ -311,36 +320,6 @@ export class FrmconsultageneralComponent {
                 // automáticamente en el objeto JSON que viene del backend.
                 // Quitamos el .map que hacía el replaceAll.
               }
-              // if(this.resultados.length > 0){
-              //   var Columns = [];
-              //   for (let x = 0; x < Object.entries(this.resultados[0]).length; x += 1) {
-              //       Columns.push(Object.entries(this.resultados[0])[x][0].toString());
-              //   }
-              //   this.resultadosColumnsNames = Columns.map((key) => {
-              //     const groupIndex = keysToGroup.indexOf(key);
-
-              //     return {
-              //       dataField: key.replaceAll('.', ''), // Reemplazar espacios por guiones bajos
-              //       caption: key, // Generar el título automáticamente
-              //       //alignment:"center"
-              //       ...(groupIndex !== -1 ? { groupIndex } : {}),
-              //       //...(key === 'Periodo' ? { groupIndex: 1 } : {})
-              //     };
-              //   });
-
-
-              //   if (this.resultados.length > 0) {
-              //     this.resultados = this.resultados.map((row) => {
-              //       const newRow = {};
-              //       Object.keys(row).forEach((key:any) => {
-              //         // Reemplazar el punto (.) por un espacio en las claves
-              //         const newKey = key.replaceAll('.', ''); // O puedes hacer otro tipo de reemplazo
-              //         newRow[newKey] = row[key];
-              //       });
-              //       return newRow;
-              //     });
-              //   }
-              // }
 
 
               this.fieldPivot = [];
@@ -383,6 +362,7 @@ export class FrmconsultageneralComponent {
             return resolve(true);
 
           } else {
+            //console.log('tipoConsulta', resp);
             await showAlert('', resp.Description, 'error');
             return resolve(false);
           }
@@ -392,12 +372,12 @@ export class FrmconsultageneralComponent {
 
 
     if (tipoConsulta === 'Grabar') {
-      const objConsul =  this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
+      const objConsul = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
       const objPost = {
-        usuarioCrea : varUser,
-        fechaInicio : this.listParamSp.find(item => item.Name == "fecInicio")?.Value?.replace(/\//g, '-') ?? null,
-        fechaFin    : this.listParamSp.find(item => item.Name == "fecFin")?.Value?.replace(/\//g, '-') ?? null,
-        lstMatPrim : this.modificacionesCosto
+        usuarioCrea: varUser,
+        fechaInicio: this.listParamSp.find(item => item.Name == "fecInicio")?.Value?.replace(/\//g, '-') ?? null,
+        fechaFin: this.listParamSp.find(item => item.Name == "fecFin")?.Value?.replace(/\//g, '-') ?? null,
+        lstMatPrim: this.modificacionesCosto
       };
       await new Promise(async (resolve) => {
         await this._objConsultaService.postGrabarDatos(objPost, objConsul).subscribe(
@@ -439,51 +419,26 @@ export class FrmconsultageneralComponent {
   generarEstructuraColumnas(obj: any, parentKey: string = '', keysToGroup: string[] = []): any[] {
     let columns = [];
     const camposPorcentaje = ["rendimiento %"];
+    const camposAltaPrecision = [
+      'Costo Mat Empaque','Total Mat Empaque','Costo Unitario','CostUltConsumo',
+      'CostoXLibra','CostoXMaster','cospro','total','pro_costoDesperdicioBobina'
+    ];
     // Lista de campos que deben llevar formato de dólar
     const camposMoneda = [
-      'PrecioCompra', 'TotalDol', 'Premio', 'Costo Mat Empaque',
-      'Costo Total Mat Empaque', 'dcCostoDirecto', 'dcCostoFijo',
+      'Precio Compra', 'Total Mat Prim', 'Premio', 'Costo Mat Empaque',
+      'Total Mat Empaque', 'dcCostoDirecto', 'dcCostoFijo',
       'dcCostoIndirecto', 'dcCostoVariable', 'dcRecepcion',
-      'dcClasificacion', 'dcCodificacion', 'dcDescabezado',
+      'dcClasificacion', 'dcCajas', 'dcDescabezado',
       'dcDecorado', 'dcRetractilado', 'dcBrine', 'dcIQF',
       'dcTunel', 'dcPelado', 'dcHidratacion', 'dcCocido',
-      'Costo X Secuencial', '$ Monto', 'C.Copacking',
-      'Costo Unitario', 'Costo Total'
+      'Costo X Secuencial', '$ Monto', 'Copacking','Costo Total',
+      'Costo Unitario', 'Total Costos', 'Total Mat',
+      'Tarifa', 'Proceso', 'Total Proceso', 'Excedente'
     ];
-    // for (const key in obj) {
-    //     // Construimos la ruta completa (ej: "Proceso Primario.dcRecepcion")
-    //     const fullKey = parentKey ? `${parentKey}.${key}` : key;
-    //     const value = obj[key];
-
-    //     // Si el valor es un objeto y no es nulo ni array, creamos una BANDA (encabezado superior)
-    //     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    //         columns.push({
-    //             caption: key, // Título del grupo
-    //             //align: 'center',
-    //             // Alinea el título del GRUPO
-    //             alignment: 'center',
-    //             // Llamada recursiva para los hijos del objeto
-    //             columns: this.generarEstructuraColumnas(value, fullKey, keysToGroup)
-    //         });
-    //     } else {
-    //         // Es una columna final (campo de datos)
-    //         const groupIndex = keysToGroup.indexOf(fullKey);
-
-    //         columns.push({
-    //             dataField: fullKey, // DevExtreme mapea esto automáticamente al objeto anidado
-    //             // Alinea el título de la COLUMNA FINAL
-    //             //alignment: 'center',
-    //             caption: key.replace(/^(str|dc|int|dt)/, ''), // Limpia prefijos técnicos
-    //             dataType: typeof value === 'number' ? 'number' : 'string',
-    //             ...(groupIndex !== -1 ? { groupIndex } : {}) // Mantiene tu agrupación de filas
-    //         });
-    //     }
-    // }
-    // return columns;
     for (const key in obj) {
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
       const value = obj[key];
-
+      //console.log(`Renderizando columna -> Campo: ${key} | Ruta: ${fullKey}`);
       if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
         columns.push({
           caption: key,
@@ -495,47 +450,43 @@ export class FrmconsultageneralComponent {
         const isNumber = typeof value === 'number';
         const esMoneda = camposMoneda.includes(key);
         const esPorcentaje = camposPorcentaje.includes(key.toLowerCase()); // <--- NUEVA DETECCIÓN
-
+        const precisionFinal = camposAltaPrecision.includes(key) ? 4 : 2;
         // Determinamos el formato según el tipo
         let columnFormat: any = null;
-        console.log("Valor determinacion: ",);
+        //console.log("Valor determinacion: ",);
         if (esMoneda) {
-          const precision = key.toLowerCase().includes('costo mat') ? 4 : 2;
-          columnFormat = { type: 'currency', precision: precision };
-        }
-        else if (esPorcentaje) {
-          // Formato Porcentaje: Multiplica por 100 y pone el %
-          // Precision 2 mostrará 0.9999... como 100.00%
-          columnFormat = { type: 'percent', precision: 2 };
+          columnFormat = {
+            type: 'currency',
+            precision: precisionFinal,
+            currency: 'USD'
+          };
+        } else if (esPorcentaje) {
+          columnFormat = {
+            type: 'percent',
+            precision: 2
+          };
+        } else if (isNumber && precisionFinal === 4) {
+          columnFormat = {
+            type: 'currency',
+            precision: 4,
+            currency: 'USD'
+          };
         }
 
-        // --- LÓGICA DE PRECISIÓN ---
-        // Si el nombre contiene "Empaque", usamos 4 decimales; si no, solo 2.
-        const precisionDecimal = key.toLowerCase().includes('costo mat') ? 4 : 2;
-        console.log('precisionDecimal: ', precisionDecimal);
+      //console.log(`Renderizando columna -> Campo: ${key}
+        //  | Ruta: ${fullKey}
+        //  | validador: ${isNumber && precisionFinal === 4}
+        //  | columFormat: `,columnFormat);
+
         columns.push({
           dataField: fullKey,
           caption: key.replace(/^(str|dc|int|dt)/, ''),
           dataType: isNumber ? 'number' : 'string',
           alignment: isNumber ? 'right' : 'left',
-          ...(columnFormat ? { format: columnFormat } : {}), // <--- APLICA EL FORMATO CALCULADO
-          ...(groupIndex !== -1 ? { groupIndex } : {}),// ---> ¡AGREGA ESTA LÍNEA! <---
+          ...(columnFormat ? { format: columnFormat } : {}), 
+          ...(groupIndex !== -1 ? { groupIndex } : {}),
           fixed: this.isColumnFixed(fullKey)
         });
-        // columns.push({
-        //   dataField: fullKey,
-        //   caption: key.replace(/^(str|dc|int|dt)/, ''), 
-        //   dataType: isNumber ? 'number' : 'string',
-        //   // Aplicamos el formato solo si es moneda con la precisión calculada
-        //   ...(esMoneda ? { 
-        //       format: { 
-        //           type: 'currency', 
-        //           precision: precisionDecimal, 
-        //           currency: 'USD' // Opcional: fuerza el símbolo de dólar
-        //       } 
-        //   } : {}),
-        //   ...(groupIndex !== -1 ? { groupIndex } : {})
-        // });
       }
     }
     return columns;
@@ -607,7 +558,7 @@ export class FrmconsultageneralComponent {
   async cargarConsultasUsario() {
     this._objConsultaService.getConsultasByUser(await localStorage.getItem(varUser)).subscribe(async (resp) => {
       if (resp.Codigo) {
-        console.log('cargarConsultasUsario', resp);
+        //console.log('cargarConsultasUsario', resp);
         this.reportes = resp.Dt.Table;
       } else {
         await showAlert('', resp.Description, 'error');
@@ -680,13 +631,13 @@ export class FrmconsultageneralComponent {
       await this._objConsultaService.getDataParametros(this.selectedItemConsulta.idConsulta).subscribe(async (resp) => {
         if (resp.Codigo) {
           if (Object.keys(resp.Dt).length > 0) {
-            console.log('cargarParametros', resp);
+            //console.log('cargarParametros', resp);
             this.filtrosConsulta = resp.Dt.Table;
             for (let i = 0; i < this.filtrosConsulta.length; i++) {
               this.parametrosValores[this.filtrosConsulta[i].name] = '';
               // Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP
               if (this.filtrosConsulta[i].tipo === 'lista' || this.filtrosConsulta[i].tipo === 'dropdown' && this.filtrosConsulta[i].sp !== '') {
-                console.log('Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
+                //console.log('Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
                 // let data:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
                 // if(data != null && data.length > 0){
                 //   this.gridDataSource[this.filtrosConsulta[i].name] = data;
@@ -698,7 +649,7 @@ export class FrmconsultageneralComponent {
                 // }
               }
               if (this.filtrosConsulta[i].tipo === 'textGroup' && this.filtrosConsulta[i].sp !== '') {
-                console.log('TEXT GROUP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
+                //console.log('TEXT GROUP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
                 //let data2:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
                 //this.DataModal[this.filtrosConsulta[i].name] = data2;
               }
@@ -796,7 +747,7 @@ export class FrmconsultageneralComponent {
       modelParam: this.listParamSp
       //data: this.resultados.map(row => this.resultadosColumnsNames.map(col => row[col.dataField]))
     };
-    console.log('Obj del payload: ', payload);
+    //console.log('Obj del payload: ', payload);
     const valorMenu = await new Promise(async (resolve) => {
 
       await this._objConsultaService.callExcellFile(payload).subscribe({

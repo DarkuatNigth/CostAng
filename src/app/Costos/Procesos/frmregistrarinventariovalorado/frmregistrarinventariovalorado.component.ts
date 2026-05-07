@@ -144,7 +144,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
       Accion: this.accionActual === AccionInventario.Actualizar ? 'U' : 'C'
 
     };
-    console.log('GUARADR : ', objParam);
+    //console.log('GUARADR : ', objParam);
     await new Promise(async (resolve) => {
       this._objService.postProcParametros(objParam).subscribe({
         next: async (resp) => {
@@ -274,7 +274,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
     try {
       this.loadingVisible = true;
       const plantillaRes: any = await firstValueFrom(this._objService.getDataParametros());
-      console.log('cargarParametros: ', plantillaRes);
+      //console.log('cargarParametros: ', plantillaRes);
       if (!plantillaRes?.Dt?.Table || plantillaRes.Dt.Table.length === 0) {
         throw new Error('No se pudo obtener la estructura desde el servidor.');
       }
@@ -305,7 +305,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
     const ultimoDia = new Date(anio, mes, 0);
 
     const fechaCorteStr = this.getFechaCorte();
-    console.log('validarFechaCorte.Lista: ', this.lstFechaCorte, '\n', 'validarFechaCorte.creada:', fechaCorteStr);
+    //console.log('validarFechaCorte.Lista: ', this.lstFechaCorte, '\n', 'validarFechaCorte.creada:', fechaCorteStr);
     const existe = this.lstFechaCorte.some((f: any) => {
       // 1. Si el objeto tiene propiedades Year, Month, Day (como muestra tu consola)
       if (f.Year && f.Month && f.Day) {
@@ -320,7 +320,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
       const fechaLista = (f.fechaCorte || f.fecha_corte || f.fecha || '').toString().substring(0, 10);
       return fechaLista === fechaCorteStr;
     });
-    console.log('validarFechaCorte : ', existe);
+    //console.log('validarFechaCorte : ', existe);
     if (existe) {
       this.fechaCorteDetectada = fechaCorteStr;
 
@@ -362,7 +362,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
     this.accionActual = AccionInventario.Ninguna;
 
     if (this.combosCompletos) {
-      console.log('onMesChanged');
+      //console.log('onMesChanged');
       await this.validarFechaCorte();
     }
   }

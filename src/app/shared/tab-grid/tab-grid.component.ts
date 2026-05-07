@@ -1,0 +1,265 @@
+import {
+  Component, Input, Output, EventEmitter,
+  ChangeDetectionStrategy, ChangeDetectorRef
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DxTabPanelModule, DxDataGridModule, DxTemplateModule } from 'devextreme-angular';
+import {
+  GRUPO_META, GRUPO_ORDEN, GRUPOS_GENERALES,
+  ProcesoAgrupado, ProcesoGeneral
+} from './procesos-agrupacion.config';
+
+@Component({
+  selector: 'app-tab-grid',
+  standalone: true,
+  imports: [CommonModule, DxTabPanelModule, DxDataGridModule, DxTemplateModule],
+  templateUrl: './tab-grid.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class TabGridComponent {
+
+  private _dataSource: ProcesoAgrupado[] = [];
+
+  filteredData: { [key: string]: ProcesoAgrupado[] } = { FRS: [], RPC: [], TAR: [] };
+  totalValor: number = 0;
+  totalLibras: number = 0;
+  subTabsGenerales: any[] = [];
+  subTabsFresco: any[] = [];
+  subTabsSecundario: any[] = [];
+  dataTarifas: ProcesoAgrupado[] = [];
+  
+  summaryFnPG  = this.getCustomSummaryFn('PG');
+  summaryFnFRS = this.getCustomSummaryFn('FRS');
+  summaryFnRPC = this.getCustomSummaryFn('RPC');
+  summaryFnTAR = this.getCustomSummaryFn('TAR');
+
+  // ── NUEVO ──────────────────────────────────────────────────────────────────
+  dataGenerales: ProcesoGeneral[] = [];
+
+  constructor(private objCdr: ChangeDetectorRef) { }
+
+  // ─── TABS ─────────────────────────────────────────────────────────────────
+  // "PG" va primero para que sea el tab por defecto visible
+  tabs = [
+    { id: 'PG', title: 'Procesos Generales', icon: 'globe' },
+    { id: 'FRS', title: 'Proceso Fresco', icon: 'card' },
+    { id: 'RPC', title: 'Proceso Secundario', icon: 'repeat' },
+    { id: 'TAR', title: 'Procesos Adicionales', icon: 'money' }
+  ];
+
+  // ─── INPUT ────────────────────────────────────────────────────────────────
+  @Input() set dataSource(value: ProcesoAgrupado[]) {
+    if (value && value.length > 0) {
+      this._dataSource = value;
+      this.generarEstructuraTabs();
+      this.refreshFilteredData();
+      this.generarSubTabsGenerales(); // ← NUEVO
+      this.objCdr.detectChanges();
+    }
+  }
+  get dataSource(): ProcesoAgrupado[] { return this._dataSource; }
+
+  @Output() onDataChanged = new EventEmitter<ProcesoAgrupado[]>();
+
+  // ─── GENERACIÓN DE ESTRUCTURA ─────────────────────────────────────────────
+  private generarEstructuraTabs() {
+    this.subTabsFresco = this.agruparParaSubTabs('FRS');
+    this.subTabsSecundario = this.agruparParaSubTabs('RPC');
+    this.dataTarifas = this._dataSource.filter(i => i.origen === 'TAR');
+    this.generarDataGenerales();          // ← NUEVO
+  }
+
+  private generarSubTabsGenerales() {
+    // Un sub-tab por cada grupo en GRUPOS_GENERALES que tenga datos
+    this.subTabsGenerales = GRUPOS_GENERALES
+      .filter(grupo => this.dataGenerales.some(i => i.grupo === grupo))
+      .map(grupo => ({
+        titulo: grupo,
+        icon: GRUPO_META[grupo]?.icon || 'box',
+        datos: this.dataGenerales.filter(i => i.grupo === grupo)
+      }));
+  }
+
+  private agruparParaSubTabs(origen: string) {
+    const filtrados = this._dataSource.filter(
+      i => i.origen === origen 
+    );
+    const nombresGrupos = [...new Set(filtrados.map(i => i.grupo))];
+
+    return nombresGrupos.map(nombre => ({
+      titulo: nombre,
+      datos: filtrados.filter(i => i.grupo === nombre),
+      icon: GRUPO_META[nombre]?.icon || 'box'
+    })).sort((a, b) => (GRUPO_ORDEN[a.titulo] || 99) - (GRUPO_ORDEN[b.titulo] || 99));
+  }
+
+
+
+  onEditorPreparing(event: any) {
+    //console.log('onEditorPreparing', event);
+    if (event.dataField !== 'Valor') return;
+    if (!event.row || event.row.rowType !== 'data') return;
+
+    const rowData = event.row.data as ProcesoAgrupado;
+    event.editorOptions.disabled = !rowData.editable;
+  }
+
+  private generarDataGenerales() {
+    this.dataGenerales = [];
+
+    GRUPOS_GENERALES.forEach((grupo, grupoIdx) => {
+      const frsItems = this._dataSource.filter(
+        i => i.origen === 'FRS' && i.grupo === grupo
+      );
+      const rpcItems = this._dataSource.filter(
+        i => i.origen === 'RPC' && i.grupo === grupo
+      );
+
+      const descripciones = [
+        ...new Set([...frsItems, ...rpcItems].map(i => i.Descripcion))
+      ];
+
+      descripciones.forEach((desc, idx) => {
+        const iFRS = frsItems.find(i => i.Descripcion === desc);
+        const iRPC = rpcItems.find(i => i.Descripcion === desc);
+
+        const librasFRS = iFRS?.Libras_Proceso ?? 0;
+        const librasRPC = iRPC?.Libras_Proceso ?? 0;
+        const librasTotal = librasFRS + librasRPC;
+        const valorTotal = (iFRS?.Valor ?? 0) + (iRPC?.Valor ?? 0);
+
+        this.dataGenerales.push(
+          new ProcesoGeneral(9000 + grupoIdx * 100 + idx, desc, valorTotal, librasTotal, grupo)
+        );
+      });
+    });
+  }
+
+  onValueChange(event: any, origen: string) {
+    const rowData = event.data;
+
+    if (origen === 'PG') {
+      this.handlePGChange(rowData);
+      return;
+    }
+
+    // Lógica original para FRS, RPC, TAR
+    const item = this._dataSource.find(
+      i => i.Codigo === rowData.Codigo && i.origen === origen
+    );
+
+    if (item) {
+      item.Valor = rowData.Valor;
+
+      if (item.Libras_Proceso > 0) {
+        const calculo = (origen === 'TAR')
+          ? item.Valor * item.Libras_Proceso
+          : item.Valor / item.Libras_Proceso;
+        item.Costo_Unitario = Number(calculo.toFixed(4));
+      }
+
+      this.refreshFilteredData();
+      this.onDataChanged.emit([...this._dataSource]);
+      this.objCdr.detectChanges();
+    }
+  }
+
+  private handlePGChange(rowData: any) {
+    const desc = rowData.Descripcion as string;
+    const newValor = rowData.Valor as number;
+
+    const itemFRS = this._dataSource.find(i => i.origen === 'FRS' && i.Descripcion === desc);
+    const itemRPC = this._dataSource.find(i => i.origen === 'RPC' && i.Descripcion === desc);
+
+    const librasFRS = itemFRS?.Libras_Proceso ?? 0;
+    const librasRPC = itemRPC?.Libras_Proceso ?? 0;
+    const librasTotal = librasFRS + librasRPC;
+
+    // Costo unitario general = total dólares / total libras (FRS + RPC)
+    const costoUnitario = librasTotal > 0 ? newValor / librasTotal : 0;
+
+    // Actualiza in-place el item en dataGenerales
+    const genItem = this.dataGenerales.find(i => i.Descripcion === desc);
+    if (genItem) {
+      genItem.Valor = newValor;
+      genItem.Libras_Proceso = librasTotal;
+      genItem.Costo_Unitario = costoUnitario;
+    }
+
+    // FRS: Valor = costoUnitario * librasFRS  →  Costo_Unitario = Valor / librasFRS
+    if (itemFRS) {
+      if (librasFRS > 0) {
+        // itemFRS.Valor = Number((costoUnitario * librasFRS).toFixed(4));
+        // itemFRS.Costo_Unitario = Number((itemFRS.Valor / librasFRS).toFixed(4));
+        itemFRS.Valor =(costoUnitario * librasFRS);
+        itemFRS.Costo_Unitario = (itemFRS.Valor / librasFRS);
+      } else {
+        itemFRS.Valor = 0;
+        itemFRS.Costo_Unitario = 0;
+      }
+    }
+
+    // RPC: Valor = costoUnitario * librasRPC  →  Costo_Unitario = Valor / librasRPC
+    if (itemRPC) {
+      if (librasRPC > 0) {
+        itemRPC.Valor = (costoUnitario * librasRPC);
+        itemRPC.Costo_Unitario = (itemRPC.Valor / librasRPC);
+      } else {
+        itemRPC.Valor = 0;
+        itemRPC.Costo_Unitario = 0;
+      }
+    }
+
+    // Regenera sub-tabs de FRS y RPC para que reflejen los nuevos valores
+    this.subTabsFresco = this.agruparParaSubTabs('FRS');
+    this.subTabsSecundario = this.agruparParaSubTabs('RPC');
+
+    this.refreshFilteredData();
+    this.onDataChanged.emit([...this._dataSource]);
+    this.objCdr.detectChanges();
+  }
+  // ─── HELPERS ──────────────────────────────────────────────────────────────
+  getGridData(origen: string): ProcesoAgrupado[] {
+    return this.filteredData[origen] || [];
+  }
+
+  private refreshFilteredData() {
+    this.tabs.forEach(tab => {
+      if (tab.id === 'PG') return; // PG tiene su propia estructura
+      this.filteredData[tab.id] = this._dataSource
+        .filter(item => item.origen === tab.id)
+        .sort((a, b) => a.grupoOrden - b.grupoOrden || a.Codigo - b.Codigo);
+    });
+  }
+
+  getCustomSummaryFn(proceso: string) {
+    return (options: any) => {
+
+      switch (options.summaryProcess) {
+        case 'start':
+          options.totalValue = 0;
+          break;
+        case 'finalize':
+          const datos: any[] = options.component.option('dataSource') ?? [];
+          options.totalValue = this.calcularPromedio(datos, proceso);
+          break;
+      }
+    };
+  }
+
+  calcularPromedio(datos: any[], proceso: string): number {
+    const nbTotLibras = datos.reduce((s: number, r: any) => s + (r.Libras_Proceso || 0), 0);
+    const nbTotDol = proceso !== 'TAR'
+      ? datos.reduce((s: number, r: any) => s + (r.Valor || 0), 0)
+      : datos.reduce((s: number, r: any) => s + (r.Costo_Unitario || 0), 0);
+
+    return nbTotLibras > 0 ? nbTotDol / nbTotLibras : 0;
+  }
+
+  get tabsFiltrados() {
+    // Aquí decides cuáles mostrar. 
+    // Si quieres esconder FRS y RPC, los filtramos:
+    return this.tabs;
+    //.filter(tab => tab.id !== 'FRS' && tab.id !== 'RPC');
+  }
+}
