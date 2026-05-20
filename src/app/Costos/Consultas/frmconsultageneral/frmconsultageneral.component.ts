@@ -371,45 +371,6 @@ export class FrmconsultageneralComponent {
     }
 
 
-    if (tipoConsulta === 'Grabar') {
-      const objConsul = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
-      const objPost = {
-        usuarioCrea: varUser,
-        fechaInicio: this.listParamSp.find(item => item.Name == "fecInicio")?.Value?.replace(/\//g, '-') ?? null,
-        fechaFin: this.listParamSp.find(item => item.Name == "fecFin")?.Value?.replace(/\//g, '-') ?? null,
-        lstMatPrim: this.modificacionesCosto
-      };
-      await new Promise(async (resolve) => {
-        await this._objConsultaService.postGrabarDatos(objPost, objConsul).subscribe(
-          {
-            next: async (resp) => {
-              // Validación de éxito según la respuesta del servicio
-              if (resp.Codigo) {
-                await showAlert('Completado', resp.Description || 'Datos guardados correctamente', 'success');
-                resolve(true);
-              } else {
-                // Error controlado devuelto por el SP/API
-                await showAlert('Atención', resp.Description || 'No se pudo completar el guardado', 'error');
-                resolve(false);
-              }
-            },
-            error: async (err) => {
-              this.loadingVisible = false;
-              // Error de comunicación, red o excepción no controlada (500, 404, etc.)
-              console.error("Error técnico al guardar:", err);
-              await showAlert('Error de Red', 'No se pudo conectar con el servidor. Intente más tarde.', 'error');
-              resolve(false);
-            },
-            complete: () => {
-              this.loadingVisible = false;
-            }
-
-          }
-
-        );
-      });
-
-    }
 
 
     this.loadingVisible = false;
