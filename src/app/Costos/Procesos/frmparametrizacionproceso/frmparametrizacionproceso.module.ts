@@ -33,7 +33,7 @@ import { TabGridComponent } from 'src/app/shared/tab-grid/tab-grid.component';
       DxCalendarModule,
       TabGridComponent,
       RouterModule.forChild([
-            { path: 'ext-parametrizacionprocesos',  component: FrmparametrizacionprocesoComponent },
+            { path: 'ext-parametrizacionprocesos',   canActivate: [AuthGuard], component: FrmparametrizacionprocesoComponent },
       ]) 
     ],
       exports: [

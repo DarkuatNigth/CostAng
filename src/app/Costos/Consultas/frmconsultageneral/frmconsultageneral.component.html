@@ -37,16 +37,7 @@
                     <i class="fa fa-file-excel" style="padding-right: 15px;"></i>Exportar Excel</button>
         </div>
         
-        <div class="col-lg-2 col-md-3 col-sm-6 col-xs-6 col-6 pb-1"  *ngIf="resultados && resultados.length > 0">
-            <dx-button
-            icon="save"
-            type="success"
-            text="Guardar"
-            (onClick)="onClickConsultar('Grabar')"
-            style="width: 100%"
-            >
-            </dx-button>
-  </div>
+
         <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn" [hidden]="!ShowOtraAccionDescarga">
             <dx-button  icon="download" type="success"
                 [text]="this.selectedItemConsulta?.otraAccionDescarga" (onClick)="onclickExportarOtraAccion()"
