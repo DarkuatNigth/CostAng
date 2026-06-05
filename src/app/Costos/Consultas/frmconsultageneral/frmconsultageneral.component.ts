@@ -310,7 +310,7 @@ export class FrmconsultageneralComponent {
               let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
 
               if (this.resultados.length > 0) {
-                console.log(tipoConsulta, this.resultados);
+                //console.log(tipoConsulta, this.resultados);
                 // 1. Generar la estructura de columnas con soporte para bandas (recursivo)
                 // Pasamos 'keysToGroup' para mantener tu lógica de agrupación de filas
                 this.resultadosColumnsNames = this.generarEstructuraColumnas(this.resultados[0], '', keysToGroup);
@@ -699,7 +699,13 @@ export class FrmconsultageneralComponent {
         break;
       }
     }
-    const elemento = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
+    let  elemento : string;
+    if(this.selectedItemConsulta.spConsulta.includes('/')){
+      elemento = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
+    }
+    else {
+      elemento = this.selectedItemConsulta.spConsulta;
+    }
     const payload = {
       title: this.title,
       title2: titulo,
