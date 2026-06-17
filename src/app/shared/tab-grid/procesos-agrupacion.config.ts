@@ -31,6 +31,7 @@ export const GRUPO_MAP: Record<string, string> = {
 
 // Orden de visualización de grupos
 export const GRUPO_ORDEN: Record<string, number> = {
+  'Totales':              0,              
   'Costos Directos':      5,
   'Costos Indirectos':    6,
   'Proceso Primario':     1,
@@ -42,6 +43,7 @@ export const GRUPO_ORDEN: Record<string, number> = {
 
 // Metadatos visuales por grupo (icono y clase CSS)
 export const GRUPO_META: Record<string, { icon: string; css: string }> = {
+  'Totales':              { icon: 'chart',       css: 'tot' },
   'Costos Directos':      { icon: 'money',       css: 'cd'  },
   'Costos Indirectos':    { icon: 'money',       css: 'ci'  },
   'Proceso Primario':     { icon: 'activefolder', css: 'pp'  },

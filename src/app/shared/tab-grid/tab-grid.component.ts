@@ -27,8 +27,7 @@ export class TabGridComponent {
   subTabsFresco: any[] = [];
   subTabsSecundario: any[] = [];
   dataTarifas: ProcesoAgrupado[] = [];
-  
-  summaryFnPG  = this.getCustomSummaryFn('PG');
+  summaryFnPG = this.getCustomSummaryFn('PG');
   summaryFnFRS = this.getCustomSummaryFn('FRS');
   summaryFnRPC = this.getCustomSummaryFn('RPC');
   summaryFnTAR = this.getCustomSummaryFn('TAR');
@@ -53,7 +52,6 @@ export class TabGridComponent {
       this._dataSource = value;
       this.generarEstructuraTabs();
       this.refreshFilteredData();
-      this.generarSubTabsGenerales(); // ← NUEVO
       this.objCdr.detectChanges();
     }
   }
@@ -63,34 +61,65 @@ export class TabGridComponent {
 
   // ─── GENERACIÓN DE ESTRUCTURA ─────────────────────────────────────────────
   private generarEstructuraTabs() {
-    this.subTabsFresco = this.agruparParaSubTabs('FRS');
-    this.subTabsSecundario = this.agruparParaSubTabs('RPC');
     this.dataTarifas = this._dataSource.filter(i => i.origen === 'TAR');
-    this.generarDataGenerales();          // ← NUEVO
+    this.generarDataGenerales();
+    this.subTabsGenerales = this.generarSubTabsConTotales_PG();
+    this.subTabsFresco = this.generarSubTabsConTotales('FRS');
+    this.subTabsSecundario = this.generarSubTabsConTotales('RPC');
   }
 
-  private generarSubTabsGenerales() {
-    // Un sub-tab por cada grupo en GRUPOS_GENERALES que tenga datos
-    this.subTabsGenerales = GRUPOS_GENERALES
+  private generarSubTabsConTotales_PG(): any[] {
+    const subTabs = GRUPOS_GENERALES
       .filter(grupo => this.dataGenerales.some(i => i.grupo === grupo))
       .map(grupo => ({
         titulo: grupo,
         icon: GRUPO_META[grupo]?.icon || 'box',
         datos: this.dataGenerales.filter(i => i.grupo === grupo)
       }));
+
+    return [this.generarSubTabTotales(this.dataGenerales), ...subTabs];
   }
 
-  private agruparParaSubTabs(origen: string) {
-    const filtrados = this._dataSource.filter(
-      i => i.origen === origen 
-    );
-    const nombresGrupos = [...new Set(filtrados.map(i => i.grupo))];
+  private generarSubTabsConTotales(origen: string): any[] {
+    const filtrados = this._dataSource.filter(i => i.origen === origen);
 
-    return nombresGrupos.map(nombre => ({
-      titulo: nombre,
-      datos: filtrados.filter(i => i.grupo === nombre),
-      icon: GRUPO_META[nombre]?.icon || 'box'
-    })).sort((a, b) => (GRUPO_ORDEN[a.titulo] || 99) - (GRUPO_ORDEN[b.titulo] || 99));
+    const subTabs = [...new Set(filtrados.map(i => i.grupo))]
+      .map(nombre => ({
+        titulo: nombre,
+        datos: filtrados.filter(i => i.grupo === nombre),
+        icon: GRUPO_META[nombre]?.icon || 'box'
+      }))
+      .sort((a, b) => (GRUPO_ORDEN[a.titulo] || 99) - (GRUPO_ORDEN[b.titulo] || 99));
+
+    return [this.generarSubTabTotales(filtrados), ...subTabs];
+  }
+
+  private generarSubTabTotales(items: (ProcesoAgrupado | ProcesoGeneral)[]): any {
+    const grupos = [...new Set(items.map(i => i.grupo))]
+      .sort((a, b) => (GRUPO_ORDEN[a] || 99) - (GRUPO_ORDEN[b] || 99));
+
+    const datos = grupos.map((grupo, idx) => {
+      const delGrupo = items.filter(i => i.grupo === grupo);
+      const valor = delGrupo.reduce((s, i) => s + (i.Valor || 0), 0);
+      const libras = grupo === 'Proceso Primario'
+          ? (delGrupo[0]?.Libras_Proceso || 0)
+          : delGrupo.reduce((s, i) => s + (i.Libras_Proceso || 0), 0);
+      return {
+        Codigo: 8000 + idx,
+        Descripcion: grupo,
+        grupo: grupo,
+        Valor: valor,
+        Libras_Proceso: libras,
+        Costo_Unitario: libras > 0 ? valor / libras : 0,
+        editable: false
+      };
+    });
+
+    return {
+      titulo: 'Totales',
+      icon: GRUPO_META['Totales']?.icon || 'chart',
+      datos
+    };
   }
 
 
@@ -158,9 +187,9 @@ export class TabGridComponent {
         item.Costo_Unitario = Number(calculo.toFixed(4));
       }
 
+      this.generarEstructuraTabs();   // ← regenera Totales también
       this.refreshFilteredData();
       this.onDataChanged.emit([...this._dataSource]);
-      this.objCdr.detectChanges();
     }
   }
 
@@ -191,7 +220,7 @@ export class TabGridComponent {
       if (librasFRS > 0) {
         // itemFRS.Valor = Number((costoUnitario * librasFRS).toFixed(4));
         // itemFRS.Costo_Unitario = Number((itemFRS.Valor / librasFRS).toFixed(4));
-        itemFRS.Valor =(costoUnitario * librasFRS);
+        itemFRS.Valor = (costoUnitario * librasFRS);
         itemFRS.Costo_Unitario = (itemFRS.Valor / librasFRS);
       } else {
         itemFRS.Valor = 0;
@@ -211,8 +240,7 @@ export class TabGridComponent {
     }
 
     // Regenera sub-tabs de FRS y RPC para que reflejen los nuevos valores
-    this.subTabsFresco = this.agruparParaSubTabs('FRS');
-    this.subTabsSecundario = this.agruparParaSubTabs('RPC');
+    this.generarEstructuraTabs();
 
     this.refreshFilteredData();
     this.onDataChanged.emit([...this._dataSource]);
