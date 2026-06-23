@@ -134,10 +134,11 @@ export class FrmdiasparadaplantaComponent implements OnInit {
 async onClickAddDias() {
 
     //validate libras are valid
-    if (this.pp_tipo === 'PA' && (this.pp_libras === null || this.pp_libras === undefined || isNaN(this.pp_libras) || this.pp_libras <= 0)) {
+    //jessica pide que ya no se valide las libras 2026/06/23
+    /* if (this.pp_tipo === 'PA' && (this.pp_libras === null || this.pp_libras === undefined || isNaN(this.pp_libras) || this.pp_libras <= 0)) {
       await this.showAlert('Alerta', 'Ingrese un valor válido para libras.', 'warning');
       return;
-    }
+    } */
 
     //validate planta and fecha does not exist in listaDiasParaPlanta
     if (this.listaDiasParaPlanta.some(dia => dia.pp_paCodigo === this.pa_codigo && dia.pp_fecha === moment(this.pp_fecha).format('YYYY/MM/DD'))) {
