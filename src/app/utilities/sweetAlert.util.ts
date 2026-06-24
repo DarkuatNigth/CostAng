@@ -17,7 +17,7 @@ export const showAlert = async (
       title: title,
       html:
         "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" +
-        mensaje.replaceAll('\n', '<br>').replaceAll('\\n', '<br>') +
+        (mensaje?.replaceAll('\n', '<br>').replaceAll('\\n', '<br>') ?? '') +
         '</div>',
       icon: tipo,
       showCancelButton: false,
@@ -48,7 +48,7 @@ export const showAlertConfirm = async (
       title: title,
       html:
         "<div class='mostly-customized-scrollbar' style='max-height: 50vh;overflow: auto;'>" +
-        mensaje.replaceAll('\n', '<br>').replaceAll('\\n', '<br>') +
+        (mensaje?.replaceAll('\n', '<br>').replaceAll('\\n', '<br>') ?? '') +
         '</div>',
       icon: tipo,
       showCancelButton: true,

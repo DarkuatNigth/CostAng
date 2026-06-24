@@ -1,0 +1,143 @@
+.control-label {
+	text-align: left;
+}
+
+
+::ng-deep .cssModalSolicitarEtiqueta {
+  .modal-dialog {
+      min-width: 850px;
+      // max-width: 1000px;
+      width: 95%;
+      z-index: unset;
+  }
+  .control-label {
+    font-weight: 600;
+  }
+}
+
+::ng-deep .cssModalSolitadasVsLiquidadas {
+  .modal-dialog {
+      min-width: 850px;
+      // max-width: 1000px;
+      width: 95%;
+      z-index: unset;
+  }
+  .control-label {
+    font-weight: 600;
+  }
+}
+
+
+::ng-deep #GridAsignacion {
+    .dx-toolbar .dx-toolbar-after {
+        width: 100%;
+        padding-left: 0px;
+    }
+    .dx-datagrid-search-panel.dx-searchbox {
+        width: 98%;
+    }
+    .dx-datagrid-search-panel {
+        margin: 0px;
+    }
+    .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+        padding: 7px;
+    }
+    .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+        width: 30px;
+        min-width: 30px;
+        max-width: 30px;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+    .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand > div {
+        font-size: 30px;
+    }
+
+    td.cell-temp-valor-2[role="gridcell"] .btn{
+        padding: 5px;
+    }
+
+    .dx-datagrid-headers .dx-header-row > td,
+    .dx-datagrid-rowsview .dx-row > td {
+        font-size: 14px;
+    }
+
+    .dx-toolbar .dx-texteditor-input,
+    .dx-datagrid-search-panel,
+    .dx-pager {
+        font-size: 14px;
+    }
+}
+
+
+::ng-deep #GridDetalle {
+    
+    td.cell-temp-valor-2[role="gridcell"] .btn{
+        padding: 0px;
+    }
+}
+
+
+::ng-deep .dx-icon-customicon {
+    background-image: url('data:image/png;base64,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');
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+}
+
+
+@media (min-width: 576px) {
+	.control-label {
+		text-align: right;
+	}
+}
+
+@media (min-width: 992px) {
+    ::ng-deep #GridAsignacion {
+        .dx-datagrid-headers .dx-header-row > td,
+        .dx-datagrid-rowsview .dx-row > td,
+        .dx-toolbar .dx-texteditor-input,
+        .dx-datagrid-search-panel,
+        .dx-pager {
+            font-size: 16px;
+        }
+    }
+}
+
+.solicitud-step {
+    will-change: transform, opacity;
+}
+
+.solicitud-step.step-next {
+    animation: solicitud-step-next 0.25s ease;
+}
+
+.solicitud-step.step-back {
+    animation: solicitud-step-back 0.25s ease;
+}
+
+@keyframes solicitud-step-next {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes solicitud-step-back {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
