@@ -7,8 +7,10 @@ import { DxDataGridTypes, DxDataGridComponent } from 'devextreme-angular/ui/data
 import { DxPivotGridComponent } from 'devextreme-angular/ui/pivot-grid';
 import * as moment from 'moment';
 import 'moment/locale/es';
+import { callApi } from 'src/app/config/Helpers';
+import { FormatoCampoMap, ColumnaConfigDx, SummaryItemDx, generarEstructuraGrid, construirFormatoCampoMap, esColumnaSimple } from './formato-grid';
 
-declare var window;
+declare var window: any;
 @Component({
   selector: 'app-frmconsultageneral',
   templateUrl: './frmconsultageneral.component.html',
@@ -17,7 +19,7 @@ declare var window;
 export class FrmconsultageneralComponent {
   modificacionesCosto: any[] = [];
   blPoderEditar: boolean | null = false;
-  @ViewChild('Griddata', { static: false }) Griddata: DxDataGridComponent;
+  @ViewChild('Griddata', { static: false }) Griddata!: DxDataGridComponent;
   @ViewChild(DxPivotGridComponent, { static: false }) pivotGrid!: DxPivotGridComponent;
   loadingVisible = false;
   isListVisible = true;
@@ -29,38 +31,23 @@ export class FrmconsultageneralComponent {
   visibleGrid = false;
 
   // Define las columnas con formato de moneda y precisión de 4
-  resultadosColumnsNames = [
-    { dataField: 'PrecioCompra', caption: 'Precio Compra', format: { type: 'currency', precision: 4 } },
-    { dataField: 'TotalDol', caption: 'Total $', format: { type: 'currency', precision: 2 } },
-    { dataField: 'Premio', caption: 'Premio', format: { type: 'currency', precision: 4 } },
-    { dataField: 'Costo Mat Empaque', caption: 'Costo Mat. Empaque', format: { type: 'currency', precision: 4 } },
-    { dataField: 'Costo Total Mat Empaque', caption: 'Costo Total Mat.', format: { type: 'currency', precision: 4 } },
-
-    // Para los objetos anidados (la clave para que funcione)
-    { dataField: 'Costos Directos.dcCostoDirecto', caption: 'Costo Directo', format: { type: 'currency', precision: 4 } },
-    { dataField: 'Costos Directos.dcCostoFijo', caption: 'Costo Fijo', format: { type: 'currency', precision: 4 } },
-
-    { dataField: 'Proceso Primario.dcRecepcion', caption: 'Recepción', format: { type: 'currency', precision: 4 } },
-    { dataField: 'Proceso Primario.dcClasificacion', caption: 'Clasificación', format: { type: 'currency', precision: 4 } },
-
-    // Agrega "Certificado" como texto normal
-    { dataField: 'Certificado', caption: 'Certificado' }
-  ];
+  resultadosColumnsNames: ColumnaConfigDx[] = [];
   ShowOtraAccionDescarga: boolean = false;
 
   selectedItemConsulta: any = null;
   filtrosConsulta: any[] = [];
-  listParamSp = [];
+  listParamSp: any[] = [];
   resultadosPrev: any[] = [];
   resultados: any[] = [];
   reportes: any[] = [];
   fieldPivot: any[] = [];
+  summaryTotalItems: SummaryItemDx[] = [];  // ← items de sumatoria generados dinámicamente 
   pivotDataSource: any;
   parametrosValores: { [key: string]: any } = {};
   parametrosValoresSelect: { [key: string]: string[] } = {};
   gridDataSource: { [key: string]: any } = {}; // Almacena la fuente de datos del grid-dropdown
   gridColumn: { [key: string]: any[] } = {}; // Almacena la fuente de datos del grid-dropdown
-
+  cfgMap: FormatoCampoMap = new Map();
   rowIniTitle = 0;
   rowEndTitle = 0;
   numRowColumns = 0;
@@ -73,13 +60,17 @@ export class FrmconsultageneralComponent {
     this.isListVisible = !this.isListVisible;
     let classes: string[] = ['col-md-8', 'col-lg-8'];
     if (!this.isListVisible) {
-      document.getElementById('sec_resultado').classList.remove(...classes);
+      document.getElementById('sec_resultado')?.classList.remove(...classes);
     } else {
-      document.getElementById('sec_resultado').classList.add(...classes);
+      document.getElementById('sec_resultado')?.classList.add(...classes);
     }
 
   }
 
+  get keyExprPrincipal(): string {
+    const primera = this.resultadosColumnsNames[0];
+    return primera && esColumnaSimple(primera) ? primera.dataField : '';
+  }
   isColumnFixed(dataField: string): boolean {
     if (!dataField) return false;
 
@@ -260,114 +251,215 @@ export class FrmconsultageneralComponent {
 
     if (tipoConsulta === 'Consultar') {
 
-      await new Promise(async (resolve) => {
-        await this._objConsultaService.getConsultaDatosByFilters(this.listParamSp, this.selectedItemConsulta.spConsulta).subscribe(async (resp) => {
-          setTimeout(() => {
+      const resp = await callApi<any>(
+        this._objConsultaService.getConsultaDatosByFilters(this.listParamSp, this.selectedItemConsulta.spConsulta)
+      );
 
-          }, 1000);
+      if (resp.ok) {
+        //console.log("objeto => ", resp.Codigo);
+        if (Object.keys(resp.data.Dt).length > 0) {
+          if (this.selectedItemConsulta.esHtml) {
+            let dt: any[] = resp.data.Dt.Table;
 
-          if (resp.Codigo) {
-            //console.log("objeto => ", resp.Codigo);
-            if (Object.keys(resp.Dt).length > 0) {
-
-              if (this.selectedItemConsulta.esHtml) {
-                let dt: any[] = resp.Dt.Table;
-
-                if (dt.length > 0) {
-                  var contenidoHTML = Object.values(dt[0])[0].toString();
-                  if (contenidoHTML !== '') {
-                    const blob = new Blob([contenidoHTML], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                  }
-                }
-                return resolve(true);
+            if (dt.length > 0) {
+              var contenidoHTML = Object.values(dt)[0].toString();
+              if (contenidoHTML !== '') {
+                const blob = new Blob([contenidoHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
               }
-
-              this.resultados = resp.Dt.Table;
-              // this.blPoderEditar = resp.Dt.Table1;
-              //console.log('consultar: ', resp.Dt.Table1);
-              this.detalleGrupos = [];
-
-              // 3. Obtenemos las llaves de las tablas disponibles (Table, Table1, etc.)
-              const tableKeys = Object.keys(resp.Dt);
-
-              if (tableKeys.length > 0) {
-                // Tomamos solo la PRIMERA tabla que aparezca en el objeto Dt
-                const primeraTabla = resp.Dt[tableKeys[0]];
-
-                if (Array.isArray(primeraTabla) && primeraTabla.length > 0) {
-                  const primeraFila = primeraTabla[0];
-
-                  if (primeraFila.hasOwnProperty("AgruparData") ||
-                    Object.keys(primeraFila)[0]?.trim() === "AgruparData") {
-
-                    this.detalleGrupos = primeraTabla;
-                  }
-                }
-              }
-
-              let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
-
-              if (this.resultados.length > 0) {
-                console.log(tipoConsulta, this.resultados);
-                // 1. Generar la estructura de columnas con soporte para bandas (recursivo)
-                // Pasamos 'keysToGroup' para mantener tu lógica de agrupación de filas
-                this.resultadosColumnsNames = this.generarEstructuraColumnas(this.resultados[0], '', keysToGroup);
-
-                // 2. IMPORTANTE: No modificar 'this.resultados'
-                // DevExtreme usa los puntos (ej: "Proceso Primario.dcRecepcion") para navegar 
-                // automáticamente en el objeto JSON que viene del backend.
-                // Quitamos el .map que hacía el replaceAll.
-              }
-
-
-              this.fieldPivot = [];
-              if (resp.Dt.Table1 && this.detalleGrupos.length <= 0) {
-                this.fieldPivot = await this.removeNullValues(resp.Dt.Table1);
-              }
-              if (this.fieldPivot.length > 0) {
-                this.visibleGrid = false;
-
-              } else {
-                this.hiddenExporting = false;
-                this.visibleGrid = true;
-                return resolve(true);
-              }
-
-              this.positionRowDelete = resp.Dt.Table2;
-
-              this.numRowColumns = 0;
-              for (let x = 0; x < this.fieldPivot.length; x++) {
-                if (this.fieldPivot[x].area === 'column') {
-                  this.numRowColumns++;
-                }
-              }
-
-              this.pivotDataSource = {
-                store: this.resultados,
-                fields: this.fieldPivot,
-              };
-              if (this.resultados.length > 0) {
-                this.ShowGuardar = true;
-              }
-
-              setTimeout(() => {
-                //this.ExportarExcelPivot();
-              }, 100);
-
             }
+          }
 
+          this.resultados = resp.data.Dt.Table;
+          // this.blPoderEditar = resp.data.Dt.Table1;
+          //console.log('consultar: ', resp.data.Dt.Table1);
+          this.detalleGrupos = [];
 
-            return resolve(true);
+          // 3. Obtenemos las llaves de las tablas disponibles (Table, Table1, etc.)
+          const tableKeys = Object.keys(resp.data.Dt);
+
+          if (tableKeys.length > 0) {
+            // Tomamos solo la PRIMERA tabla que aparezca en el objeto Dt
+            const primeraTabla = resp.data.Dt[tableKeys[0]];
+
+            if (Array.isArray(primeraTabla) && primeraTabla.length > 0) {
+              const primeraFila = primeraTabla[0];
+
+              if (primeraFila.hasOwnProperty("AgruparData") ||
+                Object.keys(primeraFila)[0]?.trim() === "AgruparData") {
+
+                this.detalleGrupos = primeraTabla;
+              }
+            }
+          }
+
+          let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
+          if (this.resultados.length > 0) {
+            if (this.selectedItemConsulta.spConsulta.includes('/')) {
+              const { columnas, summaries } = generarEstructuraGrid(
+                this.resultados[0],
+                this.cfgMap,
+                keysToGroup,
+                (field) => this.isColumnFixed(field)   // mantiene tu lógica de columnas congeladas
+              );
+              this.resultadosColumnsNames = columnas;
+              this.summaryTotalItems = summaries;
+            } else {
+              this.resultadosColumnsNames = this.generarEstructuraColumnas(this.resultados[0], '', keysToGroup);
+            }
+          }
+
+          this.fieldPivot = [];
+          if (resp.data.Dt.Table1 && this.detalleGrupos.length <= 0) {
+            this.fieldPivot = await this.removeNullValues(resp.data.Dt.Table1);
+          }
+          if (this.fieldPivot.length > 0) {
+            this.visibleGrid = false;
 
           } else {
-            //console.log('tipoConsulta', resp);
-            await showAlert('', resp.Description, 'error');
-            return resolve(false);
+            this.hiddenExporting = false;
+            this.visibleGrid = true;
           }
-        });
-      });
+
+          this.positionRowDelete = resp.data.Dt.Table2;
+
+          this.numRowColumns = 0;
+          for (let x = 0; x < this.fieldPivot.length; x++) {
+            if (this.fieldPivot[x].area === 'column') {
+              this.numRowColumns++;
+            }
+          }
+
+          this.pivotDataSource = {
+            store: this.resultados,
+            fields: this.fieldPivot,
+          };
+          if (this.resultados.length > 0) {
+            this.ShowGuardar = true;
+          }
+
+          // setTimeout(() => {
+          //   //this.ExportarExcelPivot();
+          // }, 100);
+
+        }
+
+
+
+      } else {
+        //console.log('tipoConsulta', resp);
+        await showAlert('', resp.message, 'error');
+      }
+
+      // await new Promise(async (resolve) => {
+      //   await this._objConsultaService.getConsultaDatosByFilters(this.listParamSp, this.selectedItemConsulta.spConsulta).subscribe(async (resp) => {
+      //     setTimeout(() => {
+
+      //     }, 1000);
+
+      //     if (resp.Codigo) {
+      //       //console.log("objeto => ", resp.Codigo);
+      //       if (Object.keys(resp.Dt).length > 0) {
+
+      //         if (this.selectedItemConsulta.esHtml) {
+      //           let dt: any[] = resp.Dt.Table;
+
+      //           if (dt.length > 0) {
+      //             var contenidoHTML = Object.values(dt[0])[0].toString();
+      //             if (contenidoHTML !== '') {
+      //               const blob = new Blob([contenidoHTML], { type: 'text/html' });
+      //               const url = URL.createObjectURL(blob);
+      //               window.open(url, '_blank');
+      //             }
+      //           }
+      //           return resolve(true);
+      //         }
+
+      //         this.resultados = resp.Dt.Table;
+      //         // this.blPoderEditar = resp.Dt.Table1;
+      //         //console.log('consultar: ', resp.Dt.Table1);
+      //         this.detalleGrupos = [];
+
+      //         // 3. Obtenemos las llaves de las tablas disponibles (Table, Table1, etc.)
+      //         const tableKeys = Object.keys(resp.Dt);
+
+      //         if (tableKeys.length > 0) {
+      //           // Tomamos solo la PRIMERA tabla que aparezca en el objeto Dt
+      //           const primeraTabla = resp.Dt[tableKeys[0]];
+
+      //           if (Array.isArray(primeraTabla) && primeraTabla.length > 0) {
+      //             const primeraFila = primeraTabla[0];
+
+      //             if (primeraFila.hasOwnProperty("AgruparData") ||
+      //               Object.keys(primeraFila)[0]?.trim() === "AgruparData") {
+
+      //               this.detalleGrupos = primeraTabla;
+      //             }
+      //           }
+      //         }
+
+      //         let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
+
+      //         if (this.resultados.length > 0) {
+      //           //console.log(tipoConsulta, this.resultados);
+      //           // 1. Generar la estructura de columnas con soporte para bandas (recursivo)
+      //           // Pasamos 'keysToGroup' para mantener tu lógica de agrupación de filas
+      //           this.resultadosColumnsNames = this.generarEstructuraColumnas(this.resultados[0], '', keysToGroup);
+      //           this.summaryTotalItems = this.generarSummaryItems(this.resultadosColumnsNames);
+      //           // 2. IMPORTANTE: No modificar 'this.resultados'
+      //           // DevExtreme usa los puntos (ej: "Proceso Primario.dcRecepcion") para navegar 
+      //           // automáticamente en el objeto JSON que viene del backend.
+      //           // Quitamos el .map que hacía el replaceAll.
+      //         }
+
+
+      //         this.fieldPivot = [];
+      //         if (resp.Dt.Table1 && this.detalleGrupos.length <= 0) {
+      //           this.fieldPivot = await this.removeNullValues(resp.Dt.Table1);
+      //         }
+      //         if (this.fieldPivot.length > 0) {
+      //           this.visibleGrid = false;
+
+      //         } else {
+      //           this.hiddenExporting = false;
+      //           this.visibleGrid = true;
+      //           return resolve(true);
+      //         }
+
+      //         this.positionRowDelete = resp.Dt.Table2;
+
+      //         this.numRowColumns = 0;
+      //         for (let x = 0; x < this.fieldPivot.length; x++) {
+      //           if (this.fieldPivot[x].area === 'column') {
+      //             this.numRowColumns++;
+      //           }
+      //         }
+
+      //         this.pivotDataSource = {
+      //           store: this.resultados,
+      //           fields: this.fieldPivot,
+      //         };
+      //         if (this.resultados.length > 0) {
+      //           this.ShowGuardar = true;
+      //         }
+
+      //         setTimeout(() => {
+      //           //this.ExportarExcelPivot();
+      //         }, 100);
+
+      //       }
+
+
+      //       return resolve(true);
+
+      //     } else {
+      //       //console.log('tipoConsulta', resp);
+      //       await showAlert('', resp.Description, 'error');
+      //       return resolve(false);
+      //     }
+      //   });
+      // });
     }
 
 
@@ -379,23 +471,6 @@ export class FrmconsultageneralComponent {
 
   generarEstructuraColumnas(obj: any, parentKey: string = '', keysToGroup: string[] = []): any[] {
     let columns = [];
-    const camposPorcentaje = ["rendimiento %"];
-    const camposAltaPrecision = [
-      'Costo Mat Empaque','Total Mat Empaque','Costo Unitario','CostUltConsumo',
-      'CostoXLibra','CostoXMaster','cospro','total','pro_costoDesperdicioBobina'
-    ];
-    // Lista de campos que deben llevar formato de dólar
-    const camposMoneda = [
-      'Precio Compra', 'Total Mat Prim', 'Premio', 'Costo Mat Empaque',
-      'Total Mat Empaque', 'dcCostoDirecto', 'dcCostoFijo',
-      'dcCostoIndirecto', 'dcCostoVariable', 'dcRecepcion',
-      'dcClasificacion', 'dcCajas', 'dcDescabezado',
-      'dcDecorado', 'dcRetractilado', 'dcBrine', 'dcIQF',
-      'dcTunel', 'dcPelado', 'dcHidratacion', 'dcCocido',
-      'Costo X Secuencial', '$ Monto', 'Copacking','Costo Total',
-      'Costo Unitario', 'Total Costos', 'Total Mat',
-      'Tarifa', 'Proceso', 'Total Proceso', 'Excedente'
-    ];
     for (const key in obj) {
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
       const value = obj[key];
@@ -406,45 +481,16 @@ export class FrmconsultageneralComponent {
           alignment: 'center',
           columns: this.generarEstructuraColumnas(value, fullKey, keysToGroup)
         });
-      } else {
+      }
+      else {
         const groupIndex = keysToGroup.indexOf(fullKey);
         const isNumber = typeof value === 'number';
-        const esMoneda = camposMoneda.includes(key);
-        const esPorcentaje = camposPorcentaje.includes(key.toLowerCase()); // <--- NUEVA DETECCIÓN
-        const precisionFinal = camposAltaPrecision.includes(key) ? 4 : 2;
-        // Determinamos el formato según el tipo
-        let columnFormat: any = null;
-        //console.log("Valor determinacion: ",);
-        if (esMoneda) {
-          columnFormat = {
-            type: 'currency',
-            precision: precisionFinal,
-            currency: 'USD'
-          };
-        } else if (esPorcentaje) {
-          columnFormat = {
-            type: 'percent',
-            precision: 2
-          };
-        } else if (isNumber && precisionFinal === 4) {
-          columnFormat = {
-            type: 'currency',
-            precision: 4,
-            currency: 'USD'
-          };
-        }
-
-      //console.log(`Renderizando columna -> Campo: ${key}
-        //  | Ruta: ${fullKey}
-        //  | validador: ${isNumber && precisionFinal === 4}
-        //  | columFormat: `,columnFormat);
-
         columns.push({
           dataField: fullKey,
           caption: key.replace(/^(str|dc|int|dt)/, ''),
           dataType: isNumber ? 'number' : 'string',
           alignment: isNumber ? 'right' : 'left',
-          ...(columnFormat ? { format: columnFormat } : {}), 
+          // ...(columnFormat ? { format: columnFormat } : {}),
           ...(groupIndex !== -1 ? { groupIndex } : {}),
           fixed: this.isColumnFixed(fullKey)
         });
@@ -497,7 +543,7 @@ export class FrmconsultageneralComponent {
   hideList() {
     this.isListVisible = false;
     let classes: string[] = ['col-md-8', 'col-lg-8'];
-    document.getElementById('sec_resultado').classList.remove(...classes);
+    document.getElementById('sec_resultado')?.classList.remove(...classes);
   }
 
   async ngOnInit() {
@@ -508,7 +554,7 @@ export class FrmconsultageneralComponent {
   }
 
 
-  filtrosFiltrados(tipo) {
+  filtrosFiltrados(tipo: string) {
     if (tipo === 'textGroup') {
       return this.filtrosConsulta ? this.filtrosConsulta.filter(item => item.tipo === 'textGroup') : [];
     } else {
@@ -517,14 +563,16 @@ export class FrmconsultageneralComponent {
   }
 
   async cargarConsultasUsario() {
-    this._objConsultaService.getConsultasByUser(await localStorage.getItem(varUser)).subscribe(async (resp) => {
-      if (resp.Codigo) {
-        //console.log('cargarConsultasUsario', resp);
-        this.reportes = resp.Dt.Table;
-      } else {
-        await showAlert('', resp.Description, 'error');
-      }
-    });
+    const resp = await callApi<any>(
+      this._objConsultaService.getConsultasByUser(await localStorage.getItem(varUser))
+    );
+    //console.log('cargarConsultasUsario', resp);
+    if (resp.ok) {
+      //console.log('cargarConsultasUsario', resp);
+      this.reportes = resp.data.Dt.Table;
+    } else {
+      await showAlert('', resp.message, 'error');
+    }
   }
 
 
@@ -537,7 +585,7 @@ export class FrmconsultageneralComponent {
     this.parametrosValoresSelect = {};
     this.gridDataSource = {};
     this.gridColumn = {};
-
+    this.summaryTotalItems = [];
     this.resultados = [];
     this.resultadosColumnsNames = [];
   }
@@ -587,45 +635,56 @@ export class FrmconsultageneralComponent {
   }
 
   async cargarParametros() {
-
-    const valorMenu = await new Promise(async (resolve) => {
-      await this._objConsultaService.getDataParametros(this.selectedItemConsulta.idConsulta).subscribe(async (resp) => {
-        if (resp.Codigo) {
-          if (Object.keys(resp.Dt).length > 0) {
-            //console.log('cargarParametros', resp);
-            this.filtrosConsulta = resp.Dt.Table;
-            for (let i = 0; i < this.filtrosConsulta.length; i++) {
-              this.parametrosValores[this.filtrosConsulta[i].name] = '';
-              // Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP
-              if (this.filtrosConsulta[i].tipo === 'lista' || this.filtrosConsulta[i].tipo === 'dropdown' && this.filtrosConsulta[i].sp !== '') {
-                //console.log('Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
-                // let data:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
-                // if(data != null && data.length > 0){
-                //   this.gridDataSource[this.filtrosConsulta[i].name] = data;
-                //   var Columns = [];
-                //   for (let x = 0; x < Object.entries(data[0]).length; x += 1) {
-                //       Columns.push(Object.entries(data[0])[x][0].toString());
-                //   }
-                //   this.gridColumn[this.filtrosConsulta[i].name] = JSON.parse(JSON.stringify(Columns));
-                // }
-              }
-              if (this.filtrosConsulta[i].tipo === 'textGroup' && this.filtrosConsulta[i].sp !== '') {
-                //console.log('TEXT GROUP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
-                //let data2:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
-                //this.DataModal[this.filtrosConsulta[i].name] = data2;
-              }
-              if (this.filtrosConsulta[i].tipo === 'fecha') {
-                this.parametrosValores[this.filtrosConsulta[i].name] = new Date();
-              }
-            }
+    const resp = await callApi<any>(
+      this._objConsultaService.getDataParametros(this.selectedItemConsulta.idConsulta)
+    );
+    if (resp.ok) {
+      console.log('cargarParametros', resp);
+      if (Object.keys(resp.data.Dt).length > 0) {
+        //console.log('cargarParametros', resp);
+        this.filtrosConsulta = resp.data.Dt.Table;
+        for (let i = 0; i < this.filtrosConsulta.length; i++) {
+          this.parametrosValores[this.filtrosConsulta[i].name] = '';
+          // Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP
+          if (this.filtrosConsulta[i].tipo === 'lista' || this.filtrosConsulta[i].tipo === 'dropdown' && this.filtrosConsulta[i].sp !== '') {
+            //console.log('Si el parámetro es una lista o un grid-dropdown, cargar datos desde el SP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
+            // let data:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
+            // if(data != null && data.length > 0){
+            //   this.gridDataSource[this.filtrosConsulta[i].name] = data;
+            //   var Columns = [];
+            //   for (let x = 0; x < Object.entries(data[0]).length; x += 1) {
+            //       Columns.push(Object.entries(data[0])[x][0].toString());
+            //   }
+            //   this.gridColumn[this.filtrosConsulta[i].name] = JSON.parse(JSON.stringify(Columns));
+            // }
           }
-          return resolve(true);
-        } else {
-          await showAlert('', resp.Description, 'error');
-          return resolve(false);
+          if (this.filtrosConsulta[i].tipo === 'textGroup' && this.filtrosConsulta[i].sp !== '') {
+            //console.log('TEXT GROUP', this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);
+            //let data2:[][] = await this.ObtenerListasParametros(this.filtrosConsulta[i].name, this.filtrosConsulta[i].sp);                  
+            //this.DataModal[this.filtrosConsulta[i].name] = data2;
+          }
+          if (this.filtrosConsulta[i].tipo === 'fecha') {
+            this.parametrosValores[this.filtrosConsulta[i].name] = new Date();
+          }
         }
-      });
-    });
+
+        const formatoFilas = (resp.data.Dt.Table1 ?? []) as any[];
+        if (formatoFilas.length > 0) {
+          this.cfgMap = construirFormatoCampoMap(
+            formatoFilas.map(f => ({
+              ...f,
+              blExcluidoSummary: f.blExcluidoSummary === true || f.blExcluidoSummary === 1,
+              blEsMoneda: f.blEsMoneda === true || f.blEsMoneda === 1,
+              blEsPorcentaje: f.blEsPorcentaje === true || f.blEsPorcentaje === 1,
+              blEsAltaPrecision: f.blEsAltaPrecision === true || f.blEsAltaPrecision === 1,
+              blEsEntero: f.blEsEntero === true || f.blEsEntero === 1,
+            }))
+          );
+        }
+      }
+    } else {
+      await showAlert('', resp.message, 'error');
+    }
 
   }
 
@@ -699,7 +758,13 @@ export class FrmconsultageneralComponent {
         break;
       }
     }
-    const elemento = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
+    let elemento: string;
+    if (this.selectedItemConsulta.spConsulta.includes('/')) {
+      elemento = this.selectedItemConsulta.spConsulta.split('/')[1].split('?')[0];
+    }
+    else {
+      elemento = this.selectedItemConsulta.spConsulta;
+    }
     const payload = {
       title: this.title,
       title2: titulo,
@@ -709,37 +774,53 @@ export class FrmconsultageneralComponent {
       //data: this.resultados.map(row => this.resultadosColumnsNames.map(col => row[col.dataField]))
     };
     //console.log('Obj del payload: ', payload);
-    const valorMenu = await new Promise(async (resolve) => {
+    const resp = await callApi<any>(
+      this._objConsultaService.callExcellFile(payload)
+    );
+    if (resp.ok) {
+      this.loadingVisible = false;
+      const fileURL = URL.createObjectURL(resp.data);
+      //window.open(fileURL); // Abre el PDF en nueva pestaña
 
-      await this._objConsultaService.callExcellFile(payload).subscribe({
-        next: (blob) => {
+      const a = document.createElement('a');
+      a.href = fileURL;
+      a.download = `${this.title}.xlsx`;
+      a.click();
+    } else {
+      // Otro tipo de error
+      await showAlert('Error al generar Archivo', resp.message || 'Error desconocido', 'error');
+    }
+    // const valorMenu = await new Promise(async (resolve) => {
 
-          //const blob = resp.body!;
-          this.loadingVisible = false;
-          const fileURL = URL.createObjectURL(blob);
-          //window.open(fileURL); // Abre el PDF en nueva pestaña
+    //   await this._objConsultaService.callExcellFile(payload).subscribe({
+    //     next: (blob) => {
 
-          const a = document.createElement('a');
-          a.href = fileURL;
-          a.download = `${this.title}.xlsx`;
-          a.click();
+    //       //const blob = resp.body!;
+    //       this.loadingVisible = false;
+    //       const fileURL = URL.createObjectURL(blob);
+    //       //window.open(fileURL); // Abre el PDF en nueva pestaña
 
-          return resolve(true);
-        },
-        error: async (error) => {
-          if (error.error instanceof Blob && error.error.type === 'application/json') {
-            const errorText = await error.error.text(); // Leer contenido del blob
-            const errorJson = JSON.parse(errorText);    // Convertir a JSON
-            await showAlert('Error al generar Archivo', errorJson.message || 'Error desconocido', 'error');
-          } else {
-            // Otro tipo de error
-            await showAlert('Error al generar Archivo', error?.message || 'Error desconocido', 'error');
-          }
+    //       const a = document.createElement('a');
+    //       a.href = fileURL;
+    //       a.download = `${this.title}.xlsx`;
+    //       a.click();
 
-          return resolve(false);
-        }
-      });
-    });
+    //       return resolve(true);
+    //     },
+    //     error: async (error) => {
+    //       if (error.error instanceof Blob && error.error.type === 'application/json') {
+    //         const errorText = await error.error.text(); // Leer contenido del blob
+    //         const errorJson = JSON.parse(errorText);    // Convertir a JSON
+    //         await showAlert('Error al generar Archivo', errorJson.message || 'Error desconocido', 'error');
+    //       } else {
+    //         // Otro tipo de error
+    //         await showAlert('Error al generar Archivo', error?.message || 'Error desconocido', 'error');
+    //       }
+
+    //       return resolve(false);
+    //     }
+    //   });
+    // });
 
   }
 

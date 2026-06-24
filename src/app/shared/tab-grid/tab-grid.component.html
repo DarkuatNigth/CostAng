@@ -4,7 +4,7 @@
         <i class="dx-icon-{{mainTab.icon}}"></i> <span>{{mainTab.title}}</span>
     </div>
 
-    <div *dxTemplate="let mainTab of 'item'" >
+    <div *dxTemplate="let mainTab of 'item'">
 
         <!-- ══════════════════════════════════════════════════════════════════════
          TAB: PROCESOS GENERALES (Costos Directos + Costos Indirectos)
@@ -22,7 +22,7 @@
                         <dx-data-grid [dataSource]="subTab.datos" keyExpr="Codigo" [showBorders]="true"
                             [repaintChangesOnly]="true" (onRowUpdated)="onValueChange($event, 'PG')">
 
-                            <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+                            <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
 
                             <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false">
                             </dxi-column>
@@ -71,7 +71,7 @@
                             (onEditorPreparing)="onEditorPreparing($event)" [repaintChangesOnly]="true"
                             (onRowUpdated)="onValueChange($event, mainTab.id)">
 
-                            <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+                            <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
 
                             <dxi-column dataField="Descripcion" [allowEditing]="false"></dxi-column>
                             <dxi-column dataField="Valor" caption="Costo ($)"
@@ -90,7 +90,7 @@
                                 </dxi-total-item>
                                 <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
                                     displayFormat="{0}">
-                                </dxi-total-item> 
+                                </dxi-total-item>
                                 <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
                                     [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
                                 </dxi-total-item>
