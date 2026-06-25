@@ -1,0 +1,458 @@
+<dx-load-panel
+  #loadPanel
+  shadingColor="rgba(0,0,0,0.4)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [closeOnOutsideClick]="false"
+>
+</dx-load-panel>
+
+
+<div style="padding: 10px 2%">
+    <div class="row" style="display: none">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Nuevo" icon="file" type="outlined" (onClick)="onClickNuevo()">
+            </dx-button>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 col-12 pb-1 sng-dbtn">
+            <dx-button text="Guardar" icon="save" type="success" (onClick)="onClickGuardar()"
+                [disabled]="disabledBtnGuardar">
+            </dx-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card sng-card">
+            <div class="card-header"> {{title}} </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row margin-container">
+                        
+                        <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Jefe Linea: </label>
+                        <div class="col-12 col-sm-8 col-md-4 col-lg-3 pb-1">
+                            <span style="font-weight: bold;">{{ lblJefeLinea }}</span>
+                        </div>
+                        <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Turno: </label>
+                        <div class="col-12 col-sm-8 col-md-4 col-lg-1 pb-1">
+                            <span style="font-weight: bold;">{{ lblTurno }}</span>
+                        </div>
+
+                        <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Grupo:</label>
+                        <div class="col-12 col-sm-8 col-md-4 col-lg-2 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbGrupo" appendTo="body" [searchable]="true" [clearable]="false">
+                                <ng-option *ngFor="let data of Grupos" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Máquina:</label>
+                        <div class="col-12 col-sm-8 col-md-4 col-lg-2 pb-1">
+                                <ng-select style="width: 100%" [(ngModel)]="cmbMaquina" appendTo="body" [searchable]="true" [clearable]="false" (change)="onMaquinaChange($event)">
+                                <ng-option *ngFor="let data of Maquinas" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <div class="w-100 d-lg-none d-md-block"></div>
+                        <div class="w-100 d-lg-block"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row margin-container">
+                        <div class="col-12 pb-1">
+                            <dx-data-grid #GridAsignacion 
+                                id="GridAsignacion" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="Asignacion" 
+                                keyExpr="codigo" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="false" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedAsignacion(GridAsignacion)"
+                                (onRowPrepared)="onRowPreparedAsignacion($event)"
+                            >
+                                <!-- [filterValue]="['codPlanta', '=', cmbPlantas]"  -->
+                                <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar..."> </dxo-search-panel>
+                                <dxo-grouping #expand [autoExpandAll]="false"></dxo-grouping>
+                                <dxi-column dataField="codigo" caption="codigo" [visible]="false"></dxi-column>
+                                <dxi-column dataField="" caption="" [allowFiltering]="false" [width]="70"
+                                    cellTemplate="etiquetaTemplate" cssClass="cell-temp-valor-2">
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'etiquetaTemplate'">
+                                    <div>
+                                        <button 
+                                            class="btn"
+                                            title="Solicitar Etiqueta"
+                                            (click)="onClickModalSolicitarEtiqueta(cell.data)" 
+                                            >
+                                            <!-- [disabled]="disabledGenerarMix" -->
+                                            <span class="dx-button-content">
+                                                <i class="dx-icon dx-icon-customicon"></i>&nbsp; 
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <dxi-column dataField="lote" caption="lote" [visible]="true"></dxi-column>
+                                <dxi-column dataField="maquina" caption="Cod. Máquina" [visible]="false"></dxi-column>
+                                <dxi-column dataField="descripcion" caption="Máquina" [visible]="true"></dxi-column>
+                                <dxi-column dataField="proceso" caption="proceso" [visible]="true"></dxi-column>
+                                <dxi-column dataField="Status" caption="Status" [visible]="true"></dxi-column>
+                                <dxi-column dataField="alc_lbsxprocesar" caption="lbs xProcesar" [visible]="true"></dxi-column>
+                                <dxi-column dataField="solicitado" caption="Solicitado" [visible]="true"></dxi-column>
+                                <dxi-column dataField="hriniproc" caption="ini Proc" [visible]="true"></dxi-column>
+                                <dxi-column dataField="hrfinproc" caption="fin Proc" [visible]="false"></dxi-column>
+                                <dxi-column dataField="" caption="" [allowFiltering]="false" [width]="70"
+                                    cellTemplate="etiquetaDetailTemplate" cssClass="cell-temp-valor-2">
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'etiquetaDetailTemplate'">
+                                    <div>
+                                        <button 
+                                            class="btn"
+                                            title="Etiquetas Solicitadas Vs Etiquetas Liquidadas"
+                                            (click)="onClickModalSolitadasVsLiquidadas(cell.data)"
+                                            >
+                                            <span class="dx-button-content">
+                                                <i class="dx-icon dx-icon-detailslayout" style="font-size: 40px;"></i>&nbsp; 
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <dxo-master-detail [enabled]="true" template="detail" [autoExpandAll]="false"></dxo-master-detail>
+                                <div *dxTemplate="let det of 'detail'">
+                                    <div class="detail" style="width: 100%;">
+                                        <div class="row">
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cód Asignación: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.codigo }}</span>
+                                            </div>
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Jefe Línea: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.identifica }}</span>
+                                            </div>
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cód Proveedor: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.proveedor }}</span>
+                                            </div>
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Piscina: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.piscina }}</span>
+                                            </div>
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Observación: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.observacion }}</span>
+                                            </div>
+                                            <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Solicitado: </label>
+                                            <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                                                <span style="font-weight: bold;">{{ det.data.solicitado }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<ng-template #modalSolicitarEtiqueta let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Detalle de Lote </h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+                <div class="form-group row" style="display: flex;">
+                    <label class="pb-1 control-label fb mr-2">Lote: </label>
+                    <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.lote}}</span>
+                    <label class="pb-1 control-label fb mr-2">Máquina: </label>
+                    <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.descripcion}}</span>
+                </div>
+
+                <div class="form-group solicitud-step" id="detalle" *ngIf="modalPaso === 'detalle'" [ngClass]="modalTransitionClass">
+                    <div class="row margin-container">
+                        <div class="col-12 pb-1">
+                            <dx-data-grid #GridDetalle 
+                                id="GridDetalle" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="Detalle" 
+                                keyExpr="codproducto" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="false" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedDetalle(GridDetalle)"
+                                (onRowPrepared)="onRowPreparedDetalle($event)"
+                            >
+                                <dxi-column dataField="" caption="" [allowFiltering]="false"
+                                    cellTemplate="solicitarEtiquetaTemplate" cssClass="cell-temp-valor-2">
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'solicitarEtiquetaTemplate'">
+                                    <div>
+                                        <button 
+                                            class="btn pr-0 mr-0"
+                                            title="Solicitar Etiquetas"
+                                            (click)="onClickSolicitarEtiqueta(cell.data)" 
+                                            >
+                                            <span class="dx-button-content">
+                                                <i class="dx-icon dx-icon-chevrondoubleright" style="font-size: 20px;"></i>&nbsp; 
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <dxi-column dataField="" caption="" [allowFiltering]="false"
+                                    cellTemplate="verFicTecTemplate" cssClass="cell-temp-valor-2">
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'verFicTecTemplate'">
+                                    <div>
+                                        <button 
+                                            class="btn pr-0 mr-0"
+                                            title="Ver Ficha Técnica"
+                                            (click)="onClickVerFichaTecnica(cell.data)" 
+                                            >
+                                            <span class="dx-button-content">
+                                                <i class="dx-icon dx-icon-pdffile" style="font-size: 20px;"></i>&nbsp; 
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <dxi-column dataField="" caption="" [allowFiltering]="false"
+                                    cellTemplate="impEtiquetaBalanzaTemplate" cssClass="cell-temp-valor-2">
+                                </dxi-column>
+                                <div *dxTemplate="let cell of 'impEtiquetaBalanzaTemplate'">
+                                    <div>
+                                        <button 
+                                            class="btn pr-0 mr-0"
+                                            title="Imprimir Etiqueta Balanza"
+                                            (click)="onClickImprimirEtiquetaBalanza(cell.data)" 
+                                            >
+                                            <span class="dx-button-content">
+                                                <i class="dx-icon dx-icon-print" style="font-size: 20px;"></i>&nbsp; 
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <dxi-column dataField="codproducto" caption="Codigo" [visible]="true"></dxi-column>
+                                <dxi-column dataField="Producto" caption="Producto" [visible]="true"></dxi-column>
+                                <dxi-column dataField="Talla" caption="Talla" [visible]="true"></dxi-column>
+                                <dxi-column dataField="TallaVta" caption="Talla Vta" [visible]="true"></dxi-column>
+                                <dxi-column dataField="CantMax" caption="Cant Max" [visible]="true"></dxi-column>
+                                <dxi-column dataField="FechaLoteped" caption="Fecha Ped" [visible]="true" dataType="date">
+                                    <dxo-format [type]="'date'" [formatter]="dateFormatter"></dxo-format>
+                                </dxi-column>
+                                <dxi-column dataField="Factura" caption="Factura" [visible]="true"></dxi-column>
+                                <dxi-column dataField="CodPedido" caption="CodPedido" [visible]="false"></dxi-column>
+                                <dxi-column dataField="codtalla" caption="codtalla" [visible]="false"></dxi-column>
+                                <dxi-column dataField="codtallavta" caption="codtallavta" [visible]="false"></dxi-column>
+                                <dxi-column dataField="PO" caption="#PO" [visible]="true"></dxi-column>
+                                <dxi-column dataField="loteEtiqueta" caption="loteEtiqueta" [visible]="false"></dxi-column>
+                                <dxi-column dataField="Letra" caption="Letra" [visible]="false"></dxi-column>
+                                <dxi-column dataField ="mostrarDiv" caption="mostrarDiv" [visible]="false"></dxi-column>
+                                <dxi-column dataField="reqProducto" caption="reqProducto" [visible]="false"></dxi-column>
+                                <dxi-column dataField="impresionDefault" caption="impresionDefault" [visible]="false"></dxi-column>
+                                <dxi-column dataField="esReproceso" caption="es Reproceso" [visible]="false"></dxi-column>
+                                <dxi-column dataField="troCodigo" caption="Tipo Romaneo" [visible]="false"></dxi-column>
+                                <dxi-column dataField="secuencialMP" caption="secuencial MP" [visible]="true"></dxi-column> 
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="form-group solicitud-step" id="asigna" *ngIf="modalPaso === 'asigna'" [ngClass]="modalTransitionClass" style="padding: 10px; margin-top: 10px;">
+                    <div class="row" *ngIf="itemDetalleSelected?.mostrarDiv == '1'">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Lote Etiqueta: </label>
+                        <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.loteEtiqueta }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Pedido: </label>
+                        <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.Factura }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Producto : </label>
+                        <div class="col-8 col-sm-10 col-md-10 col-lg-10 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.codproducto }} - {{ itemDetalleSelected?.Producto }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Talla : </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.Talla }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Talla Vta: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.TallaVta }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cant. Max: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.CantMax }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cant. xGenerar: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold; ">{{ itemDetalleSelected?.cantPorGenerar ?? 0 }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Bloqueado: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemDetalleSelected?.bloqueado ?? 0 }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Tinas Asignadas: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemAsignacionSelected?.alc_tinasxprocesar }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Tinas Liquidadas: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold;">{{ itemAsignacionSelected?.tinasLiquidadas ?? 0 }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Tinas xProcesar: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold; color: rgba(255, 0, 0, 0.6);">{{ itemAsignacionSelected?.tinasXProcesar ?? 0 }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cant. Solicitada: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold; color: rgba(255, 0, 0, 0.6);">{{ itemDetalleSelected?.CantGenProducto ?? 0 }}</span>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Solicitada Total: </label>
+                        <div class="col-8 col-sm-2 col-md-2 col-lg-2 pb-1">
+                            <span style="font-weight: bold; color: rgba(255, 0, 0, 0.6);">{{ itemDetalleSelected?.cantSolicitada ?? 0 }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Tipo Etiqueta: </label>
+                        <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                            <ng-select style="width: 100%" [(ngModel)]="cmbTipoEtiqueta" name="cmbTipoEtiqueta" standalone="true" appendTo="body" [searchable]="true" [clearable]="false">
+                                <ng-option *ngFor="let data of TiposEtiqueta" [value]="data.codigo">
+                                    <div title="{{ data.descripcion }}" style="font-size: 12px">
+                                        {{ data.descripcion }}
+                                    </div>
+                                </ng-option>
+                            </ng-select>
+                        </div>
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Fec.Etiq: </label>
+                        <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                            <dx-date-box
+                                [(ngModel)]="fechaEtiqueta"
+                                name="fechaEtiqueta"
+                                standalone="true"
+                                displayFormat="yyyy/MM/dd"
+                                [showClearButton]="true"
+                                [stylingMode]="'outlined'"
+                                [placeholder]="'Seleccionar fecha...'"
+                                adaptivityEnabled="true" 
+                                openOnFieldClick="true" 
+                                [useMaskBehavior]="true"
+                                style="width: 100%;"
+                                disabled="true"
+                            >
+                            </dx-date-box>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Cant Solicita: </label>
+                        <div class="col-8 col-sm-4 col-md-4 col-lg-4 pb-1">
+                            <input type="number" class="form-control" style="width: 100%;" min="1"
+                                [(ngModel)]="cantidadSolicitada" name="cantidadSolicitada" standalone="true" >
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-4 col-sm-2 col-md-2 col-lg-2 control-label">Observación: </label>
+                        <div class="col-8 col-sm-10 col-md-10 col-lg-10 pb-1">
+                            <textarea class="form-control" style="width: 100%;" [(ngModel)]="observacion" name="observacion" standalone="true" > </textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <dx-button *ngIf="modalPaso === 'asigna'" text="Regresar" icon="chevronleft" type="normal" (onClick)="onClickRegresarDetalle()">
+        </dx-button>
+        <dx-button *ngIf="modalPaso === 'asigna'" text="Solicitar" icon="save" type="success" (onClick)="onClickSolicitarEtiquetaGrabar()">
+        </dx-button>
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>
+
+
+
+<ng-template #modalSolicitadasVsLiquidadas let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Etiquetas Solicitadas Vs Etiquetas Liquidadas </h4>
+    </div>
+    <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
+            <div style="padding-left: 2%; padding-right: 2%"></div>
+            <form>
+                
+                <div class="form-group row" style="display: flex;">
+                    <label class="pb-1 control-label fb mr-2">Lote: </label>
+                    <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.lote}}</span>
+                    <label class="pb-1 control-label fb mr-2">Máquina: </label>
+                    <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.descripcion}}</span>
+                </div>
+
+                <div class="form-group mt-1">
+                    <div class="row margin-container">
+                        <div class="col-12 pb-1">
+                            <dx-data-grid #GridDetalleSolVsLiq 
+                                id="GridDetalleSolVsLiq" 
+                                style="width: 100%; max-height: 75vh"
+                                [dataSource]="DetalleSolVsLiq" 
+                                keyExpr="id" 
+                                [showColumnLines]="true" 
+                                [showRowLines]="true" 
+                                [showBorders]="true"
+                                [rowAlternationEnabled]="false" 
+                                [columnHidingEnabled]="false" 
+                                [columnAutoWidth]="true"
+                                (onInitialized)="onInitializedDetalleSolVsLiq(GridDetalleSolVsLiq)"
+                            >
+                                <dxi-column dataField="TallaSolicita" caption="Talla Solicitada" [visible]="true"></dxi-column>
+                                <dxi-column dataField="EtiquetasSolicitadas" caption="Etiquetas Solicitadas" [visible]="true"></dxi-column>
+                                <dxi-column dataField="CajasEmpacadas" caption="Etiquetas Liquidadas" [visible]="true"></dxi-column>
+                                <dxi-column dataField="DiferenciadeEtiquetas" caption="Diferencia de Etiquetas" [visible]="true"></dxi-column>
+                                <dxi-column dataField="UsuarioSoliictante" caption="Usuario Solicitante" [visible]="true"></dxi-column>
+                            </dx-data-grid>
+                        </div>
+                    </div>
+                    <!-- <div class="pt-1 sng-dbtn" style="float: right;display: flex">
+                        <label class="mr-2">Total Masters (Bloq Disponible): </label>
+                        <label class="mr-4" style="font-weight: bold;">{{totalMastersBloq | number:'1.0-2'}}</label>
+                    </div> -->
+                </div> 
+               
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <dx-button text="Cancelar" icon="remove" type="danger" (onClick)="modal.close('0')">
+        </dx-button>
+    </div>
+</ng-template>

@@ -1,0 +1,88 @@
+.control-label {
+	text-align: left;
+}
+
+
+::ng-deep .cssModalSolicitarEtiqueta {
+  .modal-dialog {
+      min-width: 850px;
+      // max-width: 1000px;
+      width: 95%;
+      z-index: unset;
+  }
+  .control-label {
+    font-weight: 600;
+  }
+}
+
+::ng-deep #GridAsignacion {
+    .dx-toolbar .dx-toolbar-after {
+        width: 100%;
+        padding-left: 0px;
+    }
+    .dx-datagrid-search-panel.dx-searchbox {
+        width: 98%;
+    }
+    .dx-datagrid-search-panel {
+        margin: 0px;
+    }
+    .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+        padding: 7px;
+    }
+    .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+        width: 30px;
+        min-width: 30px;
+        max-width: 30px;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+    .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand > div {
+        font-size: 30px;
+    }
+
+    td.cell-temp-valor-2[role="gridcell"] .btn{
+        padding: 5px;
+    }
+
+    .dx-datagrid-headers .dx-header-row > td,
+    .dx-datagrid-rowsview .dx-row > td {
+        font-size: 14px;
+    }
+
+    .dx-toolbar .dx-texteditor-input,
+    .dx-datagrid-search-panel,
+    .dx-pager {
+        font-size: 14px;
+    }
+}
+
+
+::ng-deep .dx-icon-customicon {
+    background-image: url('data:image/png;base64,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');
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    background-size: 40px 40px;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+}
+
+
+@media (min-width: 576px) {
+	.control-label {
+		text-align: right;
+	}
+}
+
+@media (min-width: 992px) {
+    ::ng-deep #GridAsignacion {
+        .dx-datagrid-headers .dx-header-row > td,
+        .dx-datagrid-rowsview .dx-row > td,
+        .dx-toolbar .dx-texteditor-input,
+        .dx-datagrid-search-panel,
+        .dx-pager {
+            font-size: 16px;
+        }
+    }
+}

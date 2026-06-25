@@ -20,6 +20,8 @@ import { FrmregistrarinventariovaloradoModuleFactory } from './Costos/Procesos/f
 import { FrmlotesespecialesModuleFactory } from './Produccion/Procesos/frmlotesespeciales/frmlotesespeciales.module';
 import { FrmactualizacreditotributarioModuleFactory } from './Produccion/Procesos/frmactualizacreditotributario/frmactualizacreditotributario.module';
 import { FrmconsgenperModuleFactory } from './Costos/Mantenimiento/frmconsgenper/frmconsgenper.module';
+import { FrmsolicitudetiquetaModuleFactory } from './Produccion/Procesos/frmsolicitudetiqueta/frmsolicitudetiqueta.module';
+import { FrminiciofinloteModuleFactory } from './Produccion/Procesos/frminiciofinlote/frminiciofinlote.module';
 
 const routes: Routes = [
   {
@@ -143,7 +145,15 @@ const routes: Routes = [
       { 
         path: 'ext-PermisosEmpleadosPlanta',
         loadChildren: () => import('./GestionPersonalRRHH/frmpermisosempleadoplanta/frmpermisosempleadoplanta.module').then((m) => m.FrmPermisosEmpleadoModule),
-      }
+      },
+      {
+        path: '',
+        loadChildren: FrmsolicitudetiquetaModuleFactory
+      },
+      {
+        path: '',
+        loadChildren: FrminiciofinloteModuleFactory
+      },
 		]
 	},
   
