@@ -27,6 +27,9 @@ export const GRUPO_MAP: Record<string, string> = {
   'Brine':               'Proceso Congelacion',
   'IQF':                 'Proceso Congelacion',
   'Tunel':               'Proceso Congelacion',
+
+  // Material Empaque
+  'Material Empaque':    'Material Empaque',  
 };
 
 // Orden de visualización de grupos
@@ -102,7 +105,16 @@ export const GRUPOS_GENERALES: string[] = [
   'Proceso Secundario',
   'Proceso Presentacion',
   'Proceso Congelacion',
+  'Costos Directos',
+  'Costos Indirectos',
+  'Material Empaque',
   'Otros'
+];
+
+export const GRUPOS_SIN_SUBTAB: string[] = [
+  'Costos Directos',
+  'Costos Indirectos',
+  'Material Empaque',
 ];
 
 // ─── NUEVA CLASE ─────────────────────────────────────────────────────────────

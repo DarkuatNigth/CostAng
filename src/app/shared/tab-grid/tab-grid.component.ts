@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { DxTabPanelModule, DxDataGridModule, DxTemplateModule } from 'devextreme-angular';
 import {
   GRUPO_META, GRUPO_ORDEN, GRUPOS_GENERALES,
+  GRUPOS_SIN_SUBTAB,
   ProcesoAgrupado, ProcesoGeneral
 } from './procesos-agrupacion.config';
 
@@ -71,6 +72,7 @@ export class TabGridComponent {
   private generarSubTabsConTotales_PG(): any[] {
     const subTabs = GRUPOS_GENERALES
       .filter(grupo => this.dataGenerales.some(i => i.grupo === grupo))
+      .filter(grupo => !GRUPOS_SIN_SUBTAB.includes(grupo))  // ← única línea nueva
       .map(grupo => ({
         titulo: grupo,
         icon: GRUPO_META[grupo]?.icon || 'box',
