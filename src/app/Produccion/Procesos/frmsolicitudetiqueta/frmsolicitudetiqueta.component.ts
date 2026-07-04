@@ -95,6 +95,12 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   ];
   Detalle: any[] = [];
   DetalleSolVsLiq: any[] = [];
+  detalleSolVsLiqChartData: any[] = [];
+  totalEtiquetasSolicitadas: number = 0;
+  totalEtiquetasLiquidadas: number = 0;
+  totalDiferenciaEtiquetas: number = 0;
+  porcentajeCumplimiento: number = 0;
+  tallasFrecuencia: string[] = [];
 
   modalReferenceItem: NgbModalRef | undefined;
   
@@ -257,6 +263,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   async SolicitarEtiquetas () {
     this.loadingVisible = true;
     try {
+      let esTallaFrecuencia = this.tallasFrecuencia.includes(this.itemDetalleSelected.Talla);
       const resp: ResultWS = await firstValueFrom(
         this._service.solicitaetiquetas(
           this.itemAsignacionSelected.maquina.toString(),
@@ -273,7 +280,8 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
           this.cantidadSolicitada,
           this.observacion.toString(),
           formatDate(this.fechaEtiqueta ?? new Date(), 'yyyy/MM/dd', 'en-US'),
-          this.usuarioEmpresa.toString()
+          this.usuarioEmpresa.toString(),
+          esTallaFrecuencia
         )
       );
       const data0 = ((resp.Dt as any)?.Table || []) as any[];
@@ -304,6 +312,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     this.loadingVisible = true;
     this.itemAsignacionSelected = rowData;
     this.DetalleSolVsLiq = [];
+    this.actualizarMetricasDetalle();
     this.loadingVisible = true;
     this.modalReferenceItem = await this.modalService.open(this.modalSolicitadasVsLiquidadas, {
       ariaLabelledBy: 'modal-basic-title',
@@ -352,6 +361,70 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   }
 
   
+  actualizarMetricasDetalle() {
+    const baseData = (this.DetalleSolVsLiq || []).map((item: any) => ({
+      talla: (item?.TallaSolicita ?? '').toString(),
+      solicitadas: this.toNumber(item?.EtiquetasSolicitadas),
+      liquidadas: this.toNumber(item?.CajasEmpacadas),
+      diferencia: this.toNumber(item?.DiferenciadeEtiquetas)
+    }));
+    this.totalEtiquetasSolicitadas = baseData
+      .reduce((acc: number, item: any) => acc + item.solicitadas, 0);
+    this.totalEtiquetasLiquidadas = baseData
+      .reduce((acc: number, item: any) => acc + item.liquidadas, 0);
+    this.totalDiferenciaEtiquetas = baseData
+      .reduce((acc: number, item: any) => acc + item.diferencia, 0);
+
+    this.detalleSolVsLiqChartData = baseData.map((item: any) => ({
+      ...item,
+      porcentajeLiquidadas: this.totalEtiquetasLiquidadas > 0
+        ? (item.liquidadas / this.totalEtiquetasLiquidadas) * 100
+        : 0
+    }));
+
+    const tallasOrdenadas = [...this.detalleSolVsLiqChartData]
+      .filter((item: any) => item.porcentajeLiquidadas > 0)
+      .sort((a: any, b: any) => b.porcentajeLiquidadas - a.porcentajeLiquidadas);
+
+    this.tallasFrecuencia = [];
+    if (tallasOrdenadas.length > 0) {
+      this.tallasFrecuencia.push(tallasOrdenadas[0].talla);
+    }
+    if (tallasOrdenadas.length > 1) {
+      const diferenciaTop2 = tallasOrdenadas[0].porcentajeLiquidadas - tallasOrdenadas[1].porcentajeLiquidadas;
+      if (diferenciaTop2 <= 20) {
+        this.tallasFrecuencia.push(tallasOrdenadas[1].talla);
+      }
+    }
+    console.log('Tallas Frecuencia:', this.tallasFrecuencia);
+    this.porcentajeCumplimiento = this.totalEtiquetasSolicitadas > 0
+      ? (this.totalEtiquetasLiquidadas / this.totalEtiquetasSolicitadas) * 100
+      : 0;
+  }
+
+  formatPercentChartLabel = (arg: any) => `${this.toNumber(arg?.value).toFixed(2)}%`;
+
+  formatPercentAndQtyChartLabel = (arg: any) => {
+    const percent = this.toNumber(arg?.value).toFixed(2);
+    const qty = this.toNumber(arg?.point?.data?.liquidadas).toLocaleString('en-US');
+    return `${percent}% (${qty})`;
+  };
+
+  customizePercentTooltip = (arg: any) => ({
+    text: `${arg.argumentText}: ${this.toNumber(arg.value).toFixed(2)}% | Liquidadas: ${this.toNumber(arg?.point?.data?.liquidadas).toLocaleString('en-US')}`
+  });
+
+ 
+  private toNumber(value: any): number {
+    if (value === null || value === undefined) {
+      return 0;
+    }
+    const normalized = value.toString().replace(/,/g, '').trim();
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  
+  
   async onMaquinaChange(idMaquina: string) {
     this.cmbMaquina = idMaquina;
     await this.obtieneLotesPlanificadosXMaquina();
@@ -376,7 +449,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario = localStorage.getItem(varUser); // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
+      const usuario = localStorage.getItem(varUser); // 'WEYANCE';//'AOTERO';//localStorage.getItem(varUser); // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
       if (!usuario) {
         this._notificationService.warning('Se terminó el tiempo de su sesión, volver a ingresar al sistema');
         return;
@@ -552,13 +625,17 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
       if (!resp.Codigo) {
         await showAlert('Error', resp.Description ?? 'Error al obtener detalle del lote', 'error');
         this.DetalleSolVsLiq = [];
+        this.actualizarMetricasDetalle();
         return;
       }
       const data = ((resp.Dt as any)?.Table || []) as any[];
       this.DetalleSolVsLiq = data;
+      this.actualizarMetricasDetalle();
       this.GridDetalleSolVsLiq?.instance?.refresh();
     } catch (error: any) {
       await showAlert('Error', error?.message ?? 'Error al obtener detalle del lote', 'error');
+      this.DetalleSolVsLiq = [];
+      this.actualizarMetricasDetalle();
     } finally {
       this.loadingVisible = false;
     }
@@ -611,6 +688,10 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
       const data = ((resp.Dt as any)?.Table || []) as any[];
       this.Detalle = data;
       this.GridDetalle?.instance?.refresh();
+
+      // Actualizar el detalle de etiquetas solicitadas vs liquidadas para obtener las etiquetas con mayor frecuencia
+      this.DetalleSolVsLiq = [];
+      await this.obtieneEtiqSolivsLiqui();
     } catch (error: any) {
       await showAlert('Error', error?.message ?? 'Error al obtener detalle del lote', 'error');
     } finally {
