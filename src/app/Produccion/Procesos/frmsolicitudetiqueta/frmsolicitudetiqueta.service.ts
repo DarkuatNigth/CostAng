@@ -149,7 +149,9 @@ export class FrmsolicitudetiquetaService {
     cantidadSolicitada: number,
     observacion: string,
     fechaEtiqueta: string,
-    usuarioEmpresa: string) {
+    usuarioEmpresa: string,
+    esTallaFrecuencia: boolean
+  ) {
 
     const listParam = [
       { Name: 'makina', Type: 'VarChar', Value: maquina },
@@ -165,6 +167,7 @@ export class FrmsolicitudetiquetaService {
       { Name: 'pedido', Type: 'VarChar', Value: CodPedido },
       { Name: 'cantidad', Type: 'VarChar', Value: cantidadSolicitada.toString() },
       { Name: 'observacion', Type: 'VarChar', Value: observacion },
+      { Name: 'estallafrecuencia', Type: 'VarChar', Value: esTallaFrecuencia ? '1' : '0' },
       { Name: 'fecha', Type: 'VarChar', Value: fechaEtiqueta },
       { Name: 'usuario', Type: 'VarChar', Value: usuarioEmpresa }
     ];

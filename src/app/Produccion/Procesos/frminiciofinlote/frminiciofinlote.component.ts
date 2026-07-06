@@ -279,7 +279,7 @@ export class FrminiciofinloteComponent implements OnInit {
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario = localStorage.getItem(varUser); // 'WEYANCE','AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
+      const usuario = localStorage.getItem(varUser); // 'WEYANCE';//'WEYANCE','AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
       if (!usuario) {
         this._notificationService.warning('Se terminó el tiempo de su sesión, volver a ingresar al sistema');
         return;
