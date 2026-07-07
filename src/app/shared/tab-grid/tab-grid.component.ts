@@ -21,6 +21,15 @@ export class TabGridComponent {
 
   private _dataSource: ProcesoAgrupado[] = [];
 
+  // Mapa de tooltips por descripción
+  readonly tooltipMap: Record<string, string> = {
+    'Hidratacion': 'Mano de obra + Materiales'
+  };
+
+  // Método que el template usará
+  getTooltip(descripcion: string): string {
+    return this.tooltipMap[descripcion] ?? '';
+  }
   filteredData: { [key: string]: ProcesoAgrupado[] } = { FRS: [], RPC: [], TAR: [] };
   totalValor: number = 0;
   totalLibras: number = 0;
