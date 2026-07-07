@@ -24,8 +24,15 @@
 
                             <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
 
-                            <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false">
+                            <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false"
+                                cellTemplate="descripcionCellTemplate">
                             </dxi-column>
+
+                            <div *dxTemplate="let cell of 'descripcionCellTemplate'">
+                                <span [title]="getTooltip(cell.data.Descripcion)">
+                                    {{ cell.data.Descripcion }}
+                                </span>
+                            </div>
                             <dxi-column dataField="Valor" caption="Dólares Totales"
                                 [format]="{type:'currency', precision: 2}">
                             </dxi-column>
@@ -73,7 +80,15 @@
 
                             <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
 
-                            <dxi-column dataField="Descripcion" [allowEditing]="false"></dxi-column>
+                            <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false"
+                                cellTemplate="descripcionCellTemplate">
+                            </dxi-column>
+
+                            <div *dxTemplate="let cell of 'descripcionCellTemplate'">
+                                <span [title]="getTooltip(cell.data.Descripcion)">
+                                    {{ cell.data.Descripcion }}
+                                </span>
+                            </div>
                             <dxi-column dataField="Valor" caption="Costo ($)"
                                 [format]="{type:'currency', precision: 2}">
                             </dxi-column>

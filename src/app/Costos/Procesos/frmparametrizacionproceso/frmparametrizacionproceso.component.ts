@@ -89,8 +89,9 @@ export class FrmparametrizacionprocesoComponent implements OnInit {
       'anio': this.cmbAnio.toString(),
       'mes': this.cmbMes.toString(),
       'usuario': varUser.toString(),
-      'valores': this.listadoTotal 
+      'valores': this.listadoTotal.filter(i => i.grupo !== 'Material Empaque')
     };
+    //console.log('Parametros a enviar al SP:', parametros);
     this.loadingVisible = true;
 
     await new Promise(async (resolve) => {
