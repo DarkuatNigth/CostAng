@@ -47,7 +47,7 @@
                                 <dxi-total-item column="Valor" summaryType="sum"
                                     [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
                                 </dxi-total-item>
-                                <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
+                                <dxi-total-item name="LibrasTotal" column="Libras_Proceso" summaryType="custom" valueFormat="#,##0.00"
                                     displayFormat="{0}">
                                 </dxi-total-item>
                                 <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
@@ -103,7 +103,7 @@
                                 <dxi-total-item column="Valor" summaryType="sum"
                                     [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
                                 </dxi-total-item>
-                                <dxi-total-item column="Libras_Proceso" summaryType="sum" valueFormat="#,##0.00"
+                                <dxi-total-item name="LibrasTotal"  column="Libras_Proceso" summaryType="custom" valueFormat="#,##0.00"
                                     displayFormat="{0}">
                                 </dxi-total-item>
                                 <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
