@@ -117,6 +117,13 @@ export const GRUPOS_SIN_SUBTAB: string[] = [
   'Material Empaque',
 ];
 
+// Grupos donde las libras son compartidas → tomar solo la primera fila
+export const GRUPOS_LIBRAS_UNICAS: string[] = [
+  'Proceso Primario',
+  'Costos Directos',
+  'Costos Indirectos'
+];
+
 // ─── NUEVA CLASE ─────────────────────────────────────────────────────────────
 export class ProcesoGeneral {
   Codigo: number;

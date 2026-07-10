@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { DxTabPanelModule, DxDataGridModule, DxTemplateModule } from 'devextreme-angular';
 import {
   GRUPO_META, GRUPO_ORDEN, GRUPOS_GENERALES,
-  GRUPOS_SIN_SUBTAB,
+  GRUPOS_SIN_SUBTAB, GRUPOS_LIBRAS_UNICAS,
   ProcesoAgrupado, ProcesoGeneral
 } from './procesos-agrupacion.config';
 
@@ -112,9 +112,9 @@ export class TabGridComponent {
     const datos = grupos.map((grupo, idx) => {
       const delGrupo = items.filter(i => i.grupo === grupo);
       const valor = delGrupo.reduce((s, i) => s + (i.Valor || 0), 0);
-      const libras = grupo === 'Proceso Primario'
-          ? (delGrupo[0]?.Libras_Proceso || 0)
-          : delGrupo.reduce((s, i) => s + (i.Libras_Proceso || 0), 0);
+      const libras = grupo === 'Proceso Primario' || grupo === 'Costos Directos' || grupo === 'Costos Indirectos'
+        ? (delGrupo[0]?.Libras_Proceso || 0)
+        : delGrupo.reduce((s, i) => s + (i.Libras_Proceso || 0), 0);
       return {
         Codigo: 8000 + idx,
         Descripcion: grupo,
@@ -280,19 +280,50 @@ export class TabGridComponent {
           break;
         case 'finalize':
           const datos: any[] = options.component.option('dataSource') ?? [];
-          options.totalValue = this.calcularPromedio(datos, proceso);
+          if (options.name === 'LibrasTotal') {
+            options.totalValue = this.calcularLibrasTotales(datos);
+          } else {
+            // 'CostoUnitarioTotal'
+            options.totalValue = this.calcularPromedio(datos, proceso);
+          }
           break;
       }
     };
   }
 
-  calcularPromedio(datos: any[], proceso: string): number {
-    const nbTotLibras = datos.reduce((s: number, r: any) => s + (r.Libras_Proceso || 0), 0);
-    const nbTotDol = proceso !== 'TAR'
-      ? datos.reduce((s: number, r: any) => s + (r.Valor || 0), 0)
-      : datos.reduce((s: number, r: any) => s + (r.Costo_Unitario || 0), 0);
+  // Devuelve las libras aplicando la misma regla que usamos para el C/Lb
+  private calcularLibrasTotales(datos: any[]): number {
+    if (!datos.length) return 0;
 
-    return nbTotLibras > 0 ? nbTotDol / nbTotLibras : 0;
+    // Cuadro Totales: todas las filas son nombres de grupos
+    const esCuadroTotales = datos.every(r => GRUPOS_GENERALES.includes(r.Descripcion) 
+      && !GRUPOS_SIN_SUBTAB.includes(r.Descripcion));
+    const esGrupoSinSubtab = datos.every(r => GRUPOS_SIN_SUBTAB.includes(r.Descripcion));
+    if (esCuadroTotales) {
+      const filaPP = datos.find(r => r.Descripcion === 'Proceso Primario') ;
+      return filaPP?.Libras_Proceso ?? 0;
+    }
+
+
+    // Sub-tab: grupo del primer elemento
+    const grupoReal: string = datos[0]?.grupo ?? '';
+    if (GRUPOS_LIBRAS_UNICAS.includes(grupoReal) || esGrupoSinSubtab) {
+      return datos[0]?.Libras_Proceso ?? 0;
+    }
+
+    return datos.reduce((s: number, r: any) => s + (r.Libras_Proceso || 0), 0);
+  }
+
+  calcularPromedio(datos: any[], proceso: string): number {
+    if (proceso === 'TAR') {
+      const nbTotLibras = datos.reduce((s: number, r: any) => s + (r.Libras_Proceso || 0), 0);
+      const nbTotDol = datos.reduce((s: number, r: any) => s + (r.Costo_Unitario || 0), 0);
+      return nbTotLibras > 0 ? nbTotDol / nbTotLibras : 0;
+    }
+
+    const nbTotDol = datos.reduce((s: number, r: any) => s + (r.Valor || 0), 0);
+    const libras = this.calcularLibrasTotales(datos);
+    return libras > 0 ? nbTotDol / libras : 0;
   }
 
   get tabsFiltrados() {
