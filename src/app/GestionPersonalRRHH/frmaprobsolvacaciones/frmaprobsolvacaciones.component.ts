@@ -77,6 +77,9 @@ export class FrmaprobsolvacacionesComponent implements OnInit {
   allMode: string = "allPages";
   checkBoxesMode: string = "always";
 
+  deshabilitaBotonGuardar: boolean = false;
+  deshabilitaBotonEliminar: boolean = false;
+
 
   constructor(
     private router: Router,
@@ -170,7 +173,41 @@ export class FrmaprobsolvacacionesComponent implements OnInit {
       return;
     }
 
-    //valido que el usuario tenga permiso a la opcion
+
+    // valido que el usuario tenga permiso a la opcion
+    var mn = localStorage.getItem(varMenuDT);
+    var pathName = '/' +
+      window.location.pathname.split('/')[
+        window.location.pathname.split('/').length - 1
+      ];
+
+    if (mn !== undefined && mn !== null) {
+      if (JSON.parse(mn).filter((c) => c.path == pathName).length > 0) {
+        let opcion = JSON.parse(mn).filter((c) => c.path == pathName)[0];
+        if (opcion) {
+          this.deshabilitaBotonGuardar = opcion.grabar === 0;
+          this.deshabilitaBotonEliminar = opcion.eliminar === 0;
+        }
+      }
+    }
+
+    const valorMenu = await new Promise(async (resolve) => {
+      await this.activatedRoute.params.subscribe(params => {
+        if(params['opcion'] !== undefined){
+          this.vlopcion = Number(params['opcion']); // (+) converts string 'id' to a number
+        }else{
+          this.vlopcion = 0;
+        }
+        return resolve(true);
+      });
+    });
+
+    this.loadingVisible = true;
+    await this.GetVacacionesPeriodo(this.idEmpresa, this.usuarioEmpresa, 'CO',this.vlopcion);
+    this.loadingVisible = false;
+
+
+    /* //valido que el usuario tenga permiso a la opcion
     var mn = localStorage.getItem(varMenuDT);
     var pathName =
       '/' +
@@ -202,7 +239,7 @@ export class FrmaprobsolvacacionesComponent implements OnInit {
     } else {
       this.router.navigateByUrl('/login');
       return;
-    }
+    } */
    
   }
 
