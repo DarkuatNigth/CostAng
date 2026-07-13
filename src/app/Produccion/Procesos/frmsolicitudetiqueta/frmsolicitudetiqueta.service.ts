@@ -182,6 +182,39 @@ export class FrmsolicitudetiquetaService {
   }
 
 
+  recomiendaCantidadEtiquetas(
+    makina: string,
+    jefelinea: string,
+    proceso: string,
+    codprod: string,
+    codtalla: string,
+    lote: string,
+    tipoetiqueta: string,
+    turno: string,
+    estallafrecuencia: string
+  ) {
+    const listParam = [
+      { Name: 'makina', Type: 'VarChar', Value: makina },
+      { Name: 'jefelinea', Type: 'NVarChar', Value: jefelinea },
+      { Name: 'proceso', Type: 'VarChar', Value: proceso },
+      { Name: 'codprod', Type: 'VarChar', Value: codprod },
+      { Name: 'codtalla', Type: 'VarChar', Value: codtalla },
+      { Name: 'lote', Type: 'VarChar', Value: lote },
+      { Name: 'tipoetiqueta', Type: 'VarChar', Value: tipoetiqueta },
+      { Name: 'turno', Type: 'VarChar', Value: turno },
+      { Name: 'estallafrecuencia', Type: 'VarChar', Value: estallafrecuencia }
+    ];
+
+    const base = {
+      sp: 'dbo.sp_RecomiendaCantidadEtiquetas_ANGPROD',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+
   imprimirEtiquetaBalanza(ip: string, port: number, texto: string) {
     let data = {
       "ip": ip,
