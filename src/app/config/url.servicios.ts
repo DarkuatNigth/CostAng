@@ -10,7 +10,7 @@ export const varNombreEmpresa = 'nombreEmpresaPROD';
 export const varToken = 'TokenPROD';
 
 /*CONEXION SONGA*/
-export const BaseConexion = "SONGA";//"SEAFOOD";//"SONGA";
+export let BaseConexion = "SONGA";//"SEAFOOD";//"SONGA";
 // let DomainSite = "http://localhost";//PREPRODUCCION
 let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
