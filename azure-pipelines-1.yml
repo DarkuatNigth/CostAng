@@ -1,0 +1,68 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  artifactName: 'angular-dist'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: npm install --legacy-peer-deps
+  displayName: 'Force install dependencies'
+
+- script: npm install sweetalert2@11.10.1 --force
+  displayName: 'Force install sweetalert2@11.10.1'
+
+- script: npm install -g @angular/cli@17.0.2
+  displayName: 'Install Angular CLI globally'
+
+- powershell: |
+    $filePath = "src/index.html"
+    (Get-Content $filePath) -replace '<base href=\"/\">', '<base href=\"/Produccion/\">' | Out-File $filePath -Encoding UTF8
+  displayName: 'Update <base href> in index.html'
+
+- powershell: |
+    $fullComponentPath = "src/app/layouts/full/full.component.ts"
+    $today = Get-Date -Format "yyyy-MM-dd"
+    (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding UTF8
+  displayName: 'Update LabelPublicacion to today'
+
+# - powershell: |
+#     $filePath = "src/app/config/url.servicios.ts"
+#     $domainSite = "$(domainSite)"
+#     (Get-Content $filePath) -replace 'let DomainSite\s*=\s*".*";', "let DomainSite = `"$domainSite`";" | Set-Content $filePath -Encoding utf8
+#   displayName: 'Set DomainSite value to $(domainSite)'
+
+- powershell: |
+    $filePath = "src/app/config/url.servicios.ts"
+    $baseConexion = "$(baseConexion)"
+    (Get-Content $filePath) -replace 'let BaseConexion\s*=\s*".*";', "let BaseConexion = `"$baseConexion`";" | Set-Content $filePath -Encoding utf8
+  displayName: 'Set BaseConexion value to $(baseConexion)'
+
+- powershell: |
+    Get-Content src/app/config/url.servicios.ts
+  displayName: 'Show url.servicios.ts content after update'
+
+- script: ng build --configuration production
+  displayName: 'Build Angular project'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'dist/produccion'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy build output'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: '$(artifactName)'
+    publishLocation: 'Container'
+  displayName: 'Publish build artifacts'
