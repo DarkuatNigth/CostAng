@@ -34,11 +34,17 @@ steps:
     (Get-Content $fullComponentPath) -replace 'LabelPublicacion:string = ".*";', "LabelPublicacion:string = `"$today`";" | Out-File $fullComponentPath -Encoding UTF8
   displayName: 'Update LabelPublicacion to today'
 
+# - powershell: |
+#     $filePath = "src/app/config/url.servicios.ts"
+#     $domainSite = "$(domainSite)"
+#     (Get-Content $filePath) -replace 'let DomainSite\s*=\s*".*";', "let DomainSite = `"$domainSite`";" | Set-Content $filePath -Encoding utf8
+#   displayName: 'Set DomainSite value to $(domainSite)'
+
 - powershell: |
     $filePath = "src/app/config/url.servicios.ts"
-    $domainSite = "$(domainSite)"
-    (Get-Content $filePath) -replace 'let DomainSite\s*=\s*".*";', "let DomainSite = `"$domainSite`";" | Set-Content $filePath -Encoding utf8
-  displayName: 'Set DomainSite value to $(domainSite)'
+    $baseConexion = "$(baseConexion)"
+    (Get-Content $filePath) -replace 'let BaseConexion\s*=\s*".*";', "let BaseConexion = `"$baseConexion`";" | Set-Content $filePath -Encoding utf8
+  displayName: 'Set BaseConexion value to $(baseConexion)'
 
 - powershell: |
     Get-Content src/app/config/url.servicios.ts
