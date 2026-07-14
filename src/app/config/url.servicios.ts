@@ -16,8 +16,13 @@ let DomainSite = "https://web.songa.com";
 //let DomainSite = "https://web.seafood-trading.com";
 let DomainSiteRRHH = 'https://talentohumano.songa.com';
 
-export const URL_SOCKET = 'https://sites.songa.com';
+if (BaseConexion == "SONGA") {
+    DomainSite = "https://web.songa.com";
+} else if (BaseConexion == "MARINA") {
+    DomainSite = "https://web.marderey.com";
+}
 
+export const URL_SOCKET = 'https://sites.songa.com';
 
 export const URL_TRANSAC = DomainSite + "/api/Transacs";
 export const URL_CONSULT = DomainSite + "/api/Consult";

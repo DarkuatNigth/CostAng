@@ -52,6 +52,7 @@ interface ItemAsignacion {
   alc_tinasxprocesar: number;
   tinasLiquidadas: number;
   tinasXProcesar: number;
+  gramaje: string;
 }
   
 
@@ -83,6 +84,15 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   fechaEtiqueta: Date | null = null;
   cantidadSolicitada: number = 0;
   observacion: string = '';
+  recomendacionCantidadMensaje: string = '';
+  popupInfoRecomendacionVisible: boolean = false;
+  recomendacionCantidadDetalle = {
+    EsFrecuencia: '',
+    MaxArranque: 0,
+    EtiquetasPorTina: 0,
+    lbrsRechazo: 0,
+    lbrsDecorado: 0
+  };
 
   Asignacion: any[] = [];
   Grupos: Catalogo[] = [];
@@ -178,6 +188,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     this.modalPaso = 'asigna';
     await this.obtienelotgeneradoybloqueado();
     await this.ObtieneCantxgenerar();
+    await this.obtenerRecomendacionCantidadEtiquetas();
   }
 
 
@@ -444,12 +455,90 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     this.fechaEtiqueta = new Date();
     this.cantidadSolicitada = 0;
     this.observacion = '';
+    this.recomendacionCantidadMensaje = '';
+    this.popupInfoRecomendacionVisible = false;
+    this.recomendacionCantidadDetalle = {
+      EsFrecuencia: '',
+      MaxArranque: 0,
+      EtiquetasPorTina: 0,
+      lbrsRechazo: 0,
+      lbrsDecorado: 0
+    };
+  }
+
+  toggleInformacion() {
+    this.popupInfoRecomendacionVisible = !this.popupInfoRecomendacionVisible;
+  }
+
+  async obtenerRecomendacionCantidadEtiquetas() {
+    this.recomendacionCantidadMensaje = '';
+
+    if (!this.itemAsignacionSelected || !this.itemDetalleSelected) {
+      return;
+    }
+
+    if (!this.cmbTipoEtiqueta || !this.codTurno || !this.codJefeLinea) {
+      return;
+    }
+
+    try {
+      const esTallaFrecuencia = this.tallasFrecuencia.includes(this.itemDetalleSelected?.Talla);
+      const resp: ResultWS = await firstValueFrom(
+        this._service.recomiendaCantidadEtiquetas(
+          this.itemAsignacionSelected.maquina.toString(),
+          this.codJefeLinea.toString(),
+          this.itemAsignacionSelected.proceso.toString(),
+          this.itemDetalleSelected.codproducto.toString(),
+          this.itemDetalleSelected.codtalla.toString(),
+          this.itemAsignacionSelected.lote.toString(),
+          this.cmbTipoEtiqueta.toString(),
+          this.codTurno.toString(),
+          esTallaFrecuencia ? '1' : '0'
+        )
+      );
+
+      if (!resp.Codigo) {
+        return;
+      }
+
+      const data = ((resp.Dt as any)?.Table || []) as any[];
+      if (data.length === 0) {
+        return;
+      }
+
+      const firstRow = data[0] ?? {};
+      const descripcion = (firstRow?.Descripcion ?? '').toString().trim();
+      this.recomendacionCantidadMensaje = descripcion;
+
+      this.recomendacionCantidadDetalle = {
+        EsFrecuencia: firstRow?.EsFrecuencia ? 'Sí' : 'No',
+        MaxArranque: this.toNumber(firstRow?.MaxArranque),
+        EtiquetasPorTina: this.toNumber(firstRow?.EtiquetasPorTina),
+        lbrsRechazo: firstRow?.lbrsRechazo,
+        lbrsDecorado: firstRow?.lbrsDecorado
+      };
+
+      const maxRecomendadas = this.toNumber(firstRow?.MaxEtiquetasRecomendadas);
+      if (maxRecomendadas > 0) {
+        this.cantidadSolicitada = Math.trunc(maxRecomendadas);
+      }
+    } catch (error) {
+      this.recomendacionCantidadMensaje = '';
+      this.popupInfoRecomendacionVisible = false;
+      this.recomendacionCantidadDetalle = {
+        EsFrecuencia: '',
+        MaxArranque: 0,
+        EtiquetasPorTina: 0,
+        lbrsRechazo: 0,
+        lbrsDecorado: 0
+      };
+    }
   }
 
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario = localStorage.getItem(varUser); // 'WEYANCE';//'AOTERO';//localStorage.getItem(varUser); // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
+      const usuario = localStorage.getItem(varUser); //'AMEJILLONE';// 'WEYANCE';//'AOTERO'; // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
       if (!usuario) {
         this._notificationService.warning('Se terminó el tiempo de su sesión, volver a ingresar al sistema');
         return;
