@@ -43,7 +43,7 @@ steps:
 - powershell: |
     $filePath = "src/app/config/url.servicios.ts"
     $baseConexion = "$(baseConexion)"
-    (Get-Content $filePath) -replace 'let BaseConexion\s*=\s*".*";', "let BaseConexion = `"$baseConexion`";" | Set-Content $filePath -Encoding utf8
+    (Get-Content $filePath -Raw) -replace 'export\s+const\s+BaseConexion\s*=\s*".*?";', "export const BaseConexion = `"$baseConexion`";" | Set-Content $filePath -Encoding utf8
   displayName: 'Set BaseConexion value to $(baseConexion)'
 
 - powershell: |
