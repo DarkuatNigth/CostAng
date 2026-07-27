@@ -93,6 +93,8 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     lbrsRechazo: 0,
     lbrsDecorado: 0
   };
+  recomendacionDistribucionHistorica: any[] = [];
+  coloresDistribucionHistorica: string[] = ['#0d6efd', '#20c997', '#fd7e14'];
 
   Asignacion: any[] = [];
   Grupos: Catalogo[] = [];
@@ -425,6 +427,16 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     text: `${arg.argumentText}: ${this.toNumber(arg.value).toFixed(2)}% | Liquidadas: ${this.toNumber(arg?.point?.data?.liquidadas).toLocaleString('en-US')}`
   });
 
+  customizeDistribucionTooltip = (arg: any) => ({
+    text: `${arg.argumentText}: ${this.toNumber(arg?.value).toFixed(2)}%`
+  });
+
+  formatDistribucionLabel = (arg: any) => `${arg.argumentText}: ${this.toNumber(arg?.value).toFixed(2)}%`;
+
+  customizeDistribucionPoint = (pointInfo: any) => ({
+    color: this.coloresDistribucionHistorica[pointInfo?.index % this.coloresDistribucionHistorica.length]
+  });
+
  
   private toNumber(value: any): number {
     if (value === null || value === undefined) {
@@ -464,6 +476,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
       lbrsRechazo: 0,
       lbrsDecorado: 0
     };
+    this.recomendacionDistribucionHistorica = [];
   }
 
   toggleInformacion() {
@@ -502,6 +515,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
       }
 
       const data = ((resp.Dt as any)?.Table || []) as any[];
+      const data1 = ((resp.Dt as any)?.Table1 || []) as any[];
       if (data.length === 0) {
         return;
       }
@@ -518,6 +532,12 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
         lbrsDecorado: firstRow?.lbrsDecorado
       };
 
+      this.recomendacionDistribucionHistorica = data1.map((item: any) => ({
+        tal_descri: (item?.tal_descri ?? '').toString(),
+        porcentaje: this.toNumber(item?.porcentaje)
+      }))
+      .sort((a: any, b: any) => b.porcentaje - a.porcentaje);
+
       const maxRecomendadas = this.toNumber(firstRow?.MaxEtiquetasRecomendadas);
       if (maxRecomendadas > 0) {
         this.cantidadSolicitada = Math.trunc(maxRecomendadas);
@@ -532,6 +552,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
         lbrsRechazo: 0,
         lbrsDecorado: 0
       };
+      this.recomendacionDistribucionHistorica = [];
     }
   }
 

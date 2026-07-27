@@ -394,7 +394,7 @@
                             <dx-popover
                                 target="#linkInfoRecomendacion"
                                 position="top"
-                                [width]="340"
+                                [width]="560"
                                 [(visible)]="popupInfoRecomendacionVisible"
                             >
                                 <dxo-animation>
@@ -407,7 +407,7 @@
                                 </dxo-animation>
 
                                 <div class="row" style="padding: 4px 8px;">
-                                    <div class="col-12">
+                                    <div class="col-12 col-lg-12">
                                         <div class="form-group row mb-1">
                                             <label class="col-7 pb-1 text-left control-label">Talla Frecuencia:</label>
                                             <div class="col-5 pb-1 text-right">
@@ -433,10 +433,32 @@
                                             </div>
                                         </div>
                                         <div class="form-group row mb-0">
-                                            <label class="col-7 pb-1 text-left control-label">lbrs Decorado:</label>
+                                            <label class="col-7 pb-1 text-left control-label">lbrs Fresco:</label>
                                             <div class="col-5 pb-1 text-right">
                                                 <strong>{{ recomendacionCantidadDetalle.lbrsDecorado }}</strong>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-lg-12" *ngIf="recomendacionDistribucionHistorica?.length > 0">
+                                        <dx-pie-chart
+                                            [dataSource]="recomendacionDistribucionHistorica"
+                                            type="doughnut"
+                                            palette="Soft Blue"
+                                            [size]="{ height: 220 }"
+                                        >
+                                            <dxi-series argumentField="tal_descri" valueField="porcentaje" name="% Distribución" [customizePoint]="customizeDistribucionPoint">
+                                                <dxo-label [visible]="true" [customizeText]="formatDistribucionLabel" [connector]="{ visible: true }"></dxo-label>
+                                            </dxi-series>
+                                            <dxo-title text="Distribución Histórica"></dxo-title>
+                                            <dxo-legend [visible]="true" horizontalAlignment="right" verticalAlignment="center"></dxo-legend>
+                                            <dxo-tooltip [enabled]="true" [customizeTooltip]="customizeDistribucionTooltip"></dxo-tooltip>
+                                        </dx-pie-chart>
+                                    </div>
+
+                                    <div class="col-12 col-lg-6" *ngIf="!recomendacionDistribucionHistorica?.length">
+                                        <div class="text-muted" style="font-size: 12px; padding-top: 12px;">
+                                            Sin datos de distribución histórica.
                                         </div>
                                     </div>
                                 </div>
