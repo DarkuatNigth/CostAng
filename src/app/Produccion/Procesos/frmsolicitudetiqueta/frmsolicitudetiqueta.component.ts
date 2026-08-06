@@ -71,6 +71,8 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   
   cmbGrupo?: string;
   cmbMaquina?: string;
+  mostrarLotesCerrados: boolean = false;
+  puedeVerFiltroLotesCerrados: boolean = false;
   lblJefeLinea: string = '';
   lblTurno: string = '';
   codTurno: string = '';
@@ -453,6 +455,11 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
     await this.obtieneLotesPlanificadosXMaquina();
   }
 
+  async onFiltroLotesCerradosChange(valor: boolean) {
+    this.mostrarLotesCerrados = !!valor;
+    await this.obtieneLotesPlanificadosXMaquina();
+  }
+
 
   limpiarModalSolicitarEtiqueta() {
     this.itemAsignacionSelected = null;
@@ -559,7 +566,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario = localStorage.getItem(varUser); //'AMEJILLONE';// 'WEYANCE';//'AOTERO'; // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
+      const usuario = localStorage.getItem(varUser); // 'MFVERA'; //'FMONTANO'; //'AMPLAZA'; // localStorage.getItem(varUser); //'AMEJILLONE';// 'WEYANCE';//'AOTERO'; // 'AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
       if (!usuario) {
         this._notificationService.warning('Se terminó el tiempo de su sesión, volver a ingresar al sistema');
         return;
@@ -575,6 +582,12 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
         return;
       }
       const firstRow = data[0];
+      this.puedeVerFiltroLotesCerrados = Number(firstRow.cgo_codigo) === 10;
+      if (!this.puedeVerFiltroLotesCerrados) {
+        // TODO: DESCOMENTAR
+        this.mostrarLotesCerrados = false;
+        // this.mostrarLotesCerrados = true; // Temporal para pruebas
+      }
       this.lblJefeLinea = `${firstRow.codEmpleado ?? ''} ${firstRow.empleado ?? ''}`.trim();
       this.codTurno = (firstRow.turno ?? '').toString();
       this.lblTurno = this.codTurno === 'D' ? 'Día' : this.codTurno === 'N' ? 'Noche' : '';
@@ -728,7 +741,7 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
       const resp: ResultWS = await firstValueFrom(
         this._service.ObtieneEtiqSolicitaVsLiquidada(
           this.itemAsignacionSelected.lote.toString(),
-          this.cmbMaquina.toString(),
+          this.itemAsignacionSelected.maquina.toString().trim(),
           this.codTurno.toString()
         )
       );
@@ -764,7 +777,8 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
         this._service.obtieneLotesPlanificadosXMaquina(
           this.cmbMaquina.toString(),
           this.usuarioEmpresa,
-          this.codTurno
+          this.codTurno,
+          this.mostrarLotesCerrados
         )
       );
       if (!resp.Codigo) {

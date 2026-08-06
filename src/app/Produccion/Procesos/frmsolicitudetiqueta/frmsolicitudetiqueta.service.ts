@@ -23,11 +23,12 @@ export class FrmsolicitudetiquetaService {
   }
 
 
-  obtieneLotesPlanificadosXMaquina(maquina: string, usuario: string, turno: string) {
+  obtieneLotesPlanificadosXMaquina(maquina: string, usuario: string, turno: string, soloCerrados: boolean = false) {
     const listParam = [
       { Name: 'maquina', Type: 'VarChar', Value: maquina },
       { Name: 'usuario', Type: 'VarChar', Value: usuario },
-      { Name: 'turno', Type: 'VarChar', Value: turno }
+      { Name: 'turno', Type: 'VarChar', Value: turno },
+      { Name: 'soloCerrados', Type: 'VarChar', Value: soloCerrados ? '1' : '0' }
     ];
     const base = {
       sp: 'sp_obtieneloteplanificadosxmaquina',
