@@ -176,11 +176,9 @@
                       [visible]="true"
                       [caption]="'Hasta'"
                     ></dxi-column>
-                    <dxi-column
-                    dataField="dias_solicitado"
-                    [visible]="true"
-                    [caption]="'Dias Solicitados'"
-                  ></dxi-column>
+                    <dxi-column dataField="dias_solicitado" [visible]="true" [caption]="'Dias Solicitados'" ></dxi-column>
+                    <dxi-column dataField="UsuarioAprobacion" [visible]="vlopcion === 2" [caption]="'Usuario Aprobación'" ></dxi-column>
+                    <dxi-column dataField="FechaAprobacion" [visible]="vlopcion === 2" [caption]="'Fecha Aprobación'" ></dxi-column>
                       <dxo-summary>
                         <dxi-total-item
                           column="empleado"
