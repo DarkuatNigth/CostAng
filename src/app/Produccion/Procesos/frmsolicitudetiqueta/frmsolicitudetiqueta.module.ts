@@ -11,12 +11,14 @@ import {MatIconModule} from '@angular/material/icon';
 
 
 import { FrmsolicitudetiquetaComponent } from './frmsolicitudetiqueta.component';
+import { FrmsolicitudetiquetaMonitorComponent } from './frmsolicitudetiqueta-monitor.component';
 
 
 
 @NgModule({
   declarations: [
-    FrmsolicitudetiquetaComponent
+    FrmsolicitudetiquetaComponent,
+    FrmsolicitudetiquetaMonitorComponent
   ],
   imports: [
       CommonModule,
@@ -48,6 +50,7 @@ import { FrmsolicitudetiquetaComponent } from './frmsolicitudetiqueta.component'
       MatIconModule,
       RouterModule.forChild([
         { path: 'ext-solicitudEtiqueta', canActivate: [AuthGuard], component: FrmsolicitudetiquetaComponent },
+        { path: 'ext-solicitudEtiqueta-monitor', canActivate: [AuthGuard], component: FrmsolicitudetiquetaMonitorComponent },
       ]) ,
   ],
   exports: [

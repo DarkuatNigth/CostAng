@@ -1,0 +1,97 @@
+.monitor-container {
+  padding: 10px 2%;
+}
+
+.monitor-resumen-card {
+  border-left: 4px solid #0d6efd;
+}
+
+.monitor-chart-card {
+  min-height: 250px;
+}
+
+.monitor-grid-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.monitor-detail-wrapper {
+  padding: 1px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.monitor-detail-resumen {
+  border-left-width: 3px;
+}
+
+.monitor-detail-chart-card {
+  min-height: 250px;
+}
+
+.monitor-detail-empty {
+  min-height: 200px;
+  border: 1px dashed #adb5bd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  background: #ffffff;
+  text-align: center;
+  padding: 10px;
+}
+
+::ng-deep #GridAsignacionMonitor {
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 1px;
+  }
+
+  .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand {
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+  }
+
+  .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-expand > div {
+    font-size: 24px;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+  .card {
+    margin-bottom: 5px;
+  }
+
+  td.cell-temp-valor-2[role="gridcell"] {
+    padding: 2px;
+  }
+}
+
+
+.small-button {
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  color: #3a44d4d2;
+}
+.small-button:hover {
+  background-color: rgba(212,63,58,.1);
+  border-color: transparent;
+}
+
+::ng-deep .cssModalDetailByLoteMaquina {
+  .modal-dialog {
+      min-width: 750px;
+      max-width: 1000px;
+      width: 75%;
+      z-index: unset;
+  }
+  .control-label {
+    font-weight: 600;
+  }
+}
