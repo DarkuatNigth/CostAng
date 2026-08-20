@@ -329,7 +329,9 @@ export class FrmaprobsolvacacionesComponent implements OnInit {
         trb_codigo: joinedData[i].codtrbcodigo,
         dias_pendiente: joinedData[i].diaspendiente,
         Estado: 'AC',
-        observacion: 'Masivo',
+        observacion: 'Masivo.',
+        usuarioAprobacion: joinedData[i].UsuarioAprobacion,
+        fechaAprobacion: joinedData[i].FechaAprobacion
       });
     }
     return periodos;
