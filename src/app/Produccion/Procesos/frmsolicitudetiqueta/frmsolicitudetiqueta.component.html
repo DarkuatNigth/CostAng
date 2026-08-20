@@ -60,6 +60,13 @@
                                 </ng-option>
                             </ng-select>
                         </div>
+                        <div class="col-12 col-sm-4 col-md-3 col-lg-2 pb-1 d-flex align-items-center" *ngIf="puedeVerFiltroLotesCerrados">
+                            <span class="mr-2" style="font-size: 12px;">Mostrar lotes cerrados</span>
+                            <dx-switch
+                                [(value)]="mostrarLotesCerrados"
+                                (onValueChanged)="onFiltroLotesCerradosChange($event.value)"
+                            ></dx-switch>
+                        </div>
                         <div class="w-100 d-lg-none d-md-block"></div>
                         <div class="w-100 d-lg-block"></div>
                     </div>
@@ -94,8 +101,8 @@
                                             class="btn"
                                             title="Solicitar Etiqueta"
                                             (click)="onClickModalSolicitarEtiqueta(cell.data)" 
+                                            [disabled]="mostrarLotesCerrados"
                                             >
-                                            <!-- [disabled]="disabledGenerarMix" -->
                                             <span class="dx-button-content">
                                                 <i class="dx-icon dx-icon-customicon"></i>&nbsp; 
                                             </span>
@@ -384,7 +391,8 @@
                         <div class="col-4 col-sm-2 col-md-2 col-lg-2"></div>
                         <div class="col-8 col-sm-10 col-md-10 col-lg-10 pb-1">
                             <div class="alert alert-warning mb-0" role="alert" style="padding: 8px 12px;">
-                                <strong>Nota:</strong> {{ recomendacionCantidadMensaje }}
+                                <strong>Nota: &nbsp;</strong>
+                                <span style="white-space: pre-line;">{{ recomendacionCantidadMensaje }}</span>
                                 <a id="linkInfoRecomendacion" style="margin-left: 6px;"></a>
                                 <button type="button" class="btn btn-link p-0 ml-1" (click)="toggleInformacion()">
                                     <i class="dx-icon-info ml-1"></i> Ver detalle
@@ -450,7 +458,7 @@
                                             <dxi-series argumentField="tal_descri" valueField="porcentaje" name="% Distribución" [customizePoint]="customizeDistribucionPoint">
                                                 <dxo-label [visible]="true" [customizeText]="formatDistribucionLabel" [connector]="{ visible: true }"></dxo-label>
                                             </dxi-series>
-                                            <dxo-title text="Distribución Histórica"></dxo-title>
+                                            <dxo-title [text]="'Distribución Histórica gr. ~ ' + (itemAsignacionSelected?.gramaje ?? '')"></dxo-title>
                                             <dxo-legend [visible]="true" horizontalAlignment="right" verticalAlignment="center"></dxo-legend>
                                             <dxo-tooltip [enabled]="true" [customizeTooltip]="customizeDistribucionTooltip"></dxo-tooltip>
                                         </dx-pie-chart>
@@ -500,6 +508,8 @@
                 <div class="form-group row" style="display: flex;">
                     <label class="pb-1 control-label fb mr-2">Lote: </label>
                     <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.lote}}</span>
+                    <label class="pb-1 control-label fb mr-2">Gramaje: </label>
+                    <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.gramaje}}</span>
                     <label class="pb-1 control-label fb mr-2">Máquina: </label>
                     <span class="mr-4" style="font-weight: bold;">{{itemAsignacionSelected?.descripcion}}</span>
                 </div>

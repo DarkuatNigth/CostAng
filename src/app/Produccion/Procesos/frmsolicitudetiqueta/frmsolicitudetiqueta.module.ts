@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthGuard } from 'src/app/_guards';
-import { DxButtonGroupModule, DxButtonModule, DxChartModule, DxCheckBoxModule, DxContextMenuModule, DxDataGridModule, DxDateBoxModule, DxDropDownButtonModule, DxFileUploaderModule, DxFormModule, DxLoadPanelModule, DxNumberBoxModule, DxPieChartModule, DxPopoverModule, DxPopupModule, DxRadioGroupModule, DxSelectBoxModule, DxTabPanelModule, DxTextBoxModule } from 'devextreme-angular';
+import { DxButtonGroupModule, DxButtonModule, DxChartModule, DxCheckBoxModule, DxContextMenuModule, DxDataGridModule, DxDateBoxModule, DxDropDownButtonModule, DxFileUploaderModule, DxFormModule, DxLoadPanelModule, DxNumberBoxModule, DxPieChartModule, DxPopoverModule, DxPopupModule, DxRadioGroupModule, DxSelectBoxModule, DxSwitchModule, DxTabPanelModule, DxTextBoxModule } from 'devextreme-angular';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/drag-drop';
@@ -11,12 +11,14 @@ import {MatIconModule} from '@angular/material/icon';
 
 
 import { FrmsolicitudetiquetaComponent } from './frmsolicitudetiqueta.component';
+import { FrmsolicitudetiquetaMonitorComponent } from './frmsolicitudetiqueta-monitor.component';
 
 
 
 @NgModule({
   declarations: [
-    FrmsolicitudetiquetaComponent
+    FrmsolicitudetiquetaComponent,
+    FrmsolicitudetiquetaMonitorComponent
   ],
   imports: [
       CommonModule,
@@ -35,6 +37,7 @@ import { FrmsolicitudetiquetaComponent } from './frmsolicitudetiqueta.component'
       DxPopupModule,
       DxSelectBoxModule,
       DxNumberBoxModule,
+      DxSwitchModule,
       DxTextBoxModule,
       DxFormModule,
       DxCheckBoxModule,
@@ -47,6 +50,7 @@ import { FrmsolicitudetiquetaComponent } from './frmsolicitudetiqueta.component'
       MatIconModule,
       RouterModule.forChild([
         { path: 'ext-solicitudEtiqueta', canActivate: [AuthGuard], component: FrmsolicitudetiquetaComponent },
+        { path: 'ext-solicitudEtiqueta-monitor', canActivate: [AuthGuard], component: FrmsolicitudetiquetaMonitorComponent },
       ]) ,
   ],
   exports: [

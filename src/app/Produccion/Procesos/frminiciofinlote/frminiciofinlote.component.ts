@@ -279,7 +279,7 @@ export class FrminiciofinloteComponent implements OnInit {
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario = localStorage.getItem(varUser); // 'WEYANCE';//'WEYANCE','AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
+      const usuario = localStorage.getItem(varUser); // 'AMEJILLONE';//'WEYANCE','AMEJILLONE';//'AYRODRIGUE'; //'EBAUTISTA';'BECHEVERRI';'JAFRANCO';'JVALDIVIES';'FRAMIREZ';'SRODRIGUEZ';
       if (!usuario) {
         this._notificationService.warning('Se terminó el tiempo de su sesión, volver a ingresar al sistema');
         return;
@@ -322,7 +322,7 @@ export class FrminiciofinloteComponent implements OnInit {
       const resp: ResultWS = await firstValueFrom(
         this._serviceSolicitudEtiqueta.ObtieneEtiqSolicitaVsLiquidada(
           this.itemAsignacionSelected.lote.toString(),
-          this.cmbMaquina.toString(),
+          this.itemAsignacionSelected.maquina.toString().trim(),
           this.codTurno.toString()
         )
       );

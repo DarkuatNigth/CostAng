@@ -23,14 +23,29 @@ export class FrmsolicitudetiquetaService {
   }
 
 
-  obtieneLotesPlanificadosXMaquina(maquina: string, usuario: string, turno: string) {
+  obtieneLotesPlanificadosXMaquina(maquina: string, usuario: string, turno: string, soloCerrados: boolean = false) {
     const listParam = [
       { Name: 'maquina', Type: 'VarChar', Value: maquina },
       { Name: 'usuario', Type: 'VarChar', Value: usuario },
-      { Name: 'turno', Type: 'VarChar', Value: turno }
+      { Name: 'turno', Type: 'VarChar', Value: turno },
+      { Name: 'soloCerrados', Type: 'VarChar', Value: soloCerrados ? '1' : '0' }
     ];
     const base = {
       sp: 'sp_obtieneloteplanificadosxmaquina',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  obtieneResumenLiquidacionEtiquetasSolicitadas(usuario: string, turno: string, soloCerrados: boolean = false) {
+    const listParam = [
+      { Name: 'usuario', Type: 'VarChar', Value: usuario },
+      { Name: 'turno', Type: 'VarChar', Value: turno },
+      { Name: 'soloCerrados', Type: 'VarChar', Value: soloCerrados ? '1' : '0' }
+    ];
+    const base = {
+      sp: 'sp_obtieneResumenLiquidacionEtiquetasSolicitadas',
       param: listParam,
       conexion: CONNECTION_PROD
     };
@@ -203,6 +218,32 @@ export class FrmsolicitudetiquetaService {
       { Name: 'tipoetiqueta', Type: 'VarChar', Value: tipoetiqueta },
       { Name: 'turno', Type: 'VarChar', Value: turno },
       { Name: 'estallafrecuencia', Type: 'VarChar', Value: estallafrecuencia }
+    ];
+
+    const base = {
+      sp: 'dbo.sp_RecomiendaCantidadEtiquetas_ANGPROD',
+      param: listParam,
+      conexion: CONNECTION_PROD
+    };
+
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
+
+  // TODO: SOLO DEJAR LOTE
+  obtenerDistribucionHistoricaPorGramaje(
+    lote: string,
+  ) {
+    const listParam = [
+      { Name: 'makina', Type: 'VarChar', Value: 'makina' },
+      { Name: 'jefelinea', Type: 'NVarChar', Value: '0' },
+      { Name: 'proceso', Type: 'VarChar', Value: 'proceso' },
+      { Name: 'codprod', Type: 'VarChar', Value: 'codprod' },
+      { Name: 'codtalla', Type: 'VarChar', Value: 'codtalla' },
+      { Name: 'lote', Type: 'VarChar', Value: lote },
+      { Name: 'tipoetiqueta', Type: 'VarChar', Value: 'tipoetiqueta' },
+      { Name: 'turno', Type: 'VarChar', Value: 'turno' },
+      // { Name: 'lote', Type: 'VarChar', Value: lote },
+      { Name: 'soloHistTall', Type: 'VarChar', Value: '1' }
     ];
 
     const base = {
