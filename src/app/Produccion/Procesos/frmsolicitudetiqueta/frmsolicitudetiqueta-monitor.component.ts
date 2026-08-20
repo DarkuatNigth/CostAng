@@ -51,6 +51,23 @@ interface ResumenLoteMaquinaActual {
   diferenciaEtiquetas: number;
 }
 
+interface ResumenLoteMaquinaModal {
+  lote: string;
+  maquina: string;
+  descripcionMaquina: string;
+  totalSolicitadas: number;
+  totalLiquidadas: number;
+  totalDiferenciaEtiquetas: number;
+  porcentajeCumplimiento: number;
+  detalleTallas: {
+    codtalla: string;
+    talla: string;
+    etiquetasSolicitadas: number;
+    cajasLiquidadas: number;
+    diferenciaEtiquetas: number;
+  }[];
+}
+
 interface ResumenHistoricoLote {
   lote: string;
   tal_descri: string;
@@ -80,7 +97,7 @@ interface MonitorComparativaLote {
   styleUrl: './frmsolicitudetiqueta-monitor.component.scss'
 })
 export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
-  title = 'Monitor de Lotes: Liquidacion Actual vs Historico';
+  title = 'Monitor Liquidación de Etiquetas (Entero): Liquidacion Actual vs Historico';
   loadingVisible = false;
 
   usuarioEmpresa = '';
@@ -95,9 +112,14 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
 
   Grupos: Catalogo[] = [];
   Maquinas: Catalogo[] = [];
+  Turnos: Catalogo[] = [
+    { codigo: 'D', descripcion: 'Día' },
+    { codigo: 'N', descripcion: 'Noche' },
+  ];
   Asignacion: ItemAsignacion[] = [];
   resumenActualPorLote: ResumenLoteActual[] = [];
   resumenActualPorLoteMaquina: ResumenLoteMaquinaActual[] = [];
+  resumenActualPorLoteMaquinaModal: ResumenLoteMaquinaModal[] = [];
   resumenHistoricoPorLote: ResumenHistoricoLote[] = [];
   comparativaPorLote: Record<string, MonitorComparativaLote> = {};
 
@@ -133,6 +155,12 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
     await this.obtieneResumenLiquidacionEtiquetasSolicitadas();
   }
 
+  async onTurnoChange(turno: string) {
+    this.codTurno = (turno ?? '').toString();
+    this.lblTurno = this.obtenerDescripcionTurno(this.codTurno);
+    await this.obtieneResumenLiquidacionEtiquetasSolicitadas();
+  }
+
   onInitializedAsignacion(grid: DxDataGridComponent): void {
     this.GridAsignacionMonitor = grid;
   }
@@ -148,11 +176,21 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
     }
   }
 
+  onRowPreparedDetailByLoteMaquina(e: any) {
+    if (e.rowType !== 'data' || !e.data) {
+      return;
+    }
+
+    e.rowElement.style.backgroundColor = '#eef6ff';
+    e.rowElement.style.borderLeft = '4px solid #d1d9e6';
+  }
+
   itemAsignacionSelected: ItemAsignacion | null = null;
   async onClickdetailByMaquina(rowData: any) {
     const data = rowData as ItemAsignacion;
     console.log('Detalle por Lote - Máquina:', data);
     this.itemAsignacionSelected = data;
+    this.resumenActualPorLoteMaquinaModal = this.construirResumenPorMaquinaModal(data?.lote);
     this.modalReferenceItem = this.modalService.open(this.modalDetailByLoteMaquina, {
       ariaLabelledBy: 'modal-basic-title',
       windowClass: 'cssModalDetailByLoteMaquina',
@@ -184,7 +222,7 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
   async obtieneInfoUsuario() {
     this.loadingVisible = true;
     try {
-      const usuario ='FMONTANO'; //localStorage.getItem(varUser) || ;
+      const usuario = localStorage.getItem(varUser);
       if (!usuario) {
         return;
       }
@@ -209,7 +247,7 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
 
       this.lblJefeLinea = `${firstRow.codEmpleado ?? ''} ${firstRow.empleado ?? ''}`.trim();
       this.codTurno = (firstRow.turno ?? '').toString();
-      this.lblTurno = this.codTurno === 'D' ? 'Dia' : this.codTurno === 'N' ? 'Noche' : '';
+      this.lblTurno = this.obtenerDescripcionTurno(this.codTurno);
       this.codJefeLinea = (firstRow.codEmpleado ?? '').toString();
 
       this.Grupos = this.mapCatalogoUnico(data, 'codgrupo', 'grupo');
@@ -235,6 +273,7 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
       this.Asignacion = [];
       this.resumenActualPorLote = [];
       this.resumenActualPorLoteMaquina = [];
+      this.resumenActualPorLoteMaquinaModal = [];
       this.resumenHistoricoPorLote = [];
       this.comparativaPorLote = {};
       return;
@@ -255,6 +294,7 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
         this.Asignacion = [];
         this.resumenActualPorLote = [];
         this.resumenActualPorLoteMaquina = [];
+        this.resumenActualPorLoteMaquinaModal = [];
         this.resumenHistoricoPorLote = [];
         this.comparativaPorLote = {};
         return;
@@ -298,8 +338,17 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
         orden: this.toNumber(item?.orden)
       }));
 
-      this.resumenActualPorLoteMaquina = data3;
-      console.log('Resumen Actual por Lote Maquina:', this.resumenActualPorLoteMaquina);
+      this.resumenActualPorLoteMaquina = data3.map((item: any) => ({
+        lote: (item?.lote ?? '').toString(),
+        turno: (item?.turno ?? '').toString(),
+        maquina: (item?.maquina ?? '').toString(),
+        cla_descripcion: (item?.cla_descripcion ?? '').toString(),
+        codtalla: (item?.codtalla ?? '').toString(),
+        talla: (item?.talla ?? item?.tal_descri ?? '').toString(),
+        etiquetasSolicitadas: this.toNumber(item?.etiquetasSolicitadas ?? item?.EtiquetasSolicitadas),
+        cajasLiquidadas: this.toNumber(item?.cajasLiquidadas ?? item?.CajasEmpacadas ?? item?.EtiquetasLiquidadas),
+        diferenciaEtiquetas: this.toNumber(item?.diferenciaEtiquetas ?? item?.DiferenciadeEtiquetas)
+      }));
 
 
 
@@ -326,11 +375,62 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
       this.Asignacion = [];
       this.resumenActualPorLote = [];
       this.resumenActualPorLoteMaquina = [];
+      this.resumenActualPorLoteMaquinaModal = [];
       this.resumenHistoricoPorLote = [];
       this.comparativaPorLote = {};
     } finally {
       this.loadingVisible = false;
     }
+  }
+
+  private construirResumenPorMaquinaModal(lote: string | number | undefined): ResumenLoteMaquinaModal[] {
+    const loteKey = this.normalizarLote(lote);
+    if (!loteKey) {
+      return [];
+    }
+
+    const rows = this.resumenActualPorLoteMaquina
+      .filter((item) => this.normalizarLote(item.lote) === loteKey);
+
+    const grouped = new Map<string, ResumenLoteMaquinaModal>();
+
+    rows.forEach((row) => {
+      const key = `${row.maquina}|${row.cla_descripcion}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          lote: loteKey,
+          maquina: row.maquina,
+          descripcionMaquina: row.cla_descripcion,
+          totalSolicitadas: 0,
+          totalLiquidadas: 0,
+          totalDiferenciaEtiquetas: 0,
+          porcentajeCumplimiento: 0,
+          detalleTallas: []
+        });
+      }
+
+      const acc = grouped.get(key)!;
+      acc.totalSolicitadas += row.etiquetasSolicitadas;
+      acc.totalLiquidadas += row.cajasLiquidadas;
+      acc.totalDiferenciaEtiquetas += row.diferenciaEtiquetas;
+      acc.detalleTallas.push({
+        codtalla: row.codtalla,
+        talla: row.talla,
+        etiquetasSolicitadas: row.etiquetasSolicitadas,
+        cajasLiquidadas: row.cajasLiquidadas,
+        diferenciaEtiquetas: row.diferenciaEtiquetas
+      });
+    });
+
+    return Array.from(grouped.values())
+      .map((item) => ({
+        ...item,
+        porcentajeCumplimiento: item.totalSolicitadas > 0
+          ? (item.totalLiquidadas / item.totalSolicitadas) * 100
+          : 0,
+        detalleTallas: [...item.detalleTallas].sort((a, b) => a.talla.localeCompare(b.talla))
+      }))
+      .sort((a, b) => a.descripcionMaquina.localeCompare(b.descripcionMaquina));
   }
 
   private construirComparativaPorLote() {
@@ -412,6 +512,40 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
 
   private normalizarLote(lote: string | number | null | undefined): string {
     return (lote ?? '').toString().trim();
+  }
+
+  private mapTurnos(data: any[]): Catalogo[] {
+    const seen = new Set<string>();
+    const result: Catalogo[] = [];
+    data.forEach((item) => {
+      const codigo = (item?.turno ?? '').toString().trim();
+      if (!codigo || seen.has(codigo)) {
+        return;
+      }
+      seen.add(codigo);
+      result.push({
+        codigo,
+        descripcion: this.obtenerDescripcionTurno(codigo)
+      });
+    });
+
+    if (result.length === 0) {
+      result.push({ codigo: 'D', descripcion: 'Dia' });
+      result.push({ codigo: 'N', descripcion: 'Noche' });
+    }
+
+    return result;
+  }
+
+  private obtenerDescripcionTurno(turno: string): string {
+    const value = (turno ?? '').toString().trim().toUpperCase();
+    if (value === 'D') {
+      return 'Dia';
+    }
+    if (value === 'N') {
+      return 'Noche';
+    }
+    return value;
   }
 
 

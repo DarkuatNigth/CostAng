@@ -21,11 +21,22 @@
           </div>
 
           <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Turno:</label>
-          <div class="col-12 col-sm-8 col-md-4 col-lg-1 pb-1">
-            <span class="font-weight-bold">{{ lblTurno }}</span>
+          <div class="col-12 col-sm-8 col-md-4 col-lg-2 pb-1">
+            <ng-select
+              style="width: 100%"
+              [(ngModel)]="codTurno"
+              (ngModelChange)="onTurnoChange($event)"
+              appendTo="body"
+              [searchable]="false"
+              [clearable]="false"
+            >
+              <ng-option *ngFor="let data of Turnos" [value]="data.codigo">
+                {{ data.descripcion }}
+              </ng-option>
+            </ng-select>
           </div>
 
-          <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Grupo:</label>
+          <!-- <label class="col-12 col-sm-4 col-md-2 col-lg-1 control-label">Grupo:</label>
           <div class="col-12 col-sm-8 col-md-4 col-lg-2 pb-1">
             <ng-select style="width: 100%" [(ngModel)]="cmbGrupo" appendTo="body" [searchable]="true" [clearable]="false">
               <ng-option *ngFor="let data of Grupos" [value]="data.codigo">
@@ -45,7 +56,7 @@
                 </div>
               </ng-option>
             </ng-select>
-          </div>
+          </div> -->
 
           <div class="col-12 col-sm-4 col-md-3 col-lg-2 pb-1 d-flex align-items-center" *ngIf="puedeVerFiltroLotesCerrados">
             <span class="mr-2" style="font-size: 12px;">Mostrar lotes cerrados</span>
@@ -54,20 +65,21 @@
               (onValueChanged)="onFiltroLotesCerradosChange($event.value)"
             ></dx-switch>
           </div>
+          <div class="monitor-grid-actions mb-2">
+            <dx-button text="Expandir todos" type="default" stylingMode="outlined" (onClick)="expandirTodosLosLotes()"></dx-button>
+            <dx-button text="Contraer todos" type="normal" stylingMode="outlined" (onClick)="contraerTodosLosLotes()"></dx-button>
+          </div>
+          
         </div>
       </div>
 
       <div class="row margin-container">
         <div class="col-12 pb-2">
-          <div class="monitor-grid-actions mb-2" style="display: none;">
-            <dx-button text="Expandir todos" type="default" stylingMode="outlined" (onClick)="expandirTodosLosLotes()"></dx-button>
-            <dx-button text="Contraer todos" type="normal" stylingMode="outlined" (onClick)="contraerTodosLosLotes()"></dx-button>
-          </div>
 
           <dx-data-grid
             #GridAsignacionMonitor
             id="GridAsignacionMonitor"
-            style="width: 100%; max-height: 72vh"
+            style="width: 100%; max-height: 80vh"
             [dataSource]="Asignacion"
             keyExpr="lote"
             [showColumnLines]="true"
@@ -116,7 +128,7 @@
                 </div> -->
 
                 <div class="row pt-0">
-                  <div class="col-12 col-xl-6 pb-0">
+                  <div class="col-12 col-lg-6 pb-0">
                     <div class="card monitor-chart-card monitor-detail-chart-card">
                       <!-- <div class="card-header">Distribucion Actual de Liquidacion</div> -->
                       <div class="card-body">
@@ -181,7 +193,7 @@
                     </div>
                   </div>
 
-                  <div class="col-12 col-xl-6 pb-0">
+                  <div class="col-12 col-lg-6 pb-0">
                     <div class="card monitor-chart-card monitor-detail-chart-card">
                       <!-- <div class="card-header">Distribucion Historica por Gramaje</div> -->
                       <div class="card-body">
@@ -220,10 +232,10 @@
 
 
 <ng-template #modalDetailByLoteMaquina let-modal>
-    <div class="modal-header">
+    <!-- <div class="modal-header">
         <h4 class="modal-title" id="modal-basic-title" style="width: 100%;">Detalle de Liquidacion por Lote - Máquina
         </h4>
-    </div>
+    </div> -->
     <div class="modal-body mostly-customized-scrollbar" style="max-height: 70vh; overflow: auto;">
         <div class="col-12 col-sm-12 col-md-12 col-lg-12 pb-1">
             <div style="padding-left: 2%; padding-right: 2%"></div>
@@ -241,27 +253,81 @@
                 <div class="row">
                     <dx-data-grid #GridDetailByLoteMaquina 
                         id="GridDetailByLoteMaquina" 
-                        style="width: 100%; max-height: 75vh;" 
-                        [dataSource]="resumenActualPorLoteMaquina"
-                        keyExpr="maquina" 
+                        style="width: 100%; max-height: 200vh;" 
+                        [dataSource]="resumenActualPorLoteMaquinaModal"
+                        keyExpr="descripcionMaquina" 
                         [showColumnHeaders]="true"
                         [showColumnLines]="true" 
                         [showRowLines]="true" 
                         [showBorders]="true" 
                         [columnAutoWidth]="true"
-                        [filterValue]="['lote', '=', itemAsignacionSelected?.lote]"
+                        (onRowPrepared)="onRowPreparedDetailByLoteMaquina($event)"
                         (onInitialized)="onInitializedDetailByLoteMaquina(GridDetailByLoteMaquina)" 
                     >
-                        <dxo-sorting mode="none"></dxo-sorting>
+                        <!-- <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar maquina..."></dxo-search-panel> -->
+                        <dxo-sorting mode="single"></dxo-sorting>
                         <dxo-paging [pageSize]="30" [pageIndex]="0"></dxo-paging>
-                        <dxo-grouping #expand [autoExpandAll]="true"></dxo-grouping>
-                        <dxi-column dataField="lote" caption="Lote" [visible]="false"></dxi-column>
-                        <dxi-column dataField="cla_descripcion" caption="Máquina" [groupIndex]="0"></dxi-column>
-                        <dxi-column dataField="codtalla" caption="Cod. Talla"></dxi-column>
-                        <dxi-column dataField="talla" caption="Talla"></dxi-column>
-                        <dxi-column dataField="etiquetasSolicitadas" caption="Etiquetas Solicitadas"></dxi-column>
-                        <dxi-column dataField="cajasLiquidadas" caption="Cajas Liquidadas"></dxi-column>
-                        <dxi-column dataField="diferenciaEtiquetas" caption="Diferencia Etiquetas"></dxi-column>
+                        <dxi-column dataField="maquina" caption="Cod. Máquina" [width]="120"></dxi-column>
+                        <dxi-column dataField="descripcionMaquina" caption="Máquina"></dxi-column>
+                        <dxi-column dataField="totalSolicitadas" caption="Total Solicitadas" dataType="number" format="#,##0"></dxi-column>
+                        <dxi-column dataField="totalLiquidadas" caption="Total Liquidadas" dataType="number" format="#,##0"></dxi-column>
+                        <dxi-column dataField="totalDiferenciaEtiquetas" caption="Diferencia" dataType="number" format="#,##0"></dxi-column>
+                        <dxi-column dataField="porcentajeCumplimiento" caption="Cumplimiento" dataType="number" format="#0.00'%'"></dxi-column>
+
+                        <dxo-master-detail [enabled]="true" template="detailByMaquinaGroup" [autoExpandAll]="true"></dxo-master-detail>
+                        <div *dxTemplate="let detail of 'detailByMaquinaGroup'">
+                          <div class="monitor-detail-wrapper">
+                            <dx-data-grid
+                              [dataSource]="detail.data?.detalleTallas"
+                              keyExpr="codtalla"
+                              [showColumnLines]="true"
+                              [showRowLines]="true"
+                              [showBorders]="true"
+                              [rowAlternationEnabled]="false"
+                              [columnAutoWidth]="true"
+                            >
+                              <dxi-column dataField="codtalla" caption="Cod. Talla" [visible]="false"></dxi-column>
+                              <dxi-column dataField="talla" caption="Talla"></dxi-column>
+                              <dxi-column dataField="etiquetasSolicitadas" caption="Etiquetas Solicitadas" dataType="number" format="#,##0"></dxi-column>
+                              <dxi-column dataField="cajasLiquidadas" caption="Cajas Liquidadas" dataType="number" format="#,##0"></dxi-column>
+                              <dxi-column dataField="diferenciaEtiquetas" caption="Diferencia Etiquetas" dataType="number" format="#,##0"></dxi-column>
+                            </dx-data-grid>
+
+                            <div class="row mt-1">
+                              <div class="col-4 pb-0">
+                                <div class="card" style="border-left: 4px solid #0d6efd;">
+                                  <div class="card-body" style="padding: 8px 12px;">
+                                    <div style="font-size: 12px; color: #6c757d;">Total Solicitadas</div>
+                                    <div style="font-size: 18px; font-weight: 700;">
+                                      {{ detail.data?.totalSolicitadas | number:'1.0-0' }}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-4 pb-0">
+                                <div class="card" style="border-left: 4px solid #198754;">
+                                  <div class="card-body" style="padding: 8px 12px;">
+                                    <div style="font-size: 12px; color: #6c757d;">Total Liquidadas</div>
+                                    <div style="font-size: 18px; font-weight: 700;">
+                                      {{ detail.data?.totalLiquidadas | number:'1.0-0' }}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-4 pb-0">
+                                <div class="card" style="border-left: 4px solid #fd7e14;">
+                                  <div class="card-body" style="padding: 8px 12px;">
+                                    <div style="font-size: 12px; color: #6c757d;">Cumplimiento</div>
+                                    <div style="font-size: 18px; font-weight: 700;">
+                                      {{ detail.data?.porcentajeCumplimiento | number:'1.0-2' }}%
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
                         
                         <!-- <dxi-column dataField="porcentaje" caption="%" dataType="#.##" [width]="45"
                             cellTemplate="porcentajeTemplate" cssClass="cell-temp-valor">

@@ -582,9 +582,8 @@ export class FrmsolicitudetiquetaComponent implements OnInit {
         return;
       }
       const firstRow = data[0];
-      this.puedeVerFiltroLotesCerrados = Number(firstRow.cgo_codigo) === 10;
+      this.puedeVerFiltroLotesCerrados = Number(firstRow.cgo_codigo) === 10 || Number(firstRow.cgo_codigo) === 220;
       if (!this.puedeVerFiltroLotesCerrados) {
-        // TODO: DESCOMENTAR
         this.mostrarLotesCerrados = false;
         // this.mostrarLotesCerrados = true; // Temporal para pruebas
       }

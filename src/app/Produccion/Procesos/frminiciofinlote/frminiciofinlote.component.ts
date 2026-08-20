@@ -322,7 +322,7 @@ export class FrminiciofinloteComponent implements OnInit {
       const resp: ResultWS = await firstValueFrom(
         this._serviceSolicitudEtiqueta.ObtieneEtiqSolicitaVsLiquidada(
           this.itemAsignacionSelected.lote.toString(),
-          this.cmbMaquina.toString(),
+          this.itemAsignacionSelected.maquina.toString().trim(),
           this.codTurno.toString()
         )
       );

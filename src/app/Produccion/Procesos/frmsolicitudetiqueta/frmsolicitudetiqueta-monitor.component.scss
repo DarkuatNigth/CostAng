@@ -2,9 +2,9 @@
   padding: 10px 2%;
 }
 
-.monitor-resumen-card {
+/* .monitor-resumen-card {
   border-left: 4px solid #0d6efd;
-}
+} */
 
 .monitor-chart-card {
   min-height: 250px;
@@ -44,6 +44,17 @@
 }
 
 ::ng-deep #GridAsignacionMonitor {
+  .dx-toolbar .dx-toolbar-after {
+      width: 100%;
+      padding-left: 0px;
+  }
+  .dx-datagrid-search-panel.dx-searchbox {
+      width: 98%;
+  }
+  .dx-datagrid-search-panel {
+      margin: 0px;
+  }
+  
   .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
     padding: 1px;
   }
@@ -93,5 +104,14 @@
   }
   .control-label {
     font-weight: 600;
+  }
+  .card{
+    margin-bottom: 5px;
+  }
+}
+
+::ng-deep #GridDetailByLoteMaquina {
+  .dx-datagrid-rowsview .dx-master-detail-row > .dx-master-detail-cell {
+    padding: 5px;
   }
 }
