@@ -66,6 +66,7 @@
             ></dx-switch>
           </div>
           <div class="monitor-grid-actions mb-2">
+            <dx-button text="Refrescar" icon="refresh" type="success" stylingMode="outlined" [disabled]="loadingVisible" (onClick)="onRefrescar()"></dx-button>
             <dx-button text="Expandir todos" type="default" stylingMode="outlined" (onClick)="expandirTodosLosLotes()"></dx-button>
             <dx-button text="Contraer todos" type="normal" stylingMode="outlined" (onClick)="contraerTodosLosLotes()"></dx-button>
           </div>
@@ -88,18 +89,18 @@
             [rowAlternationEnabled]="false"
             [columnAutoWidth]="true"
             [focusedRowEnabled]="true"
-            [filterValue]="['proceso', '=', 'CC']"
             (onInitialized)="onInitializedAsignacion(GridAsignacionMonitor)"
             (onRowPrepared)="onRowPreparedAsignacion($event)"
-        >
-            <dxo-search-panel [visible]="true" width="100%" placeholder="Buscar lote..."></dxo-search-panel>
+        > 
+            <!-- [filterValue]="['proceso', '=', 'CC']" -->
+            <dxo-filter-row [visible]="true"></dxo-filter-row>
+            <dxo-header-filter [visible]="true"></dxo-header-filter>
             <dxi-column dataField="lote" caption="Lote"></dxi-column>
             <dxi-column dataField="proveedor" caption="Proveedor"></dxi-column>
-            <dxi-column dataField="turnoDescripcion" caption="Turno"></dxi-column>
-            <dxi-column dataField="proceso" caption="Proceso"></dxi-column>
-            <dxi-column dataField="estadoLote" caption="Estado"></dxi-column>
-            <!-- <dxi-column dataField="maquinasAsignadas" caption="Máquinas Asignadas"></dxi-column> -->
-            <dxi-column dataField="maquinasAsignadas" caption="Máquinas Asignadas" [allowFiltering]="false"
+            <dxi-column dataField="turnoDescripcion" caption="Turno" [allowFiltering]="false"></dxi-column>
+            <dxi-column dataField="proceso" caption="Proceso" [allowFiltering]="false"></dxi-column>
+            <dxi-column dataField="estadoLote" caption="Estado" [allowFiltering]="false"></dxi-column>
+            <dxi-column dataField="maquinasAsignadas" caption="Máquinas Asignadas" [allowFiltering]="true"
                 cellTemplate="detailByMaquinaTemplate" cssClass="cell-temp-valor-2">
             </dxi-column>
             <div *dxTemplate="let cell of 'detailByMaquinaTemplate'">
@@ -111,9 +112,7 @@
                     </button>
                 </div>
             </div>
-            
             <dxi-column dataField="gramaje" caption="Gramaje"></dxi-column>
-
             <dxo-master-detail [enabled]="true" template="monitorComparativaDetail" [autoExpandAll]="true"></dxo-master-detail>
             <div *dxTemplate="let detail of 'monitorComparativaDetail'">
               <div class="monitor-detail-wrapper">

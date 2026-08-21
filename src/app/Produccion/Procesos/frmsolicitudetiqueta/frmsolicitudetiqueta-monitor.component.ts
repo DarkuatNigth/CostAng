@@ -161,6 +161,10 @@ export class FrmsolicitudetiquetaMonitorComponent implements OnInit {
     await this.obtieneResumenLiquidacionEtiquetasSolicitadas();
   }
 
+  async onRefrescar() {
+    await this.obtieneResumenLiquidacionEtiquetasSolicitadas();
+  }
+
   onInitializedAsignacion(grid: DxDataGridComponent): void {
     this.GridAsignacionMonitor = grid;
   }
