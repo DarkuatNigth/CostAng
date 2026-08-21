@@ -140,3 +140,7 @@
 //     text-align: center !important;
 //     height: 100%;
 // }
+::ng-deep .dx-datagrid .dx-header-row td .dx-datagrid-text-content {
+  white-space: pre-line !important;   /* o pre-wrap */
+  text-align: center !important;
+}

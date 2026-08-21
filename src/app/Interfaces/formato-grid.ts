@@ -55,6 +55,33 @@ export interface FormatoCampoDto {
   blEsPorcentaje    : boolean;     // reemplaza camposPorcentaje[]
   blEsAltaPrecision : boolean;     // reemplaza camposAltaPrecision[]
   blEsEntero        : boolean;
+  blEsFijo          : boolean;
+}
+
+export interface CostosUnitarios {
+  // Proceso Primario
+  Recepcion: number;
+  Clasificacion: number;
+  Cajas: number;
+  Descabezado: number;
+  // Proceso Presentación
+  Decorado: number;
+  Retractilado: number;
+  // Proceso Congelación
+  Brine: number;
+  IQF: number;
+  Tunel: number;
+  // Proceso Secundario
+  Pelado: number;
+  Hidratacion: number;
+  Cocido: number;
+  // Costos estructurales
+  CostDirVariables: number;
+  CostDirFijos: number;
+  CostIndirVariables: number;
+  CostIndirFijos: number;
+  Copacking: number;
+  Excedente: number;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -219,8 +246,8 @@ export function generarEstructuraGrid(
   obj           : Record<string, unknown>,
   cfgMap        : FormatoCampoMap,
   keysToGroup   : string[] = [],
-  esColumnaFija?: (dataField: string) => boolean,
-  parentKey     : string   = ''
+  parentKey     : string   = '',
+  costosUni?    : CostosUnitarios   // ← nuevo: objeto de costos (Table3[0])
 ): EstructuraGridDx {
 
   const columnas : ColumnaConfigDx[] = [];
@@ -230,16 +257,22 @@ export function generarEstructuraGrid(
     const fullKey = parentKey ? `${parentKey}.${key}` : key;
     const value   = obj[key];
 
+    let caption = key.replace(/^(str|dc|int|dt)/, '');
+    const costo = (costosUni as unknown as Record<string, number> | undefined)?.[caption];
+    if (costo !== undefined && costo !== null) {
+      caption = `${caption}\n $${costo.toFixed(4)}`;
+    }
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
       const sub = generarEstructuraGrid(
         value as Record<string, unknown>,
         cfgMap,
         keysToGroup,
-        esColumnaFija,
-        fullKey
-      );
+        //esColumnaFija,
+        fullKey,
+        costosUni                                    // ← propagar en recursión
+      );      
       columnas.push({
-        caption  : key,
+        caption  : caption,
         alignment: 'center',
         columns  : sub.columnas,
       } satisfies ColumnaGrupoDx);
@@ -251,7 +284,7 @@ export function generarEstructuraGrid(
     const tipoDx = cfg ? resolverTipoDx(cfg.tipo) : inferirTipoDxFallback(value);
     const esNumero = tipoDx === 'number';
     const formato = cfg ? resolverFormatoDx(cfg) : null;
-    const caption    = key.replace(/^(str|dc|int|dt)/, '');
+    const esFijo = cfg?.blEsFijo ?? false;   
     const groupIndex = keysToGroup.indexOf(fullKey);
 
     const col: ColumnaResueltaDx = {
@@ -261,7 +294,7 @@ export function generarEstructuraGrid(
       alignment: esNumero ? 'right' : 'left',
       ...(formato    ? { format: formato }       : {}),
       ...(groupIndex !== -1 ? { groupIndex }     : {}),
-      ...(esColumnaFija ? { fixed: esColumnaFija(fullKey) } : {}),
+      ...(esFijo ? { fixed: true } : {}),
     };
     columnas.push(col);
 

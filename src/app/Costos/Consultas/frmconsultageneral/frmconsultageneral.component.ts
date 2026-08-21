@@ -8,7 +8,7 @@ import { DxPivotGridComponent } from 'devextreme-angular/ui/pivot-grid';
 import * as moment from 'moment';
 import 'moment/locale/es';
 import { callApi } from 'src/app/config/Helpers';
-import { FormatoCampoMap, ColumnaConfigDx, SummaryItemDx, generarEstructuraGrid, construirFormatoCampoMap, esColumnaSimple } from './formato-grid';
+import { FormatoCampoMap, ColumnaConfigDx, SummaryItemDx, generarEstructuraGrid, construirFormatoCampoMap, esColumnaSimple, CostosUnitarios } from '../../../Interfaces/formato-grid';
 
 declare var window: any;
 @Component({
@@ -51,6 +51,7 @@ export class FrmconsultageneralComponent {
   rowIniTitle = 0;
   rowEndTitle = 0;
   numRowColumns = 0;
+  dataCostUni !: CostosUnitarios | null;
 
   positionRowDelete: any[] = [];
   detalleGrupos: any[] = [];
@@ -71,23 +72,25 @@ export class FrmconsultageneralComponent {
     const primera = this.resultadosColumnsNames[0];
     return primera && esColumnaSimple(primera) ? primera.dataField : '';
   }
-  isColumnFixed(dataField: string): boolean {
-    if (!dataField) return false;
 
-    // Ponemos los nombres EXACTOS de los dataFields que quieres congelar (todo en minúsculas).
-    // He incluido las variaciones (con y sin los prefijos str/int) para que no falle.
-    const camposFijosExactos = [
-      // 'intlote', 'strprod',  'prod',
-      // 'strnomtal', 'nomtal', 
-      'lote', 'codprod', 'descripcion', 'talla',
-      'lot_numero', 'loteunificado', 'rld_prodcod', 'descriproduc', 'tal_descri'
-    ];
+  // isColumnFixed(dataField: string): boolean {
+  //   if (!dataField) return false;
 
-    const campoLimpio = dataField.toLowerCase();
+  //   // Ponemos los nombres EXACTOS de los dataFields que quieres congelar (todo en minúsculas).
+  //   // He incluido las variaciones (con y sin los prefijos str/int) para que no falle.
+  //   const camposFijosExactos = [
+  //     // 'intlote', 'strprod',  'prod',
+  //     // 'strnomtal', 'nomtal', 
+  //     'lote', 'codprod', 'descripcion', 'talla',
+  //     'lot_numero', 'loteunificado', 'rld_prodcod', 'descriproduc', 'tal_descri'
+  //   ];
 
-    // En lugar de includes de texto, verificamos si el campo exacto existe en nuestro arreglo
-    return camposFijosExactos.includes(campoLimpio);
-  }
+  //   const campoLimpio = dataField.toLowerCase();
+
+  //   // En lugar de includes de texto, verificamos si el campo exacto existe en nuestro arreglo
+  //   return camposFijosExactos.includes(campoLimpio);
+  // }
+
   async onCellDblClick(e: any) {
     if (e.column.caption === 'Costo X Libra' || e.column.dataField === 'costo_x_libra') {
       e.cancel = true; // Bloquea la edición por defecto del Grid
@@ -277,8 +280,8 @@ export class FrmconsultageneralComponent {
           this.detalleGrupos = [];
 
           // 3. Obtenemos las llaves de las tablas disponibles (Table, Table1, etc.)
-          const tableKeys = Object.keys(resp.data.Dt);
-
+          const tableKeys = Object.keys(resp.data.Dt.Table);
+          this.dataCostUni = resp.data.Dt.Table3 == undefined ? null : resp.data.Dt.Table3[0] as CostosUnitarios; // Asignamos el objeto de costos unitarios
           if (tableKeys.length > 0) {
             // Tomamos solo la PRIMERA tabla que aparezca en el objeto Dt
             const primeraTabla = resp.data.Dt[tableKeys[0]];
@@ -297,11 +300,14 @@ export class FrmconsultageneralComponent {
           let keysToGroup: string[] = this.detalleGrupos.map((item) => item.NameGrupo);
           if (this.resultados.length > 0) {
             if (this.selectedItemConsulta.spConsulta.includes('/')) {
+              
               const { columnas, summaries } = generarEstructuraGrid(
                 this.resultados[0],
                 this.cfgMap,
                 keysToGroup,
-                (field) => this.isColumnFixed(field)   // mantiene tu lógica de columnas congeladas
+                //(field) => this.isColumnFixed(field),   // mantiene tu lógica de columnas congeladas
+                '',
+                this.dataCostUni
               );
               this.resultadosColumnsNames = columnas;
               this.summaryTotalItems = summaries;
@@ -492,7 +498,7 @@ export class FrmconsultageneralComponent {
           alignment: isNumber ? 'right' : 'left',
           // ...(columnFormat ? { format: columnFormat } : {}),
           ...(groupIndex !== -1 ? { groupIndex } : {}),
-          fixed: this.isColumnFixed(fullKey)
+          //fixed: this.isColumnFixed(fullKey)
         });
       }
     }

@@ -34,13 +34,14 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
   selectedMes: any = null;
   fechaCorteDetectada: string | null = null; // fecha de corte que ya existe en BD
   tbInvVal: any[] = [];
+  objTablaHomologacion: any[] = [];
   tbErrores: any[] = [];
   title = 'Registro Masivo Inventario Valorado';
 
   @ViewChild('GridInvVal', { static: false })
-  GridInvVal: DxDataGridComponent;
+  GridInvVal!: DxDataGridComponent;
   @ViewChild('GridErrores', { static: false })
-  GridErrores: DxDataGridComponent;
+  GridErrores!: DxDataGridComponent;
   Grid_errores: any;
   applyFilterTypes = [
     { key: 'auto', name: 'Immediately' },
@@ -128,6 +129,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
       filaLimpia.TOTAL = parsearANumero(filaLimpia.TOTAL);
       filaLimpia.LIBRAS = parsearANumero(filaLimpia.LIBRAS);
       filaLimpia.master = parsearANumero(filaLimpia.master);
+      filaLimpia.codTal = parsearANumero(filaLimpia.codTal);
 
       // Opcional: Asegurar formato de fecha ISO para evitar errores de cultura
       if (filaLimpia.fecha && filaLimpia.fecha.includes('/')) {
@@ -202,7 +204,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
         try {
           // ✅ Usa objConstantePlantilla en lugar de volver a llamar al servicio
           const firstRow = this.objConstantePlantilla;
-          const expectedHeaders = Object.keys(firstRow).map((h: string) => h.trim());
+          const expectedHeaders = Object.keys(firstRow).map((h: string) => h.trim()).filter(h => h.toLowerCase() !== 'codtal');
 
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'dd/mm/yyyy' });
@@ -242,10 +244,27 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
               return obj;
             });
 
-          this.tbErrores = [];
-          this.blVerBtnGuardar = false;
+          // ── Resolución de tallas contra la tabla de homologación (Table3) ──
+          // this.objTablaHomologacion debe contener Table3 (cargado en cargarParametros)
+          const filasSinTalla = this.resolverTallas(this.tbInvVal, this.objTablaHomologacion);
+
+          this.tbErrores = filasSinTalla;
+
           this.loadingVisible = false;
-          await showAlert('', 'Archivo cargado correctamente.', 'success');
+          if (filasSinTalla.length > 0) {
+            await showAlert(
+              'Tallas no resueltas',
+              `${filasSinTalla.length} fila(s) no pudieron homologar su talla. Revise la tabla de errores.`,
+              'warning'
+            );
+          } else {
+            this.blVerBtnGuardar = false;
+            await showAlert('', 'Archivo cargado correctamente.', 'success');
+          }
+
+          // this.tbErrores = [];
+          // 
+          // await showAlert('', 'Archivo cargado correctamente.', 'success');
 
         } catch (err: any) {
           await showAlert('Error', err.message || 'Error al procesar el archivo.', 'error');
@@ -283,6 +302,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
       this.lstAnio = plantillaRes.Dt.Table1.filter((row: any) => row.tipoData === 'ANIO');
       this.lstMes = plantillaRes.Dt.Table1.filter((row: any) => row.tipoData === 'MES');
       this.lstFechaCorte = plantillaRes.Dt.Table2;
+      this.objTablaHomologacion = plantillaRes.Dt.Table3 ?? [];
 
     } catch (err: any) {
       this.loadingVisible = false;
@@ -367,6 +387,149 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
     }
   }
 
+  // ── Normaliza la descripción de talla del Excel para comparar contra descTalla de Table3 ──
+  // El Excel trae '-' y Table3 trae '/'. Además: corrige typo MEDIUN→MEDIUM y limpia ceros a la izquierda.
+  // Equivalente inverso a NormalizarTalla del back.
+  private normalizarTalla(strNomTal: string): string {
+    let arrTallasEsp: string[] = ["U-", "ML", "BK"];
+    if (!strNomTal || strNomTal.trim() === '') {
+      return strNomTal;
+    }
 
+    if (arrTallasEsp.some(t => strNomTal.includes(t))) {
+      return strNomTal;
+    }
+
+    if (strNomTal.includes('VERY-S')) {
+      return strNomTal.replace(/VERY-S/gi, 'VERY-SMALL');
+    }
+    // Corrección de typo conocido
+    let strResultado = strNomTal.trim().replace(/MEDIUN/gi, 'MEDIUM');
+
+    // El Excel usa '-' como separador; Table3 usa '/'. Homologamos a '/'.
+    strResultado = strResultado.replace(/-/g, '/');
+
+    const arrPartes = strResultado.split('/');
+
+    // Si son exactamente 2 partes y ambas son numéricas → es una TALLA: limpiamos ceros a la izquierda
+    const todasNumericas = arrPartes.length === 2 &&
+      arrPartes.every(p => p.trim() !== '' && /^\d+$/.test(p.trim()));
+
+    if (todasNumericas) {
+      strResultado = arrPartes
+        .map(p => {
+          const limpio = p.trim().replace(/^0+/, '');
+          return limpio === '' ? '0' : limpio; // "00" → "0"
+        })
+        .join('/');
+    }
+
+    return strResultado;
+  }
+  
+  // ── Construye un índice "prodInt|desc" → codigo, para un par de columnas dado ──
+  // Registra la desc tal cual y también sin punto (para el caso "21/25." vs "21/25").
+  private construirIndice(
+    tablaHomologacion: any[],
+    colDesc: string,
+    colCod: string
+  ): Map<string, number> {
+    const indice = new Map<string, number>();
+    (tablaHomologacion ?? []).forEach(t => {
+      const prod = Number(t.pro_codcor);
+      const desc = (t[colDesc] ?? '').toString().trim();
+      const cod = Number(t[colCod]);
+      if (!isNaN(prod) && desc !== '' && !isNaN(cod)) {
+        indice.set(`${prod}|${desc}`, cod);
+        const descSinPunto = desc.replace(/\./g, '');
+        if (descSinPunto !== desc) {
+          indice.set(`${prod}|${descSinPunto}`, cod);
+        }
+      }
+    });
+    return indice;
+  }
+
+  // ── Intenta homologar una descripción contra un índice: crudo → normalizado ──
+  // Devuelve { cod, descResuelta } si encuentra, o null si no.
+  private homologarTalla(
+    prodInt: number,
+    nomTalRaw: string,
+    indice: Map<string, number>
+  ): { cod: number; descResuelta: string } | null {
+    // Intento 1: descripción TAL CUAL viene del Excel
+    const claveCruda = `${prodInt}|${nomTalRaw}`;
+    if (indice.has(claveCruda)) {
+      return { cod: indice.get(claveCruda)!, descResuelta: nomTalRaw };
+    }
+
+    // Intento 2: descripción normalizada
+    const descNorm = this.normalizarTalla(nomTalRaw).trim();
+    const claveNorm = `${prodInt}|${descNorm}`;
+    if (indice.has(claveNorm)) {
+      return { cod: indice.get(claveNorm)!, descResuelta: descNorm };
+    }
+
+    return null;
+  }
+
+  // ── Resuelve el codTal de cada fila: primero talla normal, y como fallback, talla VTA ──
+  private resolverTallas(filas: any[], tablaHomologacion: any[]): any[] {
+    const filasSinTalla: any[] = [];
+
+    // Dos índices: uno para talla normal, otro para talla VTA
+    const indiceNormal = this.construirIndice(tablaHomologacion, 'descTalla', 'codTalla');
+    const indiceMP = this.construirIndice(tablaHomologacion, 'descTallaMP', 'codTallaVTA');
+    const indiceVta = this.construirIndice(tablaHomologacion, 'descTallaVTA', 'codTallaVTA');
+
+    filas.forEach(fila => {
+      const nomTalRaw = (fila.NOMTAL ?? '').toString().trim();
+
+      // Omitir filas sin talla (sumarización / totales)
+      if (nomTalRaw === '') {
+        fila.codTal = 0;
+        return;
+      }
+
+      const prodInt = parseInt((fila.PROD ?? '').toString().trim(), 10);
+
+      if (isNaN(prodInt)) {
+        fila.codTal = 0;
+        filasSinTalla.push({
+          PROD: fila.PROD,
+          NOMTAL: fila.NOMTAL,
+          error: 'Código de producto (PROD) no es numérico'
+        });
+        return;
+      }
+
+      // ── PASO 1: homologar contra talla NORMAL ──
+      let resultado = this.homologarTalla(prodInt, nomTalRaw, indiceNormal);
+
+      // ── PASO 2 (fallback): si no encontró, intentar contra talla VTA del mismo producto ──
+      if (resultado === null) {
+        resultado = this.homologarTalla(prodInt, nomTalRaw, indiceVta);
+      }
+      if (resultado === null) {
+        //console.log("Entra", prodInt, nomTalRaw, indiceMP);
+        resultado = this.homologarTalla(prodInt, nomTalRaw, indiceMP);
+      }
+
+      if (resultado !== null) {
+        fila.codTal = resultado.cod;
+        fila.NOMTAL = resultado.descResuelta;  // refleja la desc que sí hizo match
+      } else {
+        fila.codTal = 0;
+        const descNorm = this.normalizarTalla(nomTalRaw).trim();
+        filasSinTalla.push({
+          PROD: fila.PROD,
+          NOMTAL: fila.NOMTAL,
+          error: `No se encontró talla '${descNorm}' para el producto ${prodInt} (ni normal ni VTA)`
+        });
+      }
+    });
+
+    return filasSinTalla;
+  }
 
 }
