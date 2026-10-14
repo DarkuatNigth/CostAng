@@ -1,68 +1,1082 @@
-<dx-load-panel #loadPanel shadingColor="rgba(0,0,0,0.4)" [(visible)]="loadingVisible" [showIndicator]="true"
-    [showPane]="true" [shading]="true" [closeOnOutsideClick]="false">
+<dx-load-panel shadingColor="rgba(0,0,0,0.35)" [(visible)]="loadingVisible" [showIndicator]="true" [showPane]="true"
+    [shading]="true" [hideOnOutsideClick]="false">
 </dx-load-panel>
 
-<div class="container-fluid mt-3">
+<div class="container-fluid mt-3 actualizacion-page">
     <div class="panel panel-custom">
+        <div class="panel-heading d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h3 class="panel-title">Resumen de Costos - Actualización</h3>
+                <small>Consulta de costos por etapa, partición y proceso productivo</small>
+            </div>
 
-        <div class="panel-heading">
-            <h3 class="panel-title">Distribución de Costos</h3>
+            <div class="periodo-label" *ngIf="filasVista.length">
+                {{ periodoLabel }}
+            </div>
         </div>
 
         <div class="panel-body">
-            <div class="row align-items-end">
+            <!-- ========================================================= -->
+            <!-- FILTROS                                                   -->
+            <!-- ========================================================= -->
+            <div class="filter-bar">
+                <div class="filter-item">
+                    <label class="control-label-aspx">Año</label>
 
-                <div class="col-md-2 mb-2">
-                    <label class="control-label-aspx">Año:</label>
-                    <div class="select-wrapper-compact">
-                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbAnio" [searchable]="true"
-                            [clearable]="false">
-                            <ng-option *ngFor="let data of listAnios" [value]="data.CODIGO">
-                                <div class="option-text" title="{{ data.DESCRIPCION }}">
-                                    {{ data.DESCRIPCION }}
-                                </div>
-                            </ng-option>
-                        </ng-select>
-                    </div>
+                    <ng-select [(ngModel)]="cmbAnio" [searchable]="true" [clearable]="false">
+
+                        <ng-option *ngFor="let data of listAnios" [value]="data.CODIGO">
+                            {{ data.DESCRIPCION }}
+                        </ng-option>
+                    </ng-select>
                 </div>
 
-                <div class="col-md-3 mb-2">
-                    <label class="control-label-aspx">Mes:</label>
-                    <div class="select-wrapper-compact">
-                        <ng-select bindLabel="Mes" [(ngModel)]="cmbMes" [searchable]="true" [clearable]="false">
-                            <ng-option *ngFor="let data of listMeses" [value]="data.CODIGO">
-                                <div title="{{ data.DESCRIPCION }}" style="font-size: 14px">
-                                    {{ data.DESCRIPCION }}
-                                </div>
-                            </ng-option>
-                        </ng-select>
-                    </div>
+                <div class="filter-item">
+                    <label class="control-label-aspx">Mes</label>
+
+                    <ng-select [(ngModel)]="cmbMes" [searchable]="true" [clearable]="false">
+
+                        <ng-option *ngFor="let data of listMeses" [value]="data.CODIGO">
+                            {{ data.DESCRIPCION }}
+                        </ng-option>
+                    </ng-select>
                 </div>
 
-                <div class="col-md-4 mb-2">
-                    <div class="btn-group-aspx">
-                        <dx-button text="Consultar" type="default" icon="search"
-                            (onClick)="onClickConsultar('Consultar')">
-                        </dx-button>
-
-                        <dx-button class="ml-2" icon="save" type="success" (onClick)="onGrabarCostosClick()"
-                            text="Guardar">
-                        </dx-button>
-                    </div>
+                <div class="filter-actions">
+                    <dx-button text="Consultar" type="default" icon="search" (onClick)="onClickConsultar()">
+                    </dx-button>
                 </div>
 
+                <div class="filter-item warren-filter" *ngIf="filasVista.length">
+
+                    <label class="control-label-aspx">
+                        Warren objetivo
+                    </label>
+
+                    <input type="number" step="0.01" class="warren-input-control" [(ngModel)]="warrenObjetivo"
+                        (ngModelChange)="onWarrenChange($event)">
+                </div>
+
+                <div class="filter-actions" *ngIf="filasVista.length">
+
+                    <dx-button text="Calcular Warren" type="success" icon="check" (onClick)="calcularWarren()">
+                    </dx-button>
+                </div>
+
+                <div class="filter-actions" *ngIf="filasVista.length">
+
+                    <dx-button text="Guardar Cierre" type="success" icon="save" [disabled]="!warrenCalculado"
+                        (onClick)="onClickGuardarCierre()">
+                    </dx-button>
+                </div>
+
+                <div class="filter-actions" *ngIf="filasVista.length">
+
+                    <dx-button text="Restablecer 0.83" type="normal" icon="refresh" (onClick)="restaurarWarren()">
+                    </dx-button>
+                </div>
             </div>
-            <div class="row" style="padding: 5px; margin-right: 2px">
-                    <div class="row" style="padding: 5px; margin-right: 2px">
-                        
-                        <app-tab-grid 
-                        style="width: 100%"
-                        [dataSource]="(listadoTotal$ | async)!" 
-                        (onDataChanged)="handleDataChange($event)">
-                        </app-tab-grid>
 
-                    </div>
+            <!-- ========================================================= -->
+            <!-- RESUMEN COSTO MATERIA PRIMA                              -->
+            <!-- ========================================================= -->
+            <div class="summary-card" *ngIf="resumenLibras.length">
+
+                <div class="summary-title">
+                    Resumen Costo Materia Prima
+                </div>
+
+                <div class="summary-wrap">
+                    <table class="summary-table summary-cost-table">
+                        <thead>
+                            <tr class="summary-group-header">
+                                <th rowspan="2" class="summary-sticky-concept">
+                                    Concepto
+                                </th>
+
+                                <th colspan="3">Entero</th>
+                                <th colspan="3">Cola</th>
+                                <th colspan="3">Valor Agregado</th>
+                                <th colspan="3">Total</th>
+                            </tr>
+
+                            <tr class="summary-sub-header">
+                                <th>Libras</th>
+                                <th>Dólares</th>
+                                <th>Unitario</th>
+
+                                <th>Libras</th>
+                                <th>Dólares</th>
+                                <th>Unitario</th>
+
+                                <th>Libras</th>
+                                <th>Dólares</th>
+                                <th>Unitario</th>
+
+                                <th>Libras</th>
+                                <th>Dólares</th>
+                                <th>Unitario</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr
+                                *ngFor="let item of resumenLibrasVisibles"
+                                [class.summary-group-row]="item.EsGrupoCompra"
+                                [class.summary-sublevel]="item.EsSubnivelCompra">
+                                <td
+                                    class="summary-sticky-concept"
+                                    [class.summary-sublevel-concept]="item.EsSubnivelCompra">
+
+                                    <!-- Compra Camarón funciona como cabecera desplegable. -->
+                                    <button
+                                        *ngIf="item.EsGrupoCompra; else conceptoResumenNormal"
+                                        type="button"
+                                        class="summary-group-toggle"
+                                        (click)="toggleCompraCamaron()"
+                                        [attr.aria-expanded]="compraCamaronExpandida"
+                                        aria-label="Mostrar u ocultar composición de Compra Camarón">
+
+                                        <span
+                                            class="summary-group-chevron"
+                                            aria-hidden="true">
+                                            {{ compraCamaronExpandida ? '▼' : '▶' }}
+                                        </span>
+
+                                        <span class="summary-group-label">
+                                            {{ item.Descripcion }}
+                                        </span>
+
+                                        <span class="summary-group-hint">
+                                            {{ compraCamaronExpandida ? 'Ocultar detalle' : 'Ver detalle' }}
+                                        </span>
+                                    </button>
+
+                                    <ng-template #conceptoResumenNormal>
+                                        <span
+                                            [class.summary-sublevel-label]="item.EsSubnivelCompra">
+                                            {{ item.Descripcion }}
+                                        </span>
+                                    </ng-template>
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ item.Libras_Entero | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ (item.Dolares_Entero || 0) | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ 
+                                    (costoMateriaPrimaUnitario(
+                                                item.Dolares_Entero,
+                                                item.Libras_Entero
+                                              ) ?? 0
+                                             )
+                                              | currency:'USD':'symbol':'1.4-4'  
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ item.Libras_Cola | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ (item.Dolares_Cola || 0) | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                     (costoMateriaPrimaUnitario(
+                                                item.Dolares_Cola,
+                                                item.Libras_Cola
+                                              ) ?? 0
+                                             ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ item.Libras_Valor_Agregado | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ (item.Dolares_Valor_Agregado || 0) | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                     (costoMateriaPrimaUnitario(
+                                                item.Dolares_Valor_Agregado,
+                                                item.Libras_Valor_Agregado
+                                              ) ?? 0
+                                             ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{
+                                        (
+                                            item.Total ||
+                                            (
+                                                item.Libras_Entero +
+                                                item.Libras_Cola +
+                                                item.Libras_Valor_Agregado
+                                            )
+                                        ) | number:'1.0-0'
+                                    }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                        (
+                                            item.Dolares_Total ||
+                                            (
+                                                (item.Dolares_Entero || 0) +
+                                                (item.Dolares_Cola || 0) +
+                                                (item.Dolares_Valor_Agregado || 0)
+                                            )
+                                        ) | currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                     (costoMateriaPrimaUnitario(
+                                                (
+                                                    item.Dolares_Total ||
+                                                    (
+                                                        (item.Dolares_Entero || 0) +
+                                                        (item.Dolares_Cola || 0) +
+                                                        (item.Dolares_Valor_Agregado || 0)
+                                                    )
+                                                ),
+                                                (
+                                                    item.Total ||
+                                                    (
+                                                        item.Libras_Entero +
+                                                        item.Libras_Cola +
+                                                        item.Libras_Valor_Agregado
+                                                    )
+                                                )
+                                              ) ?? 0
+                                            )
+                                              | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+                            </tr>
+
+                            <tr class="summary-total">
+                                <td class="summary-sticky-concept">Total</td>
+
+                                <td class="num-cell">
+                                    {{ resumenTotalEntero | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ resumenMateriaPrimaDolaresEntero | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                        costoMateriaPrimaUnitario(
+                                            resumenMateriaPrimaDolaresEntero,
+                                            resumenTotalEntero
+                                        ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ resumenTotalCola | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ resumenMateriaPrimaDolaresCola | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                        costoMateriaPrimaUnitario(
+                                            resumenMateriaPrimaDolaresCola,
+                                            resumenTotalCola
+                                        ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ resumenTotalVa | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ resumenMateriaPrimaDolaresVa | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                        costoMateriaPrimaUnitario(
+                                            resumenMateriaPrimaDolaresVa,
+                                            resumenTotalVa
+                                        ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+
+                                <td class="num-cell">
+                                    {{ resumenTotalGeneral | number:'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{ resumenMateriaPrimaDolaresTotal | currency:'USD':'symbol':'1.0-0' }}
+                                </td>
+                                <td class="num-cell">
+                                    {{
+                                        costoMateriaPrimaUnitario(
+                                            resumenMateriaPrimaDolaresTotal,
+                                            resumenTotalGeneral
+                                        ) | currency:'USD':'symbol':'1.4-4'
+                                    }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sheet-caption" *ngIf="filasVista.length">
+
+                Los valores son de consulta. Haga clic sobre el nombre de una etapa
+                para revisar los procesos productivos que componen sus libras y haga
+                clic sobre un valor en dólares para abrir el detalle contable.
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- HOJA DE COSTOS                                            -->
+            <!-- ========================================================= -->
+            <div class="cost-sheet-wrap" *ngIf="filasVista.length">
+
+                <table class="cost-sheet" aria-label="Hoja Actualización de Costos">
+
+                    <thead>
+                        <tr class="group-header-row">
+                            <th rowspan="2" class="sticky-concept concept-header">
+                                Costo Produccion
+                            </th>
+
+                            <th colspan="3" class="partition-header">
+                                Entero
+                                <!-- <span class="unit-cost">
+                                    ({{ costoEnteroXLibra | number:'1.0-0' }})
+                                </span> -->
+                            </th>
+
+                            <th colspan="3" class="partition-header">
+                                Cola
+                                <!-- <span class="unit-cost">
+                                    ({{ costoColaXLibra | number:'1.0-0' }})
+                                </span> -->
+                            </th>
+
+                            <th colspan="3" class="partition-header">
+                                Valor Agregado
+                            </th>
+
+                            <th colspan="3" class="total-header">
+                                Total
+                            </th>
+
+                            <th rowspan="2" class="metric-header">
+                                % Absorcion
+                            </th>
+
+                            <th rowspan="2" class="metric-header">
+                                Calculo Warren
+                            </th>
+
+                            <th colspan="3" class="adjusted-header">
+                                Entero Warren
+                            </th>
+
+                            <th colspan="3" class="adjusted-header">
+                                Cola Warren
+                            </th>
+
+                            <th colspan="3" class="adjusted-header">
+                                Valor Agregado Warren
+                            </th>
+                        </tr>
+
+                        <tr class="sub-header-row">
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+
+                            <th>Libras</th>
+                            <th>Dólares</th>
+                            <th>Unitario</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let row of filasVista; trackBy: trackByFila"
+                            [class.row-total]="row.tipo === 'total'"
+                            [class.row-total-procesos]="row.tipo === 'totalProcesos'"
+                            [class.row-total-general]="row.tipo === 'totalGeneral'"
+                            [class.row-section]="row.tipo === 'seccion'"
+                            [class.major-section]="row.id === 'sec-material-empaque' || row.id === 'sec-produccion'"
+                            [class.row-spacer]="row.tipo === 'espacio'"
+                            [class.row-material-empaque]="row.id === 'material-empaque'">
+
+                            <!-- CONCEPTO / ETAPA -->
+                            <td class="concept-cell sticky-concept" [class.section-label]="row.tipo === 'seccion'">
+
+                                <div *ngIf="row.tipo === 'normal' && row.tieneDetalleEtapa; else conceptoTexto"
+                                    class="stage-cell">
+
+                                    <span>{{ row.concepto }}</span>
+
+                                    <dx-button icon="search" stylingMode="text" hint="Ver procesos productivos"
+                                        class="stage-detail-button" (onClick)="abrirDetalleEtapa(row)">
+                                    </dx-button>
+                                </div>
+
+                                <ng-template #conceptoTexto>
+                                    <div *ngIf="row.id === 'material-empaque'; else conceptoSimple"
+                                        class="material-empaque-concepto">
+                                        <span>{{ row.concepto }}</span>
+                                        <span class="material-empaque-badge">
+                                            Asignación directa
+                                        </span>
+                                    </div>
+
+                                    <ng-template #conceptoSimple>
+                                        {{ row.concepto }}
+                                    </ng-template>
+                                </ng-template>
+                            </td>
+
+                            <!-- ================================================= -->
+                            <!-- ENTERO                                            -->
+                            <!-- ================================================= -->
+                            <td class="num-cell lbs-cell">
+                                {{
+                                row.enteroVista.libras !== null
+                                ? (row.enteroVista.libras | number:'1.0-0')
+                                : ''
+                                }}
+                            </td>
+
+                            <td class="num-cell money-cell">
+                                <button *ngIf="
+                                        row.tipo === 'normal' &&
+                                        !esCero(row.enteroVista.dolares);
+                                        else enteroDol
+                                    " class="money-link" type="button" (click)="abrirDetalleCuenta(row, 'EN')">
+
+                                    {{
+                                    row.enteroVista.dolares |
+                                    currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </button>
+
+                                <ng-template #enteroDol>
+                                    <span *ngIf="
+                                            row.enteroVista.dolares !== null &&
+                                            !esCero(row.enteroVista.dolares)
+                                        ">
+                                        {{
+                                        row.enteroVista.dolares |
+                                        currency:'USD':'symbol':'1.0-0'
+                                        }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <td class="num-cell unit-cell">
+                                {{
+                                row.enteroVista.unitario !== null
+                                ? (row.enteroVista.unitario | currency:'USD':'symbol':'1.4-4')
+                                : ''
+                                }}
+                            </td>
+
+                            <!-- ================================================= -->
+                            <!-- COLA                                              -->
+                            <!-- ================================================= -->
+                            <td class="num-cell lbs-cell">
+                                {{
+                                row.colaVista.libras !== null
+                                ? (row.colaVista.libras | number:'1.0-0')
+                                : ''
+                                }}
+                            </td>
+
+                            <td class="num-cell money-cell">
+                                <button *ngIf="
+                                        row.tipo === 'normal' &&
+                                        !esCero(row.colaVista.dolares);
+                                        else colaDol
+                                    " class="money-link" type="button" (click)="abrirDetalleCuenta(row, 'SH')">
+
+                                    {{
+                                    row.colaVista.dolares |
+                                    currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </button>
+
+                                <ng-template #colaDol>
+                                    <span *ngIf="
+                                            row.colaVista.dolares !== null &&
+                                            !esCero(row.colaVista.dolares)
+                                        ">
+                                        {{
+                                        row.colaVista.dolares |
+                                        currency:'USD':'symbol':'1.0-0'
+                                        }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <td class="num-cell unit-cell">
+                                {{
+                                row.colaVista.unitario !== null
+                                ? (row.colaVista.unitario | currency:'USD':'symbol':'1.4-4')
+                                : ''
+                                }}
+                            </td>
+
+                            <!-- ================================================= -->
+                            <!-- VALOR AGREGADO                                    -->
+                            <!-- ================================================= -->
+                            <td class="num-cell lbs-cell">
+                                {{
+                                row.valorAgregadoVista.libras !== null
+                                ? (row.valorAgregadoVista.libras | number:'1.0-0')
+                                : ''
+                                }}
+                            </td>
+
+                            <td class="num-cell money-cell">
+                                <button *ngIf="
+                                        row.tipo === 'normal' &&
+                                        !esCero(row.valorAgregadoVista.dolares);
+                                        else vaDol
+                                    " class="money-link" type="button" (click)="abrirDetalleCuenta(row, 'VA')">
+
+                                    {{
+                                    row.valorAgregadoVista.dolares |
+                                    currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </button>
+
+                                <ng-template #vaDol>
+                                    <span *ngIf="
+                                            row.valorAgregadoVista.dolares !== null &&
+                                            !esCero(row.valorAgregadoVista.dolares)
+                                        ">
+                                        {{
+                                        row.valorAgregadoVista.dolares |
+                                        currency:'USD':'symbol':'1.0-0'
+                                        }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <td class="num-cell unit-cell">
+                                {{
+                                row.valorAgregadoVista.unitario !== null
+                                ? (row.valorAgregadoVista.unitario | currency:'USD':'symbol':'1.4-4')
+                                : ''
+                                }}
+                            </td>
+
+                            <!-- ================================================= -->
+                            <!-- TOTAL DE LA FILA                                    -->
+                            <!-- ================================================= -->
+                            <td class="num-cell lbs-cell total-lbs-cell">
+                                {{
+                                row.totalVista.libras !== null
+                                ? (row.totalVista.libras | number:'1.0-0')
+                                : ''
+                                }}
+                            </td>
+
+                            <td class="num-cell total-cell">
+                                <span *ngIf="
+                                        row.totalVista.dolares !== null &&
+                                        !esCero(row.totalVista.dolares)
+                                    ">
+                                    {{
+                                    row.totalVista.dolares |
+                                    currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </span>
+                            </td>
+
+                            <td class="num-cell unit-cell total-unit-cell">
+                                {{
+                                row.totalVista.unitario !== null
+                                ? (row.totalVista.unitario | currency:'USD':'symbol':'1.4-4')
+                                : ''
+                                }}
+                            </td>
+
+                            <!-- % ABSORCIÓN -->
+                            <td class="num-cell pct-cell">
+                                <span *ngIf="
+                                        warrenCalculado &&
+                                        row.mostrarProrrateo &&
+                                        row.prorrateo !== null &&
+                                        !esCero(row.prorrateo)
+                                    ">
+                                    {{ row.prorrateo | percent:'1.2-2' }}
+                                </span>
+                            </td>
+
+                            <!-- CALCULO WARREN -->
+                            <td class="num-cell warren-cell">
+                                <span *ngIf="
+                                        warrenCalculado &&
+                                        row.ajusteWarren !== null &&
+                                        !esCero(row.ajusteWarren)
+                                    ">
+                                    {{
+                                    row.ajusteWarren |
+                                    currency:'USD':'symbol':'1.0-0'
+                                    }}
+                                </span>
+                            </td>
+                            <!-- ENTERO WARREN: LIBRAS / DÓLARES / UNITARIO -->
+                            <td class="num-cell lbs-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.enteroWarrenVista.libras ?? 0) | number:'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell money-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.enteroWarrenVista.dolares ?? 0) | currency:'USD':'symbol':'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell unit-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.enteroWarrenVista.unitario ?? 0) | currency:'USD':'symbol':'1.4-4' }}</span>
+                            </td>
+
+                            <!-- COLA WARREN: LIBRAS / DÓLARES / UNITARIO -->
+                            <td class="num-cell lbs-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.colaWarrenVista.libras ?? 0) | number:'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell money-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.colaWarrenVista.dolares ?? 0) | currency:'USD':'symbol':'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell unit-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.colaWarrenVista.unitario ?? 0) | currency:'USD':'symbol':'1.4-4' }}</span>
+                            </td>
+
+                            <!-- V.A. WARREN: COPIA DEL ORIGEN -->
+                            <td class="num-cell lbs-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.valorAgregadoWarrenVista.libras ?? 0) | number:'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell money-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.valorAgregadoWarrenVista.dolares ?? 0) | currency:'USD':'symbol':'1.0-0' }}</span>
+                            </td>
+                            <td class="num-cell unit-cell adjusted-cell">
+                                <span *ngIf="row.tipo !== 'espacio' && row.tipo !== 'seccion'">{{ (row.valorAgregadoWarrenVista.unitario ?? 0) | currency:'USD':'symbol':'1.4-4' }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <!-- Warren únicamente después del click -->
+                    <tfoot *ngIf="warrenCalculado">
+                        <tr class="warren-summary-row">
+                            <td class="sticky-concept">
+                                Totales Warren
+                            </td>
+
+                            <td colspan="12"></td>
+
+                            <td class="num-cell pct-cell">
+                                {{ totalPorcentajeAbsorcion | percent:'1.2-2' }}
+                            </td>
+
+                            <td class="num-cell summary-warren">
+                                {{
+                                ajusteWarrenTotal |
+                                currency:'USD':'symbol':'1.0-0'
+                                }}
+                            </td>
+
+                            <td colspan="9"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="empty-state" *ngIf="!filasVista.length && !loadingVisible">
+                Seleccione año y mes, luego presione Consultar.
             </div>
         </div>
     </div>
 </div>
+
+<!-- ===================================================================== -->
+<!-- MODAL GENERAL                                                         -->
+<!-- Este es el único contenedor NgbModal. Los contenidos específicos      -->
+<!-- permanecen en este mismo HTML mediante ng-template.                    -->
+<!-- ===================================================================== -->
+<ng-template #ModalGeneral let-modal>
+    <div class="modal-header modal-header-costos">
+        <h5 class="modal-title">
+            {{ modalActual?.title }}
+        </h5>
+
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('close')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="modal-body modal-body-costos">
+        <ng-container *ngIf="modalActual?.contentBody" [ngTemplateOutlet]="modalActual?.contentBody || null">
+        </ng-container>
+    </div>
+
+    <div class="modal-footer" *ngIf="
+            modalActual?.showFooter !== false &&
+            modalActual?.contentFooter
+        ">
+
+        <ng-container [ngTemplateOutlet]="modalActual?.contentFooter || null">
+        </ng-container>
+    </div>
+</ng-template>
+
+<!-- ===================================================================== -->
+<!-- MODAL: DETALLE DE ETAPA                                               -->
+<!-- ===================================================================== -->
+<ng-template #ContentModalDetalleEtapa>
+    <div class="form-group row margin-container">
+        <div class="col-12">
+            <div class="row modal-summary-row align-items-center">
+                <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                    Etapa
+                </label>
+
+                <div class="col-12 col-md-4 pl-0">
+                    <input type="text" readonly="true" class="form-control form-control-sm"
+                        [value]="filaDetalleSeleccionada?.concepto || ''">
+                </div>
+
+                <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                    Total Libras
+                </label>
+
+                <div class="col-12 col-md-4 pl-0">
+                    <input type="text" readonly="true" class="form-control form-control-sm text-right"
+                        [value]="(detalleTotalGeneral | number:'1.0-0') || ''">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mt-2">
+            <p class="grid-titulo">
+                Detalle Etapa
+            </p>
+
+            <div class="modal-note">
+                El detalle ya fue cargado con la consulta del período.
+                Se consolida por proceso productivo, código y origen.
+                El backend ya entrega RPC únicamente desde 2. PROCESADO.
+                En Brine se muestra Tipo Embalaje para distinguir FONDO, PANERA
+                y registros sin clasificar. No se realiza una nueva consulta
+                al abrir esta ventana.
+            </div>
+
+            <div class="modal-grid-wrap">
+                <dx-data-grid [dataSource]="detalleEtapa" [showBorders]="true" [showRowLines]="true"
+                    [showColumnLines]="true" [rowAlternationEnabled]="true" [columnAutoWidth]="true"
+                    [allowColumnResizing]="true" columnResizingMode="widget" [wordWrapEnabled]="true"
+                    [hoverStateEnabled]="true" [height]="430">
+
+                    <dxo-search-panel [visible]="true" [width]="260" placeholder="Buscar en el detalle...">
+                    </dxo-search-panel>
+
+                    <dxo-filter-row [visible]="true"></dxo-filter-row>
+                    <dxo-header-filter [visible]="true"></dxo-header-filter>
+                    <dxo-column-chooser [enabled]="true"></dxo-column-chooser>
+
+                    <dxo-paging [pageSize]="20"></dxo-paging>
+                    <dxo-pager [visible]="true" [showInfo]="true" 
+                        [showNavigationButtons]="true"
+                        [showPageSizeSelector]="true"
+                        [allowedPageSizes]="[10, 20, 50]">
+                    </dxo-pager>
+
+                    <dxi-column *ngIf="esEtapaBrine" dataField="tipoEmbalaje" caption="Tipo Embalaje" [minWidth]="130">
+                    </dxi-column>
+
+                    <dxi-column dataField="proceso" caption="Proceso Productivo" [minWidth]="230">
+                    </dxi-column>
+
+                    <dxi-column dataField="codigoProceso" caption="Código" [width]="100">
+                    </dxi-column>
+
+                    <dxi-column dataField="origen" caption="Origen" [width]="90">
+                    </dxi-column>
+
+                    <dxi-column dataField="librasEntero" caption="Libras Entero" dataType="number" format="#,##0.00"
+                        alignment="right" [minWidth]="135">
+                    </dxi-column>
+
+                    <dxi-column dataField="librasCola" caption="Libras Cola" dataType="number" format="#,##0.00"
+                        alignment="right" [minWidth]="135">
+                    </dxi-column>
+
+                    <dxi-column dataField="librasValorAgregado" caption="Libras Valor Agregado" dataType="number"
+                        format="#,##0.00" alignment="right" [minWidth]="165">
+                    </dxi-column>
+
+                    <dxi-column dataField="total" caption="Total" dataType="number" format="#,##0.00" alignment="right"
+                        [minWidth]="140">
+                    </dxi-column>
+
+                    <dxo-summary>
+                        <dxi-total-item column="librasEntero" summaryType="sum" valueFormat="#,##0.00"
+                            displayFormat="{0}">
+                        </dxi-total-item>
+
+                        <dxi-total-item column="librasCola" summaryType="sum" valueFormat="#,##0.00"
+                            displayFormat="{0}">
+                        </dxi-total-item>
+
+                        <dxi-total-item column="librasValorAgregado" summaryType="sum" valueFormat="#,##0.00"
+                            displayFormat="{0}">
+                        </dxi-total-item>
+
+                        <dxi-total-item column="total" summaryType="sum" valueFormat="#,##0.00" displayFormat="{0}">
+                        </dxi-total-item>
+
+                    </dxo-summary>
+                </dx-data-grid>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #FooterModalDetalleEtapa>
+    <div class="w-100">
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<!-- ===================================================================== -->
+<!-- MODAL: DETALLE CUENTA CONTABLE                                        -->
+<!-- ===================================================================== -->
+<ng-template #ContentModalCuentaContable>
+    <div class="form-group row margin-container">
+        <div class="col-12">
+            <div class="row modal-summary-row align-items-center">
+                <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                    Etapa
+                </label>
+
+                <div class="col-12 col-md-4 pl-0">
+                    <input type="text" readonly="true" class="form-control form-control-sm"
+                        [value]="filaCuentaSeleccionada?.concepto || ''">
+                </div>
+
+                <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                    Partición
+                </label>
+
+                <div class="col-12 col-md-4 pl-0">
+                    <input type="text" readonly="true" class="form-control form-control-sm"
+                        [value]="nombreParticionCuenta">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mt-2">
+            <p class="grid-titulo">
+                Distribución por Cuenta Contable
+            </p>
+
+            <div *ngIf="filaCuentaSeleccionada?.id === 'material-empaque'; else advertenciaCuentaNormal"
+                class="material-empaque-note">
+                Material de Empaque utiliza asignación directa por centro contable:
+                50301 = Entero, 50302 = Cola y 50303 = Valor Agregado.
+                No utiliza drivers de libras ni distribución por proceso productivo.
+            </div>
+
+            <ng-template #advertenciaCuentaNormal>
+                <!-- <div class="mock-warning">
+                    MOCK temporal: el endpoint ParamProc todavía no devuelve la cuenta
+                    contable real. Los dólares corresponden a la fila y partición
+                    seleccionadas; número y descripción de cuenta se reemplazarán cuando
+                    el backend exponga esa información.
+                </div> -->
+            </ng-template>
+
+            <div class="modal-note">
+                Los valores están consolidados por Grupo Centro de Costo.
+                Si REMUNERACION aparece en varias cuentas o agrupaciones del backend,
+                aquí se muestra una sola vez. Haga clic sobre el grupo para ver las
+                cuentas contables que componen su total.
+            </div>
+
+            <div class="modal-grid-wrap cuentas-grupo-grid">
+                <dx-data-grid [dataSource]="detalleCuentasAgrupadas" [showBorders]="true"
+                    [showRowLines]="true" [columnAutoWidth]="true" [allowColumnResizing]="true"
+                    [rowAlternationEnabled]="true" [hoverStateEnabled]="true" [height]="430"
+                    (onRowClick)="abrirDetalleGrupoCuenta($event)">
+
+                    <dxo-search-panel [visible]="true" [width]="240" placeholder="Buscar grupo...">
+                    </dxo-search-panel>
+
+                    <dxo-filter-row [visible]="true"></dxo-filter-row>
+                    <dxo-header-filter [visible]="true"></dxo-header-filter>
+
+                    <dxo-paging [pageSize]="20"></dxo-paging>
+                    <dxo-pager [visible]="true" [showInfo]="true"
+                        [showNavigationButtons]="true" [showPageSizeSelector]="true"
+                        [allowedPageSizes]="[10, 20, 50]">
+                    </dxo-pager>
+
+                    <dxi-column dataField="grupoCentro" caption="Grupo Centro de Costo" [minWidth]="360">
+                    </dxi-column>
+
+                    <dxi-column dataField="cantidadCuentas" caption="Cuentas" dataType="number"
+                        alignment="right" [width]="110">
+                    </dxi-column>
+
+                    <dxi-column dataField="dolares" caption="Dólares" dataType="number" format="$ #,##0.00"
+                        alignment="right" [width]="180">
+                    </dxi-column>
+
+                    <dxo-summary>
+                        <dxi-total-item column="dolares" summaryType="sum" valueFormat="$ #,##0.00"
+                            displayFormat="{0}">
+                        </dxi-total-item>
+                    </dxo-summary>
+
+                </dx-data-grid>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #FooterModalCuentaContable>
+    <div class="w-100">
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<!-- ===================================================================== -->
+<!-- MODAL: CUENTAS CONTABLES DEL GRUPO                                    -->
+<!-- Se abre encima del modal agrupado y es únicamente informativo.         -->
+<!-- ===================================================================== -->
+<ng-template #ModalDetalleCuentasGrupo let-modal>
+    <div class="modal-header modal-header-costos">
+        <h5 class="modal-title">
+            Cuentas contables - {{ grupoCuentaSeleccionado?.grupoCentro || '' }}
+        </h5>
+
+        <button type="button" class="close" aria-label="Close" (click)="modal.close('close')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="modal-body modal-body-costos">
+        <div class="form-group row margin-container">
+            <div class="col-12">
+                <div class="row modal-summary-row align-items-center">
+                    <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                        Grupo
+                    </label>
+
+                    <div class="col-12 col-md-4 pl-0">
+                        <input type="text" readonly="true" class="form-control form-control-sm"
+                            [value]="grupoCuentaSeleccionado?.grupoCentro || ''">
+                    </div>
+
+                    <label class="col-12 col-md-2 col-form-label text-md-end fw-semibold">
+                        Total
+                    </label>
+
+                    <div class="col-12 col-md-4 pl-0">
+                        <input type="text" readonly="true" class="form-control form-control-sm text-right"
+                            [value]="(grupoCuentaSeleccionado?.dolares || 0) | currency:'USD':'symbol':'1.2-2'">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mt-2">
+                <p class="grid-titulo">
+                    Cuentas que componen el grupo
+                </p>
+
+                <div class="modal-note">
+                    Este detalle es informativo y proviene del mismo Table6 cargado al consultar el período;
+                    no se realiza una nueva llamada al backend.
+                </div>
+
+                <div class="modal-grid-wrap">
+                    <dx-data-grid [dataSource]="detalleCuentasGrupo" [showBorders]="true" [showRowLines]="true"
+                        [showColumnLines]="true" [columnAutoWidth]="true" [allowColumnResizing]="true"
+                        [rowAlternationEnabled]="true" [hoverStateEnabled]="true" [height]="430">
+
+                        <dxo-search-panel [visible]="true" [width]="260" placeholder="Buscar cuenta...">
+                        </dxo-search-panel>
+
+                        <dxo-filter-row [visible]="true"></dxo-filter-row>
+                        <dxo-header-filter [visible]="true"></dxo-header-filter>
+                        <dxo-column-chooser [enabled]="true"></dxo-column-chooser>
+
+                        <dxo-paging [pageSize]="20"></dxo-paging>
+                        <dxo-pager [visible]="true" [showInfo]="true" [showNavigationButtons]="true"
+                            [showPageSizeSelector]="true" [allowedPageSizes]="[10, 20, 50]">
+                        </dxo-pager>
+
+                        <dxi-column dataField="numeroCuenta" caption="Cuenta" [width]="180">
+                        </dxi-column>
+
+                        <dxi-column dataField="descripcionCuenta" caption="Descripción Cuenta" [minWidth]="260">
+                        </dxi-column>
+
+                        <dxi-column dataField="agrupacionCentro" caption="Agrupación" [minWidth]="320">
+                        </dxi-column>
+
+                        <dxi-column dataField="centroCodigo" caption="Centro" [width]="120">
+                        </dxi-column>
+
+                        <dxi-column dataField="subcentroCodigo" caption="Subcentro" [width]="140">
+                        </dxi-column>
+
+                        <dxi-column dataField="dolares" caption="Dólares" dataType="number" format="$ #,##0.00"
+                            alignment="right" [width]="170">
+                        </dxi-column>
+
+                        <dxo-summary>
+                            <dxi-total-item column="dolares" summaryType="sum" valueFormat="$ #,##0.00"
+                                displayFormat="{0}">
+                            </dxi-total-item>
+                        </dxo-summary>
+                    </dx-data-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close('close')">
+            Cerrar
+        </button>
+    </div>
+</ng-template>
+

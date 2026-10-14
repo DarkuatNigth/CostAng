@@ -7,11 +7,10 @@
     <div *dxTemplate="let mainTab of 'item'">
 
         <!-- ══════════════════════════════════════════════════════════════════════
-         TAB: PROCESOS GENERALES (Costos Directos + Costos Indirectos)
-         Libras = FRS + RPC | Costo Unitario = Valor / Libras Totales
+         TAB: PROCESOS GENERALES
     ══════════════════════════════════════════════════════════════════════ -->
         <div *ngIf="mainTab.id === 'PG'" class="p-3">
-            <dx-tab-panel [dataSource]="subTabsGenerales" [loop]="false" class="subtab-custom">
+            <dx-tab-panel [dataSource]="subTabsGenerales" [loop]="false" class="subtab-custom" [scrollingEnabled]="true">
 
                 <div *dxTemplate="let subTab of 'title'">
                     <i class="dx-icon-{{subTab.icon}}"></i> <span>{{subTab.titulo}}</span>
@@ -19,10 +18,23 @@
 
                 <div *dxTemplate="let subTab of 'item'">
                     <div class="p-2">
-                        <dx-data-grid [dataSource]="subTab.datos" keyExpr="Codigo" [showBorders]="true"
+                        <dx-data-grid
+                            [dataSource]="subTab.titulo === 'Totales' ? getTotales('PG') : getParticiones('PG', subTab.titulo)"
+                            keyExpr="Codigo" [showBorders]="true"
                             [repaintChangesOnly]="true" (onRowUpdated)="onValueChange($event, 'PG')">
 
+                            <dxo-grouping [autoExpandAll]="subTab.titulo !== 'Totales'"></dxo-grouping>
                             <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
+
+                            <!-- Totales → agrupa por Grupo (filas = particiones) -->
+                            <dxi-column dataField="grupo" caption="Grupo" [groupIndex]="0"
+                                sortOrder="asc" [sortingMethod]="ordenarGrupo"
+                                [allowEditing]="false" *ngIf="subTab.titulo === 'Totales'"></dxi-column>
+
+                            <!-- Detalle → agrupa por Partición (filas = procesos) -->
+                            <dxi-column dataField="particion" caption="Partición" [groupIndex]="0"
+                                sortOrder="asc" [sortingMethod]="ordenarGrupo"
+                                [allowEditing]="false" *ngIf="subTab.titulo !== 'Totales'"></dxi-column>
 
                             <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false"
                                 cellTemplate="descripcionCellTemplate">
@@ -47,12 +59,25 @@
                                 <dxi-total-item column="Valor" summaryType="sum"
                                     [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
                                 </dxi-total-item>
-                                <dxi-total-item name="LibrasTotal" column="Libras_Proceso" summaryType="custom" valueFormat="#,##0.00"
-                                    displayFormat="{0}">
+                                <dxi-total-item name="LibrasTotal" column="Libras_Proceso" summaryType="custom"
+                                    valueFormat="#,##0.00" displayFormat="{0}">
                                 </dxi-total-item>
                                 <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
                                     [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
                                 </dxi-total-item>
+                                <dxi-group-item column="Valor" summaryType="sum" [alignByColumn]="true"
+                                    [valueFormat]="{type:'currency', precision: 2}" displayFormat="{0}">
+                                </dxi-group-item>
+
+                                <!-- Libras del grupo: SIN column, con showInColumn -->
+                                <dxi-group-item name="LibrasGrupo" summaryType="custom"[alignByColumn]="true" showInColumn="Libras_Proceso"
+                                    valueFormat="#,##0.00" displayFormat="{0}">
+                                </dxi-group-item>
+
+                                <!-- C.Unitario del grupo = costo grupo / libras grupo: SIN column, con showInColumn -->
+                                <dxi-group-item name="CU_Grupo" summaryType="custom" [alignByColumn]="true" showInColumn="Costo_Unitario"
+                                    [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
+                                </dxi-group-item>
                             </dxo-summary>
                         </dx-data-grid>
                     </div>
@@ -62,10 +87,10 @@
         </div>
 
         <!-- ══════════════════════════════════════════════════════════════════════
-         TAB: FRS y RPC  (excluyen Costos Directos/Indirectos, ya en PG)
+         TAB: FRS y RPC
     ══════════════════════════════════════════════════════════════════════ -->
         <div *ngIf="mainTab.id === 'FRS' || mainTab.id === 'RPC'" class="p-3">
-            <dx-tab-panel [dataSource]="mainTab.id === 'FRS' ? subTabsFresco : subTabsSecundario" [loop]="false"
+            <dx-tab-panel [dataSource]="mainTab.id === 'FRS' ? subTabsFresco : subTabsSecundario" [loop]="false" [scrollingEnabled]="true"
                 class="subtab-custom">
 
                 <div *dxTemplate="let subTab of 'title'">
@@ -74,11 +99,24 @@
 
                 <div *dxTemplate="let subTab of 'item'">
                     <div class="p-2">
-                        <dx-data-grid [dataSource]="subTab.datos" keyExpr="Codigo" [showBorders]="true"
+                        <dx-data-grid
+                            [dataSource]="subTab.titulo === 'Totales' ? getTotales(mainTab.id) : getParticiones(mainTab.id, subTab.titulo)"
+                            keyExpr="Codigo" [showBorders]="true"
                             (onEditorPreparing)="onEditorPreparing($event)" [repaintChangesOnly]="true"
                             (onRowUpdated)="onValueChange($event, mainTab.id)">
 
+                            <dxo-grouping [autoExpandAll]="subTab.titulo !== 'Totales'"></dxo-grouping>
                             <dxo-editing mode="cell" [allowUpdating]="subTab.titulo !== 'Totales'"></dxo-editing>
+
+                            <!-- Totales → agrupa por Grupo (filas = particiones) -->
+                            <dxi-column dataField="grupo" caption="Grupo" [groupIndex]="0"
+                                sortOrder="asc" [sortingMethod]="ordenarGrupo"
+                                [allowEditing]="false" *ngIf="subTab.titulo === 'Totales'"></dxi-column>
+
+                            <!-- Detalle → agrupa por Partición (filas = procesos) -->
+                            <dxi-column dataField="particion" caption="Partición" [groupIndex]="0"
+                                sortOrder="asc" [sortingMethod]="ordenarGrupo"
+                                [allowEditing]="false" *ngIf="subTab.titulo !== 'Totales'"></dxi-column>
 
                             <dxi-column dataField="Descripcion" caption="Proceso" [allowEditing]="false"
                                 cellTemplate="descripcionCellTemplate">
@@ -103,12 +141,25 @@
                                 <dxi-total-item column="Valor" summaryType="sum"
                                     [valueFormat]="{type:'currency', precision: 2}" displayFormat="Total: {0}">
                                 </dxi-total-item>
-                                <dxi-total-item name="LibrasTotal"  column="Libras_Proceso" summaryType="custom" valueFormat="#,##0.00"
-                                    displayFormat="{0}">
+                                <dxi-total-item name="LibrasTotal"  column="Libras_Proceso" summaryType="custom" valueFormat="#,##0.00" 
+                                displayFormat="{0}">
                                 </dxi-total-item>
                                 <dxi-total-item name="CostoUnitarioTotal" summaryType="custom" column="Costo_Unitario"
                                     [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
                                 </dxi-total-item>
+                                <dxi-group-item column="Valor" summaryType="sum" [alignByColumn]="true"
+                                    [valueFormat]="{type:'currency', precision: 2}" displayFormat="{0}">
+                                </dxi-group-item>
+
+                                <!-- Libras del grupo: SIN column, con showInColumn -->
+                                <dxi-group-item name="LibrasGrupo" summaryType="custom" [alignByColumn]="true"
+                                    showInColumn="Libras_Proceso" valueFormat="#,##0.00" displayFormat="{0}">
+                                </dxi-group-item>
+
+                                <!-- C.Unitario del grupo = costo grupo / libras grupo: SIN column, con showInColumn -->
+                                <dxi-group-item name="CU_Grupo" summaryType="custom" [alignByColumn]="true" showInColumn="Costo_Unitario"
+                                    [valueFormat]="{type:'currency', precision: 4}" displayFormat="C/Lb: {0}">
+                                </dxi-group-item>
                             </dxo-summary>
                         </dx-data-grid>
                     </div>

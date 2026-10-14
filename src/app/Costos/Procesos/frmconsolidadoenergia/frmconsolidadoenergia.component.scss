@@ -1,0 +1,50 @@
+/* Reutiliza panel-custom, control-label-aspx, select-wrapper-compact, grid-metropolis-style
+   del SCSS global (los mismos de tus otros componentes). */
+
+.tabla-titulo {
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #0087B9;
+  background: #f2f2f2;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  padding: 6px 10px;
+  margin-top: 10px;
+}
+
+/* Columna Total resaltada */
+::ng-deep .col-total {
+  font-weight: bold;
+  background: #eef4f7 !important;
+}
+
+/* Fila TOTAL (última) en negrita */
+::ng-deep .grid-metropolis-style .dx-data-row:last-child td {
+  font-weight: bold;
+  background: #f7f9fb;
+}
+
+/* Gráficos: alto fijo y separación */
+::ng-deep dx-chart {
+  display: block;
+  height: 360px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 6px;
+  background: #fff;
+}
+
+.empty-state {
+  padding: 28px 16px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 13px;
+  font-family: Tahoma, Geneva, sans-serif;
+}
+
+::ng-deep .grid-metropolis-style .dx-datagrid-headers .dx-header-row td[colspan] {
+  text-align: center !important;
+  font-weight: bold;
+  background: #eef4f7;
+}

@@ -51,7 +51,7 @@ export class FrmconsultageneralComponent {
   rowIniTitle = 0;
   rowEndTitle = 0;
   numRowColumns = 0;
-  dataCostUni !: CostosUnitarios | null;
+  dataCostUni !: CostosUnitarios  | undefined;
 
   positionRowDelete: any[] = [];
   detalleGrupos: any[] = [];

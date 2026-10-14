@@ -1,0 +1,491 @@
+<dx-load-panel
+  shadingColor="rgba(0,0,0,0.35)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="container-fluid mt-3 configuracion-costos-page">
+  <div class="panel panel-custom">
+    <div class="panel-heading d-flex justify-content-between align-items-center flex-wrap">
+      <div>
+        <h3 class="panel-title">Configuración de Costos Productivos</h3>
+        <small>
+          Mantenimiento de niveles, matriz de aplicación y cuentas contables.
+          La matriz conserva reglas especiales aunque la vista principal sea True / False.
+        </small>
+      </div>
+
+      <div class="header-actions">
+        <dx-button
+          text="Recargar"
+          type="normal"
+          icon="refresh"
+          (onClick)="cargar()">
+        </dx-button>
+
+        <dx-button
+          text="Guardar cambios"
+          type="success"
+          icon="save"
+          [disabled]="!hayCambios"
+          (onClick)="guardarCambios()">
+        </dx-button>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="maintenance-note">
+        <strong>Lectura rápida:</strong>
+        el switch encendido significa que el costo participa. Los códigos TAR, DEP, PRO,
+        FIC, D y NA se mantienen como reglas especiales para no perder la semántica del
+        archivo <em>niveles de costeo</em>. Doble clic sobre una celda para cambiar la regla exacta.
+      </div>
+
+      <div class="config-tabs" role="tablist" aria-label="Configuración de costos productivos">
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'matriz'"
+          (click)="seleccionarTab('matriz')">
+          Matriz de Costeo
+        </button>
+
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'tipos'"
+          (click)="seleccionarTab('tipos')">
+          Tipos / Niveles
+        </button>
+
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'cuentas'"
+          (click)="seleccionarTab('cuentas')">
+          Cuentas Contables
+        </button>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- MATRIZ                                                           -->
+      <!-- ================================================================ -->
+      <section *ngIf="tabActiva === 'matriz'" class="tab-panel-content">
+        <div class="section-heading">
+          <div>
+            <h4>Matriz por tipo de liquidación</h4>
+            <p>
+              Una fila por TIPOLIQ y una columna por costo/proceso, siguiendo la estructura del Excel.
+            </p>
+          </div>
+          <span class="pending-badge" *ngIf="hayCambios">Cambios sin guardar</span>
+        </div>
+
+        <dx-data-grid
+          class="matrix-grid"
+          [dataSource]="filasMatriz"
+          keyExpr="codigo"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [showColumnLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="false"
+          [allowColumnResizing]="true"
+          columnResizingMode="widget"
+          [wordWrapEnabled]="true"
+          [hoverStateEnabled]="true"
+          (onCellDblClick)="abrirReglaDesdeCelda($event)">
+
+          <dxo-search-panel
+            [visible]="true"
+            [width]="280"
+            placeholder="Buscar TIPOLIQ...">
+          </dxo-search-panel>
+
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
+          <dxo-paging [enabled]="false"></dxo-paging>
+
+          <dxi-column
+            dataField="nombre"
+            caption="TIPOLIQ"
+            [width]="300"
+            [fixed]="true"
+            fixedPosition="left">
+          </dxi-column>
+
+          <dxi-column
+            dataField="tipoLoteCodigo"
+            caption="Tipo"
+            [width]="70"
+            alignment="center"
+            [fixed]="true"
+            fixedPosition="left">
+          </dxi-column>
+
+          <dxi-column
+            dataField="nivel"
+            caption="Nivel"
+            [width]="72"
+            alignment="center"
+            [fixed]="true"
+            fixedPosition="left"
+            cellTemplate="nivelCell">
+          </dxi-column>
+
+          <dxi-column caption="Costos Directos" alignment="center">
+            <dxi-column name="CDF" caption="Fijos" [width]="92" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="CDV" caption="Variables" [width]="92" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <dxi-column caption="Costos Indirectos" alignment="center">
+            <dxi-column name="CIF" caption="Fijos" [width]="92" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="CIV" caption="Variables" [width]="92" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <dxi-column caption="Proceso Primario" alignment="center">
+            <dxi-column name="LOG" caption="Logística" [width]="92" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="REC" caption="Recepción" [width]="92" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="CLA" caption="Clasificación" [width]="100" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="COD" caption="Codificación" [width]="100" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <dxi-column caption="Proceso Secundario" alignment="center">
+            <dxi-column name="DES" caption="Descabezado" [width]="100" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="DSC" caption="Descongelado" [width]="104" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="PEL" caption="Pelado" [width]="90" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="HID" caption="Hidratación" [width]="96" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="COC" caption="Cocido" [width]="90" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <dxi-column caption="Proceso Presentación" alignment="center">
+            <dxi-column name="DEC" caption="Decorado" [width]="92" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="RET" caption="Retractilado" [width]="98" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <dxi-column caption="Proceso Congelación" alignment="center">
+            <dxi-column name="BRI" caption="Brine" [width]="88" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="IQF" caption="IQF" [width]="88" cellTemplate="reglaCell"></dxi-column>
+            <dxi-column name="TUN" caption="Túnel" [width]="88" cellTemplate="reglaCell"></dxi-column>
+          </dxi-column>
+
+          <div *dxTemplate="let cell of 'nivelCell'" class="level-cell">
+            NV{{ cell.value }}
+          </div>
+
+          <div *dxTemplate="let cell of 'reglaCell'" class="rule-cell">
+            <dx-switch
+              class="matrix-switch"
+              [value]="aplicaRegla(cell.data, cell.column.name)"
+              switchedOnText="Sí"
+              switchedOffText="No"
+              (onValueChanged)="cambiarAplicacion(cell.data, cell.column.name, $event.value)">
+            </dx-switch>
+
+            <button
+              *ngIf="etiquetaRegla(cell.data, cell.column.name)"
+              type="button"
+              class="rule-badge"
+              [ngClass]="claseRegla(cell.data, cell.column.name)"
+              [title]="'Regla: ' + etiquetaRegla(cell.data, cell.column.name)"
+              (click)="abrirRegla(cell.data, cell.column.name); $event.stopPropagation()">
+              {{ etiquetaRegla(cell.data, cell.column.name) }}
+            </button>
+          </div>
+        </dx-data-grid>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- TIPOS / NIVELES                                                  -->
+      <!-- ================================================================ -->
+      <section *ngIf="tabActiva === 'tipos'" class="tab-panel-content">
+        <div class="section-heading">
+          <div>
+            <h4>Tipos de proceso y nivel de costeo</h4>
+            <p>
+              Alta, edición y activación de TIPOLIQ. El nivel guardado se carga al motor antes del costeo.
+            </p>
+          </div>
+
+          <dx-button
+            text="Nuevo tipo"
+            type="default"
+            icon="add"
+            (onClick)="nuevoTipo()">
+          </dx-button>
+        </div>
+
+        <dx-data-grid
+          [dataSource]="tiposProceso"
+          keyExpr="codigo"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="true"
+          [allowColumnResizing]="true"
+          [hoverStateEnabled]="true">
+
+          <dxo-search-panel [visible]="true" [width]="280" placeholder="Buscar tipo..."></dxo-search-panel>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-paging [pageSize]="20"></dxo-paging>
+          <dxo-pager
+            [visible]="true"
+            [showInfo]="true"
+            [showNavigationButtons]="true"
+            [showPageSizeSelector]="true"
+            [allowedPageSizes]="[10,20,50]">
+          </dxo-pager>
+
+          <dxi-column dataField="codigo" caption="Código" [width]="90"></dxi-column>
+          <dxi-column dataField="nombre" caption="TIPOLIQ" [minWidth]="330"></dxi-column>
+          <dxi-column dataField="tipoLoteCodigo" caption="Tipo" [width]="90"></dxi-column>
+          <dxi-column dataField="tipoLote" caption="Tipo Lote" [width]="150"></dxi-column>
+          <dxi-column dataField="nivel" caption="Nivel" [width]="90" cellTemplate="nivelTipoCell"></dxi-column>
+          <dxi-column dataField="activo" caption="Activo" [width]="90" cellTemplate="activoCell"></dxi-column>
+          <dxi-column caption="" [width]="70" cellTemplate="accionesTipo"></dxi-column>
+
+          <div *dxTemplate="let cell of 'nivelTipoCell'" class="level-cell">NV{{ cell.value }}</div>
+          <div *dxTemplate="let cell of 'activoCell'" class="status-cell">
+            <span class="status-pill" [class.inactive]="!cell.value">
+              {{ cell.value ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div *dxTemplate="let cell of 'accionesTipo'" class="grid-actions">
+            <dx-button icon="edit" stylingMode="text" hint="Editar" (onClick)="editarTipo(cell.data)"></dx-button>
+          </div>
+        </dx-data-grid>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- CUENTAS                                                          -->
+      <!-- ================================================================ -->
+      <section *ngIf="tabActiva === 'cuentas'" class="tab-panel-content">
+        <div class="section-heading">
+          <div>
+            <h4>Cuentas contables configuradas</h4>
+            <p>
+              Se mantiene la configuración física. Proceso, driver y modo de monto se resuelven en C#.
+            </p>
+          </div>
+
+          <dx-button
+            text="Nueva cuenta"
+            type="default"
+            icon="add"
+            (onClick)="nuevaCuenta()">
+          </dx-button>
+        </div>
+
+        <dx-data-grid
+          class="account-grid"
+          [dataSource]="cuentas"
+          keyExpr="id"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="true"
+          [allowColumnResizing]="true"
+          [wordWrapEnabled]="true"
+          [hoverStateEnabled]="true">
+
+          <dxo-search-panel [visible]="true" [width]="300" placeholder="Buscar cuenta, centro o proceso..."></dxo-search-panel>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-column-chooser [enabled]="true"></dxo-column-chooser>
+          <dxo-paging [pageSize]="25"></dxo-paging>
+          <dxo-pager
+            [visible]="true"
+            [showInfo]="true"
+            [showNavigationButtons]="true"
+            [showPageSizeSelector]="true"
+            [allowedPageSizes]="[25,50,100]">
+          </dxo-pager>
+
+          <dxi-column dataField="empresa" caption="Empresa" [width]="80"></dxi-column>
+          <dxi-column dataField="cuenta" caption="Cuenta" [width]="140"></dxi-column>
+          <dxi-column dataField="etapaCodigo" caption="Etapa" [width]="80"></dxi-column>
+          <dxi-column dataField="etapa" caption="Etapa General" [width]="175"></dxi-column>
+          <dxi-column dataField="centroCodigo" caption="Centro" [width]="105"></dxi-column>
+          <dxi-column dataField="subcentroCodigo" caption="Subcentro" [width]="120"></dxi-column>
+          <dxi-column dataField="procesoResuelto" caption="Proceso Resuelto" [width]="145"></dxi-column>
+          <dxi-column dataField="driverResuelto" caption="Driver" [width]="145"></dxi-column>
+          <dxi-column dataField="modoMonto" caption="Modo Monto" [width]="120"></dxi-column>
+          <dxi-column dataField="requiereCreditoRetiro" caption="Retiro Crédito" [width]="105" dataType="boolean"></dxi-column>
+          <dxi-column dataField="activo" caption="Activo" [width]="90" cellTemplate="activoCuentaCell"></dxi-column>
+          <dxi-column caption="" [width]="70" cellTemplate="accionesCuenta"></dxi-column>
+
+          <div *dxTemplate="let cell of 'activoCuentaCell'" class="status-cell">
+            <span class="status-pill" [class.inactive]="!cell.value">
+              {{ cell.value ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div *dxTemplate="let cell of 'accionesCuenta'" class="grid-actions">
+            <dx-button icon="edit" stylingMode="text" hint="Editar" (onClick)="editarCuenta(cell.data)"></dx-button>
+          </div>
+        </dx-data-grid>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- POPUP REGLA AVANZADA                                                   -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupReglaVisible"
+  [showTitle]="true"
+  title="Regla de aplicación"
+  [width]="520"
+  [height]="360"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="false">
+
+  <div *dxTemplate="let data of 'content'" class="popup-form">
+    <div class="popup-context">
+      <div><strong>TIPOLIQ:</strong> {{ reglaTipoCodigo }} - {{ reglaTipoNombre }}</div>
+      <div><strong>Proceso:</strong> {{ reglaProcesoCodigo }} - {{ reglaProcesoNombre }}</div>
+    </div>
+
+    <label class="control-label-aspx">Regla</label>
+    <dx-select-box
+      [dataSource]="reglasDisponibles"
+      displayExpr="descripcion"
+      valueExpr="codigo"
+      [(value)]="reglaSeleccionada"
+      [searchEnabled]="true">
+    </dx-select-box>
+
+    <div class="rule-help">
+      El switch de la matriz es una representación simple. Este valor es el que realmente se guarda en
+      <code>tb_configTipoLiquidacion_procesoCosto</code>.
+    </div>
+
+    <div class="popup-actions">
+      <dx-button text="Cancelar" type="normal" (onClick)="popupReglaVisible=false"></dx-button>
+      <dx-button text="Aplicar" type="success" icon="check" (onClick)="aplicarReglaAvanzada()"></dx-button>
+    </div>
+  </div>
+</dx-popup>
+
+<!-- ======================================================================= -->
+<!-- POPUP TIPO / NIVEL                                                     -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupTipoVisible"
+  [showTitle]="true"
+  [title]="tipoEdicion.esNuevo ? 'Nuevo tipo de proceso' : 'Editar tipo de proceso'"
+  [width]="620"
+  [height]="510"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="false">
+
+  <div *dxTemplate="let data of 'content'" class="popup-form form-grid">
+    <div class="form-field">
+      <label class="control-label-aspx">Código</label>
+      <dx-text-box [(value)]="tipoEdicion.codigo" [readOnly]="!tipoEdicion.esNuevo" [maxLength]="10"></dx-text-box>
+    </div>
+
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Descripción TIPOLIQ</label>
+      <dx-text-box [(value)]="tipoEdicion.nombre" [maxLength]="180"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Tipo de lote</label>
+      <dx-select-box
+        [dataSource]="tiposLote"
+        displayExpr="nombre"
+        valueExpr="codigo"
+        [(value)]="tipoEdicion.tipoLoteCodigo">
+      </dx-select-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Nivel</label>
+      <dx-select-box [items]="[1,2,3,4,5]" [(value)]="tipoEdicion.nivel"></dx-select-box>
+    </div>
+
+    <div class="form-field switch-field">
+      <label class="control-label-aspx">Activo</label>
+      <dx-switch [(value)]="tipoEdicion.activo" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+    </div>
+
+    <div class="form-field form-field-wide info-box">
+      Al crear un TIPOLIQ nuevo, el front genera automáticamente todas sus celdas de matriz con regla
+      <strong>NA</strong>. Luego se pueden activar con el switch o definir TAR/DEP/PRO/FIC/D.
+    </div>
+
+    <div class="popup-actions form-field-wide">
+      <dx-button text="Cancelar" type="normal" (onClick)="popupTipoVisible=false"></dx-button>
+      <dx-button text="Aceptar" type="success" icon="check" (onClick)="guardarTipoLocal()"></dx-button>
+    </div>
+  </div>
+</dx-popup>
+
+<!-- ======================================================================= -->
+<!-- POPUP CUENTA                                                           -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupCuentaVisible"
+  [showTitle]="true"
+  [title]="cuentaEdicion.esNuevo ? 'Nueva cuenta productiva' : 'Editar cuenta productiva'"
+  [width]="680"
+  [height]="570"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="false">
+
+  <div *dxTemplate="let data of 'content'" class="popup-form form-grid">
+    <div class="form-field">
+      <label class="control-label-aspx">Empresa</label>
+      <dx-number-box [(value)]="cuentaEdicion.empresa" [min]="1" [showSpinButtons]="true"></dx-number-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Cuenta</label>
+      <dx-text-box [(value)]="cuentaEdicion.cuenta" [maxLength]="13"></dx-text-box>
+    </div>
+
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Etapa</label>
+      <dx-select-box
+        [dataSource]="etapas"
+        displayExpr="nombre"
+        valueExpr="codigo"
+        [(value)]="cuentaEdicion.etapaCodigo"
+        [searchEnabled]="true">
+      </dx-select-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Centro</label>
+      <dx-text-box [(value)]="cuentaEdicion.centroCodigo"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Subcentro</label>
+      <dx-text-box [(value)]="cuentaEdicion.subcentroCodigo"></dx-text-box>
+    </div>
+
+    <div class="form-field switch-field">
+      <label class="control-label-aspx">Activo</label>
+      <dx-switch [(value)]="cuentaEdicion.activo" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+    </div>
+
+    <div class="form-field form-field-wide info-box">
+      El mantenimiento no pide al usuario seleccionar el proceso derivado. El backend resuelve
+      LOG/REC/CLA/COD, DES/DSC/PEL/HID/COC, DEC/RET, BRI/IQF/TUN, CDF/CDV, CIF/CIV,
+      MPE y COP con la misma lógica de la configuración actual. Las cuentas IQF siguen usando el mapa
+      especializado existente.
+    </div>
+
+    <div class="popup-actions form-field-wide">
+      <dx-button text="Cancelar" type="normal" (onClick)="popupCuentaVisible=false"></dx-button>
+      <dx-button text="Aceptar" type="success" icon="check" (onClick)="guardarCuentaLocal()"></dx-button>
+    </div>
+  </div>
+</dx-popup>

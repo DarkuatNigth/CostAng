@@ -1,0 +1,588 @@
+<dx-load-panel #loadPanel shadingColor="rgba(0,0,0,0.4)" [(visible)]="loadingVisible" [showIndicator]="true"
+    [showPane]="true" [shading]="true" [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="container-fluid mt-3">
+    <div class="panel panel-custom">
+
+        <div class="panel-heading">
+            <h3 class="panel-title">Distribución de Costos — Consumo de Luz</h3>
+        </div>
+
+        <div class="panel-body">
+
+            <!-- ===================== FILTROS ===================== -->
+            <div class="row align-items-end">
+                <div class="col-md-2 mb-2">
+                    <label class="control-label-aspx">Año:</label>
+                    <div class="select-wrapper-compact">
+                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbAnio" [searchable]="true"
+                            [clearable]="false">
+                            <ng-option *ngFor="let data of listAnios" [value]="data.CODIGO">
+                                <div class="option-text" title="{{ data.DESCRIPCION }}">{{ data.DESCRIPCION }}</div>
+                            </ng-option>
+                        </ng-select>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <label class="control-label-aspx">Mes:</label>
+                    <div class="select-wrapper-compact">
+                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbMes" [searchable]="true" [clearable]="false">
+                            <ng-option *ngFor="let data of listMeses" [value]="data.CODIGO">
+                                <div title="{{ data.DESCRIPCION }}" class="option-text">{{ data.DESCRIPCION }}</div>
+                            </ng-option>
+                        </ng-select>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <div class="btn-group-aspx">
+                        <dx-button text="Consultar" type="default" icon="search" (onClick)="onClickConsultar()">
+                        </dx-button>
+                        <dx-button class="ml-2" icon="save" type="success" text="Guardar" (onClick)="onGuardar()">
+                        </dx-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TOTALES: visibles solo tras consultar ===== -->
+            <ng-container *ngIf="consultado">
+                <div class="grupos-flex">
+
+                    <!-- ============================================================================
+                        GRUPO ENERGÍA — usa totales.energia.SONGA1 / SONGA2 / COMIN
+                        ============================================================================ -->
+                    <div class="grupo-card">
+                        <div class="grupo-titulo-main">ENERGÍA ELÉCTRICA</div>
+                        <div class="totales-wrap">
+
+                            <div class="totales-grupo">
+                                <span class="totales-titulo">SONGA 1 / SONGA 2</span>
+
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 1 - Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.SONGA1.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('energia','SONGA1','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 1 - Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.SONGA1.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('energia','SONGA1','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 2 - Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.SONGA2.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('energia','SONGA2','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 2 - Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.SONGA2.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('energia','SONGA2','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+
+                                <div class="split-box" *ngIf="split">
+                                    <div class="split-row">
+                                        <span class="split-pct">{{ split.pctSonga1 | number:'1.0-2' }}%</span>
+                                        <span class="split-monto">{{ totales.energia.SONGA1.dolares |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">SONGA 1</span>
+                                    </div>
+                                    <div class="split-row">
+                                        <span class="split-pct">{{ split.pctSonga2 | number:'1.0-2' }}%</span>
+                                        <span class="split-monto">{{ totales.energia.SONGA2.dolares |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">SONGA 2</span>
+                                    </div>
+                                    <div class="split-row"
+                                        style="border-top: 1px solid #ddd; margin-top: 8px; padding-top: 8px; font-weight: bold;">
+                                        <span class="split-pct">100.00%</span>
+                                        <span class="split-monto">{{ (totales.energia.SONGA1.dolares +
+                                            totales.energia.SONGA2.dolares) | currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">TOTAL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="totales-grupo">
+                                <span class="totales-titulo">COMÍN</span>
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.COMIN.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('energia','COMIN','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.energia.COMIN.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('energia','COMIN','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+                                <div class="split-box">
+                                    <div class="split-row">
+                                        <span class="split-pct">100%</span>
+                                        <span class="split-monto">{{ (totales.energia.COMIN.dolares || 0) |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">Cuenta única</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================================
+                        GRUPO BASURA — MISMA estructura, ahora con SONGA 2 (antes no existía)
+                        usa totales.basura.SONGA1 / SONGA2 / COMIN
+                        ============================================================================ -->
+                    <div class="grupo-card">
+                        <div class="grupo-titulo-main">TASA RECOLECCIÓN BASURA</div>
+                        <div class="totales-wrap">
+
+                            <div class="totales-grupo">
+                                <span class="totales-titulo">SONGA 1 / SONGA 2</span>
+
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 1 - Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.SONGA1.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('basura','SONGA1','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 1 - Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.SONGA1.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('basura','SONGA1','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+
+                                <!-- ← NUEVO: antes basura NO tenía SONGA 2 propio -->
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 2 - Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.SONGA2.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('basura','SONGA2','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">SONGA 2 - Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.SONGA2.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('basura','SONGA2','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+
+                                <div class="split-box" *ngIf="splitBasura">
+                                    <div class="split-row">
+                                        <span class="split-pct">{{ splitBasura.pctSonga1 | number:'1.0-2' }}%</span>
+                                        <span class="split-monto">{{ totales.basura.SONGA1.dolares |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">SONGA 1</span>
+                                    </div>
+                                    <div class="split-row">
+                                        <span class="split-pct">{{ splitBasura.pctSonga2 | number:'1.0-2' }}%</span>
+                                        <span class="split-monto">{{ totales.basura.SONGA2.dolares |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">SONGA 2</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="totales-grupo">
+                                <span class="totales-titulo">COMÍN</span>
+                                <div class="totales-campos">
+                                    <div class="campo">
+                                        <label class="control-label-aspx">Total dólares: <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.COMIN.dolares"
+                                            format="$ #,##0.00" [min]="0" placeholder="0.00"
+                                            (onValueChanged)="onTotalChanged('basura','COMIN','dolares',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                    <div class="campo">
+                                        <label class="control-label-aspx">Total watts (kWh): <span
+                                                class="req">*</span></label>
+                                        <dx-number-box class="nb-aspx" [(value)]="totales.basura.COMIN.watts"
+                                            format="#,##0.## 'kWh'" [min]="0" placeholder="0"
+                                            (onValueChanged)="onTotalChanged('basura','COMIN','watts',$event.value)">
+                                        </dx-number-box>
+                                    </div>
+                                </div>
+                                <div class="split-box">
+                                    <div class="split-row">
+                                        <span class="split-pct">100%</span>
+                                        <span class="split-monto">{{ (totales.basura.COMIN.dolares || 0) |
+                                            currency:'USD':'symbol':'1.2-2' }}</span>
+                                        <span class="split-lbl">Cuenta única</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </ng-container>
+
+            <!-- ===================== TABS ===================== -->
+            <div class="row" style="padding: 5px; margin-right: 2px" *ngIf="consultado">
+                <div class="col-12">
+
+                    <dx-tab-panel [dataSource]="tabs" [selectedIndex]="tabSeleccionado" [loop]="false"
+                        [swipeEnabled]="false" [animationEnabled]="false" [deferRendering]="false"
+                        (onSelectionChanged)="onTabSelectionChanged($event)">
+
+                        <div *dxTemplate="let tab of 'title'">
+                            <span class="dx-icon-{{ tab.icon }}"></span>
+                            <span class="ml-1">{{ tab.text }}</span>
+                        </div>
+
+                        <div *dxTemplate="let tab of 'item'">
+
+                            <!-- ---------- TAB 1: CAPTURA DE % ---------- -->
+                            <ng-container *ngIf="tab.id === 0">
+                                <div class="tab1-toolbar">
+                                    <label class="control-label-aspx mr-2">Copiar porcentajes del mes:</label>
+                                    <div class="copiar-mes-wrapper select-wrapper-compact">
+                                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbMesCopiar"
+                                            [searchable]="true" [clearable]="true" placeholder="Seleccione mes...">
+                                            <ng-option *ngFor="let data of listMeses" [value]="data.CODIGO">
+                                                <div title="{{ data.DESCRIPCION }}" class="option-text">{{
+                                                    data.DESCRIPCION }}</div>
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                    <dx-button class="ml-2" text="Copiar" type="normal" icon="copy"
+                                        (onClick)="onCopiarMes()"></dx-button>
+                                    <span class="nota-editable">Solo SONGA es editable. COMÍN es cuenta única
+                                        (100%).</span>
+                                </div>
+
+                                <div class="grid-metropolis-style">
+                                    <dx-data-grid [dataSource]="drivers" keyExpr="id" [showBorders]="true"
+                                        [columnAutoWidth]="true" [height]="440" [wordWrapEnabled]="false"
+                                        (onRowUpdated)="onRowUpdatedDrivers()"
+                                        (onEditingStart)="onEditingStart($event)">
+                                        <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+                                        <dxo-scrolling mode="virtual"></dxo-scrolling>
+                                        <dxo-search-panel [visible]="true"
+                                            placeholder="Buscar cuenta o centro..."></dxo-search-panel>
+                                        <dxo-group-panel [visible]="false"></dxo-group-panel>
+
+                                        <dxi-column dataField="asientoLabel" caption="Asiento"
+                                            [groupIndex]="0"></dxi-column>
+                                        <dxi-column dataField="bolsa" caption="Bolsa" [width]="90"
+                                            [allowEditing]="false"></dxi-column>
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [allowEditing]="false"
+                                            [width]="130"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [allowEditing]="false"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Descripción" [allowEditing]="false"
+                                            [width]="120"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" dataType="number"
+                                            [width]="130" alignment="right" format="#,##0.0000 '%'">
+                                            <dxo-format type="fixedPoint" [precision]="4"></dxo-format>
+                                        </dxi-column>
+
+                                        <dxo-summary>
+                                            <dxi-group-item column="porcentaje" summaryType="sum"
+                                                valueFormat="#,##0.0000 '%'" displayFormat="Suma: {0}"
+                                                [alignByColumn]="true">
+                                            </dxi-group-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+                            </ng-container>
+
+                            <!-- ---------- TAB 2: DISTRIBUCIÓN (2 asientos) ---------- -->
+                            <ng-container *ngIf="tab.id === 1">
+
+                                <!-- ===== Asiento SONGA ===== -->
+                                <div class="asiento-header">{{ resumenSonga?.label }}</div>
+                                <div class="grid-metropolis-style mb-1">
+                                    <dx-data-grid #gridSonga [dataSource]="filasSonga" keyExpr="id" [showBorders]="true"
+                                        [columnAutoWidth]="true" [wordWrapEnabled]="false"
+                                        [rowAlternationEnabled]="false" [height]="420">
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+                                        <dxi-column dataField="clave" caption="Clave" [width]="80"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [minWidth]="220"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Cuentas"
+                                            [width]="130"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" alignment="right"
+                                            [width]="110" cellTemplate="pctCell"></dxi-column>
+                                        <dxi-column dataField="debe" caption="DEBE ($)" alignment="right" [width]="140"
+                                            format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="haber" caption="HABER ($)" alignment="right"
+                                            [width]="140" format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="debeWatts" caption="DEBE (kWh)" alignment="right"
+                                            [width]="130" format="#,##0.0000"></dxi-column>
+
+                                        <div *dxTemplate="let c of 'pctCell'">
+                                            <span *ngIf="!c.data.esHaber">{{ c.value | number:'1.4-4' }} %</span>
+                                        </div>
+
+                                        <dxo-summary>
+                                            <dxi-total-item column="debe" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="haber" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="debeWatts" summaryType="sum"
+                                                valueFormat="#,##0.0000" displayFormat="{0}"></dxi-total-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+
+                                <div class="cuadre-box" *ngIf="resumenSonga as r">
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">DEBE ($)</span>
+                                        <span class="cuadre-val">{{ r.totalDebe | currency:'USD':'symbol':'1.2-2'
+                                            }}</span>
+                                    </div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">HABER ($)</span>
+                                        <span class="cuadre-val">{{ r.totalHaber | currency:'USD':'symbol':'1.2-2'
+                                            }}</span>
+                                    </div>
+                                    <div class="cuadre-col" [class.desc-ok]="r.diferencia === 0"
+                                        [class.desc-warn]="r.diferencia !== 0">
+                                        <span class="cuadre-lbl">Diferencia ($)</span>
+                                        <span class="cuadre-val">{{ r.diferencia | number:'1.4-4' }}</span>
+                                    </div>
+                                    <div class="cuadre-sep"></div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">Watts repartidos</span>
+                                        <span class="cuadre-val">{{ r.totalWattsRepartido | number:'1.2-2' }}</span>
+                                    </div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">Watts ingresados</span>
+                                        <span class="cuadre-val">{{ r.totalWatts | number:'1.2-2' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- ===== Asiento COMÍN ===== -->
+                                <div class="asiento-header">{{ resumenComin?.label }}</div>
+                                <div class="grid-metropolis-style mb-1">
+                                    <dx-data-grid #gridComun [dataSource]="filasComun" keyExpr="id" [showBorders]="true"
+                                        [columnAutoWidth]="true" [wordWrapEnabled]="false"
+                                        [rowAlternationEnabled]="false" [height]="420">
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+                                        <dxi-column dataField="clave" caption="Clave" [width]="80"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [minWidth]="200"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Cuentas"
+                                            [width]="150"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" alignment="right"
+                                            [width]="110" cellTemplate="pctCellC"></dxi-column>
+                                        <dxi-column dataField="debe" caption="DEBE ($)" alignment="right" [width]="140"
+                                            format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="haber" caption="HABER ($)" alignment="right"
+                                            [width]="140" format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="debeWatts" caption="DEBE (kWh)" alignment="right"
+                                            [width]="130" format="#,##0.0000"></dxi-column>
+
+                                        <div *dxTemplate="let c of 'pctCellC'">
+                                            <span *ngIf="!c.data.esHaber">{{ c.value | number:'1.4-4' }} %</span>
+                                        </div>
+
+                                        <dxo-summary>
+                                            <dxi-total-item column="debe" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="haber" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+
+                                <div class="cuadre-box" *ngIf="resumenComin as r">
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">DEBE ($)</span>
+                                        <span class="cuadre-val">{{ r.totalDebe | currency:'USD':'symbol':'1.2-2'
+                                            }}</span>
+                                    </div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">HABER ($)</span>
+                                        <span class="cuadre-val">{{ r.totalHaber | currency:'USD':'symbol':'1.2-2'
+                                            }}</span>
+                                    </div>
+                                    <div class="cuadre-col" [class.desc-ok]="r.diferencia === 0"
+                                        [class.desc-warn]="r.diferencia !== 0">
+                                        <span class="cuadre-lbl">Diferencia ($)</span>
+                                        <span class="cuadre-val">{{ r.diferencia | number:'1.4-4' }}</span>
+                                    </div>
+                                    <div class="cuadre-sep"></div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">Watts repartidos</span>
+                                        <span class="cuadre-val">{{ r.totalWattsRepartido | number:'1.2-2' }}</span>
+                                    </div>
+                                    <div class="cuadre-col">
+                                        <span class="cuadre-lbl">Watts ingresados</span>
+                                        <span class="cuadre-val">{{ r.totalWatts | number:'1.2-2' }}</span>
+                                    </div>
+                                </div>
+
+                            </ng-container>
+
+                            <!-- TAB 2: Drivers Basura -->
+                            <ng-container *ngIf="tab.id === 2">
+                                <div class="grid-metropolis-style">
+                                    <dx-data-grid [dataSource]="driversBasura" keyExpr="id" [showBorders]="true"
+                                        [columnAutoWidth]="true" [height]="440" [wordWrapEnabled]="false"
+                                        (onRowUpdated)="recalcularBasura()" (onEditingStart)="onEditingStart($event)">
+                                        <dxo-editing mode="cell" [allowUpdating]="true"></dxo-editing>
+                                        <dxo-scrolling mode="virtual"></dxo-scrolling>
+                                        <dxo-search-panel [visible]="true" placeholder="Buscar..."></dxo-search-panel>
+                                        <dxi-column dataField="asientoLabel" caption="Asiento"
+                                            [groupIndex]="0"></dxi-column>
+                                        <dxi-column dataField="bolsa" caption="Bolsa" [width]="90"
+                                            [allowEditing]="false"></dxi-column>
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [allowEditing]="false"
+                                            [width]="130"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [allowEditing]="false"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Descripción" [allowEditing]="false"
+                                            [width]="180"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" dataType="number"
+                                            [width]="130" alignment="right" format="#,##0.0000 '%'">
+                                            <dxo-format type="fixedPoint" [precision]="4"></dxo-format>
+                                        </dxi-column>
+                                        <dxo-summary>
+                                            <dxi-group-item column="porcentaje" summaryType="sum"
+                                                valueFormat="#,##0.0000 '%'" displayFormat="Suma: {0}"
+                                                [alignByColumn]="true"></dxi-group-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+                            </ng-container>
+
+                            <!-- TAB 3: Distribucion Basura -->
+                            <ng-container *ngIf="tab.id === 3">
+                                <div class="asiento-header">{{ resumenBasuraSonga?.label }}</div>
+                                <div class="grid-metropolis-style mb-1">
+                                    <dx-data-grid #gridBasuraSonga [dataSource]="filasBasuraSonga" keyExpr="id"
+                                        [showBorders]="true" [columnAutoWidth]="true" [wordWrapEnabled]="false"
+                                        [height]="420">
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+                                        <dxi-column dataField="clave" caption="Clave" [width]="80"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [minWidth]="200"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Cuentas"
+                                            [width]="150"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" alignment="right"
+                                            [width]="110" cellTemplate="pctB1"></dxi-column>
+                                        <dxi-column dataField="debe" caption="DEBE ($)" alignment="right" [width]="140"
+                                            format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="haber" caption="HABER ($)" alignment="right"
+                                            [width]="140" format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="debeWatts" caption="DEBE (kWh)" alignment="right"
+                                            [width]="130" format="#,##0.0000"></dxi-column>
+                                        <div *dxTemplate="let c of 'pctB1'"><span *ngIf="!c.data.esHaber">{{ c.value |
+                                                number:'1.4-4' }} %</span></div>
+                                        <dxo-summary>
+                                            <dxi-total-item column="debe" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="haber" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="debeWatts" summaryType="sum"
+                                                valueFormat="#,##0.0000" displayFormat="{0}"></dxi-total-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+                                <div class="cuadre-box" *ngIf="resumenBasuraSonga as r">
+                                    <div class="cuadre-col"><span class="cuadre-lbl">DEBE ($)</span><span
+                                            class="cuadre-val">{{ r.totalDebe | currency:'USD':'symbol':'1.2-2'
+                                            }}</span></div>
+                                    <div class="cuadre-col"><span class="cuadre-lbl">HABER ($)</span><span
+                                            class="cuadre-val">{{ r.totalHaber | currency:'USD':'symbol':'1.2-2'
+                                            }}</span></div>
+                                    <div class="cuadre-col" [class.desc-ok]="r.diferencia === 0"
+                                        [class.desc-warn]="r.diferencia !== 0">
+                                        <span class="cuadre-lbl">Diferencia ($)</span><span class="cuadre-val">{{
+                                            r.diferencia | number:'1.4-4' }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="asiento-header">{{ resumenBasuraComin?.label }}</div>
+                                <div class="grid-metropolis-style mb-1">
+                                    <dx-data-grid #gridBasuraComun [dataSource]="filasBasuraComun" keyExpr="id"
+                                        [showBorders]="true" [columnAutoWidth]="true" [wordWrapEnabled]="false"
+                                        [height]="420">
+                                        <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+                                        <dxi-column dataField="clave" caption="Clave" [width]="80"></dxi-column>
+                                        <dxi-column dataField="centroCosto" caption="Centro de Costo"
+                                            [minWidth]="200"></dxi-column>
+                                        <dxi-column dataField="descripcion" caption="Cuentas"
+                                            [width]="150"></dxi-column>
+                                        <dxi-column dataField="porcentaje" caption="Driver (%)" alignment="right"
+                                            [width]="110" cellTemplate="pctB2"></dxi-column>
+                                        <dxi-column dataField="debe" caption="DEBE ($)" alignment="right" [width]="140"
+                                            format="$ #,##0.00"></dxi-column>
+                                        <dxi-column dataField="haber" caption="HABER ($)" alignment="right"
+                                            [width]="140" format="$ #,##0.00"></dxi-column>
+                                        <div *dxTemplate="let c of 'pctB2'"><span *ngIf="!c.data.esHaber">{{ c.value |
+                                                number:'1.4-4' }} %</span></div>
+                                        <dxo-summary>
+                                            <dxi-total-item column="debe" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                            <dxi-total-item column="haber" summaryType="sum" valueFormat="$ #,##0.00"
+                                                displayFormat="{0}"></dxi-total-item>
+                                        </dxo-summary>
+                                    </dx-data-grid>
+                                </div>
+                                <div class="cuadre-box" *ngIf="resumenBasuraComin as r">
+                                    <div class="cuadre-col"><span class="cuadre-lbl">DEBE ($)</span><span
+                                            class="cuadre-val">{{ r.totalDebe | currency:'USD':'symbol':'1.2-2'
+                                            }}</span></div>
+                                    <div class="cuadre-col"><span class="cuadre-lbl">HABER ($)</span><span
+                                            class="cuadre-val">{{ r.totalHaber | currency:'USD':'symbol':'1.2-2'
+                                            }}</span></div>
+                                    <div class="cuadre-col" [class.desc-ok]="r.diferencia === 0"
+                                        [class.desc-warn]="r.diferencia !== 0">
+                                        <span class="cuadre-lbl">Diferencia ($)</span><span class="cuadre-val">{{
+                                            r.diferencia | number:'1.4-4' }}</span>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </dx-tab-panel>
+                </div>
+            </div>
+
+            <!-- Estado vacío -->
+            <div class="empty-state" *ngIf="!consultado">
+                Seleccione año y mes, luego presione <strong>Consultar</strong>.
+            </div>
+
+        </div>
+    </div>
+</div>

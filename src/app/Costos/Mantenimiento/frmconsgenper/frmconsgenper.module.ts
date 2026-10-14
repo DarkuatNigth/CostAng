@@ -50,7 +50,7 @@ import { AuthGuard } from 'src/app/_guards';
     CalendarModule,
     AutocompleteLibModule,
     RouterModule.forChild([
-      { path: 'ext-mantconfig',  canActivate: [AuthGuard],component: FrmconsgenperComponent },
+      { path: 'ext-mantconfig',  /*canActivate: [AuthGuard],*/component: FrmconsgenperComponent },
     ])
   ],
   exports: [

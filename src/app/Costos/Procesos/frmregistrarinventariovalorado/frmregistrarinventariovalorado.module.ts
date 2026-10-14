@@ -31,7 +31,7 @@ import { FrmregistrarinventariovaloradoComponent } from './frmregistrarinventari
       DxFileUploaderModule,
   
       RouterModule.forChild([
-            { path: 'ext-registroinventarioval', canActivate: [AuthGuard],  component: FrmregistrarinventariovaloradoComponent },
+            { path: 'ext-registroinventarioval', /*canActivate: [AuthGuard],*/  component: FrmregistrarinventariovaloradoComponent },
       ]) 
     ],
       exports: [

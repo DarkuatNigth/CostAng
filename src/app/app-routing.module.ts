@@ -22,12 +22,17 @@ import { FrmactualizacreditotributarioModuleFactory } from './Produccion/Proceso
 import { FrmconsgenperModuleFactory } from './Costos/Mantenimiento/frmconsgenper/frmconsgenper.module';
 import { FrmsolicitudetiquetaModuleFactory } from './Produccion/Procesos/frmsolicitudetiqueta/frmsolicitudetiqueta.module';
 import { FrminiciofinloteModuleFactory } from './Produccion/Procesos/frminiciofinlote/frminiciofinlote.module';
+import { FrmdistribucionluzModuleFactory } from './Costos/Procesos/frmdistribucionluz/frmdistribucionluz.module';
+import { FrmconsolidadoenergiaModuleFactory } from './Costos/Procesos/frmconsolidadoenergia/frmconsolidadoenergia.module';
+import { FrmcostoproductivoModuleFactory } from './Costos/Procesos/frmcostoproductivo/frmcostoproductivo.module';
+import { FrmdiarioscierreModuleFactory } from './Costos/Procesos/frmdiarioscierre/frmdiarioscierre.module';
+import { FrmcostprodconfigModuleFactory } from './Costos/Mantenimiento/frmcostprodconfig/frmcostprodconfig.module';
 
 const routes: Routes = [
   {
     path: '',
     component: FullComponent,
-    canActivate: [AuthGuard],
+    // canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
@@ -75,6 +80,26 @@ const routes: Routes = [
       { 
         path: '', 
         loadChildren: FrmregistrarinventariovaloradoModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmdistribucionluzModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmcostoproductivoModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmdiarioscierreModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmcostprodconfigModuleFactory 
+      },
+      { 
+        path: '', 
+        loadChildren: FrmconsolidadoenergiaModuleFactory 
       },
       { 
         path: '', 

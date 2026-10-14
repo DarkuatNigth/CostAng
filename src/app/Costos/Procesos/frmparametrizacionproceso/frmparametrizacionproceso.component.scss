@@ -1,252 +1,736 @@
-/* Recreación del Panel de Bootstrap 3 */
 .panel-custom {
   margin-bottom: 20px;
-  background-color: #fff;
-  border: 1px solid #ddd; /* Color de borde solicitado */
+  background: #fff;
+  border: 1px solid #d8d8d8;
   border-radius: 4px;
-  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
-  box-shadow: 0 1px 1px rgba(0,0,0,.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
 }
 
-/* Encabezado con el azul #0087B9 */
-.panel-custom > .panel-heading {
-  color: #0087B9; /* Color de título solicitado */
-  background-color: #f5f5f5;
-  border-color: #ddd;
+.panel-heading {
   padding: 10px 15px;
-  border-bottom: 1px solid #ddd;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+  color: #0087b9;
+  background: #f5f5f5;
+  border-bottom: 1px solid #d8d8d8;
+  gap: 10px;
 }
 
 .panel-title {
-  margin-top: 0;
-  margin-bottom: 0;
-  font-size: 14px; /* Tamaño estándar de ASPX */
-  font-weight: bold;
+  margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.panel-heading small {
+  display: block;
+  margin-top: 2px;
+  color: #666;
+  font-size: 11px;
+}
+
+.periodo-label {
+  color: #444;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .panel-body {
   padding: 15px;
 }
 
-/* Labels estilo ASPX clásico */
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filter-item {
+  width: 170px;
+}
+
+.filter-actions {
+  padding-bottom: 1px;
+}
+
 .control-label-aspx {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
   font-family: Tahoma, Geneva, sans-serif;
   font-size: 11px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
-  display: inline-block;
+  font-weight: 700;
 }
 
-/* Ajuste de ng-select para encajar en el panel */
 ::ng-deep .ng-select .ng-select-container {
-  border: 1px solid #ccc !important;
-  border-radius: 3px !important;
   min-height: 30px !important;
   height: 30px !important;
+  border-radius: 2px !important;
+  border-color: #c9c9c9 !important;
+  font-size: 11px;
+}
+
+.warren-filter {
+  width: 145px;
+}
+
+.warren-input-control {
+  width: 100%;
+  height: 30px;
+  padding: 4px 8px;
+  border: 1px solid #c9c9c9;
+  border-radius: 2px;
+  background: #fff;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.summary-card {
+  margin: 6px 0 18px;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+}
+
+.summary-title {
+  padding: 7px 12px;
+  border-bottom: 1px solid #d8d8d8;
+  background: #f2f2f2;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-wrap {
+  overflow-x: auto;
+}
+
+.summary-table {
+  width: 100%;
+  min-width: 1560px;
+  border-collapse: collapse;
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 6px 10px;
+  border: 1px solid #e5e5e5;
+}
+
+.summary-table th {
+  background: #fafafa;
+  text-align: center;
+  font-weight: 700;
+}
+
+.summary-cost-table .summary-group-header th {
+  background: #f2f2f2;
+  border-bottom-color: #cfcfcf;
+}
+
+.summary-cost-table .summary-sub-header th {
+  background: #fafafa;
+}
+
+.summary-sticky-concept {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 210px;
+  background: #fff;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, .06);
+}
+
+thead .summary-sticky-concept {
+  z-index: 5;
+  background: #f2f2f2;
+}
+
+.summary-total .summary-sticky-concept {
+  background: #d9d9d9;
+}
+
+.production-summary-card {
+  margin-top: 10px;
+}
+
+.summary-table td:first-child {
+  font-weight: 600;
+}
+
+.summary-total td {
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+
+/*
+ * Composición desplegable de Compra Camarón.
+ *
+ * Compra Camarón actúa como cabecera del grupo. Los subniveles siguen siendo
+ * informativos y no participan nuevamente en los totales.
+ */
+.summary-group-row td {
+  background: #f7f7f7;
+  font-weight: 700;
+}
+
+.summary-group-row .summary-sticky-concept {
+  background: #f7f7f7;
+}
+
+.summary-group-toggle {
+  display: flex;
   align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.summary-group-toggle:hover .summary-group-label {
+  text-decoration: underline;
+}
+
+.summary-group-toggle:focus-visible {
+  outline: 2px solid #8aa8b8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.summary-group-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  flex: 0 0 14px;
+  color: #555;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.summary-group-label {
+  min-width: 0;
+}
+
+.summary-group-hint {
+  margin-left: auto;
+  color: #777;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.summary-sublevel td {
+  background: #eeeeee;
+  font-style: italic;
+}
+
+.summary-sublevel .summary-sticky-concept {
+  background: #eeeeee;
+}
+
+.summary-sublevel-concept {
+  padding-left: 35px !important;
+  font-weight: 500 !important;
+}
+
+.summary-sublevel-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-sublevel-label::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: #aaa;
+}
+
+.sheet-caption {
+  margin: 8px 0 6px;
+  color: #666;
+  font-size: 11px;
+}
+
+.cost-sheet-wrap {
+  position: relative;
+  width: 100%;
+  max-height: calc(100vh - 280px);
+  overflow: auto;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+}
+
+.cost-sheet {
+  width: max-content;
+  min-width: 3400px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: #111;
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+}
+
+.cost-sheet th,
+.cost-sheet td {
+  height: 25px;
+  padding: 3px 7px;
+  border: 1px solid #e6e6e6;
+  white-space: nowrap;
+}
+
+.cost-sheet thead th {
+  position: sticky;
+  z-index: 4;
+  text-align: center;
+  font-weight: 700;
+}
+
+.group-header-row th {
+  top: 0;
+  background: #f5f5f5;
+}
+
+.sub-header-row th {
+  top: 31px;
+  background: #fafafa;
+}
+
+.group-header-row .partition-header {
+  border-bottom: 1px solid #bdbdbd;
+}
+
+.group-header-row .metric-header {
+  background: #f5f5f5;
+}
+
+.concept-header {
+  width: 235px;
+}
+
+.partition-header {
+  min-width: 375px;
+}
+
+.total-header {
+  min-width: 375px;
+  border-bottom: 1px solid #bdbdbd;
+}
+
+.adjusted-header {
+  min-width: 375px;
+  border-bottom: 1px solid #bdbdbd;
+}
+
+.sticky-concept {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #fff;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, .08);
+}
+
+thead .sticky-concept {
+  z-index: 8;
+}
+
+.concept-cell {
+  width: 235px;
+  text-align: left;
+}
+
+.num-cell {
+  min-width: 122px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.lbs-cell {
+  min-width: 128px;
+}
+
+.money-cell {
+  min-width: 130px;
+}
+
+.unit-cell {
+  min-width: 95px;
+  color: #444;
+}
+
+.total-cell {
+  min-width: 130px;
+  font-weight: 600;
 }
 
 
-
-/* Simulación de Fuente 11px y Tema Metropolis */
-.grid-metropolis-style ::ng-deep {
-    .dx-datagrid {
-        font-size: 11px !important;
-        font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-    }
-
-    /* Estilo de encabezados Metropolis */
-    .dx-datagrid-headers {
-        color: #333;
-        background-color: #f2f2f2;
-        font-weight: normal;
-    }
-
-    /* Quitar padding excesivo para compactar como en ASPX */
-    .dx-datagrid-rowsview .dx-data-row .dx-command-edit {
-        padding: 2px;
-    }
-
-    .dx-datagrid-content .dx-datagrid-table .dx-row > td {
-        padding: 4px 7px;
-        vertical-align: middle;
-    }
+.total-lbs-cell {
+  min-width: 128px;
 }
 
-/* Estilo para el input dentro de la celda */
-.input-grid-aspx {
-    font-size: 11px;
-    padding: 0px 5px;
-    height: 24px;
-    outline: none;
+.total-unit-cell {
+  min-width: 95px;
 }
 
-// .input-grid-aspx:focus {
-//     background-color: #fffbe6 !important; /* Efecto focus claro */
-//     box-shadow: none;
-// }
-.input-grid-aspx:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    background-color: #fffbe6 !important; /* Color amarillento clásico de edición en DevEx */
+.pct-cell {
+  min-width: 105px;
 }
 
-/* ========================================
-   WRAPPER COMPACTO PARA NG-SELECT
-   ======================================== */
-
-.select-wrapper-compact {
-    display: inline-block;
-    width: auto;
-    min-width: 80px;
-    max-width: 100%;
+.warren-cell {
+  min-width: 140px;
 }
 
-/* ========================================
-   ESTILOS NG-SELECT COMPACTO
-   ======================================== */
-
-.aspx-select-compact {
-    width: auto !important;
-    display: inline-block !important;
-    min-width: 100px !important;
+.adjusted-cell {
+  min-width: 122px;
 }
 
-.aspx-select-compact ::ng-deep .ng-select {
-    width: auto !important;
-    display: inline-block !important;
+.adjusted-cell.unit-cell {
+  min-width: 95px;
 }
 
-.aspx-select-compact ::ng-deep .ng-select-container {
-    width: auto !important;
-    min-width: 90px !important;
-    min-height: 28px !important;
-    height: 28px !important;
-    border: 1px solid #ccc !important;
-    border-radius: 0px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
+.stage-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 
-.aspx-select-compact ::ng-deep .ng-value-container {
-    display: flex !important;
-    flex: 0 1 auto !important;
-    padding-left: 5px !important;
-    padding-right: 5px !important;
-    align-items: center !important;
-    white-space: nowrap !important;
+.stage-detail-button {
+  flex: 0 0 auto;
 }
 
-.aspx-select-compact ::ng-deep .ng-value {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-    white-space: nowrap !important;
+::ng-deep .stage-detail-button .dx-button-content {
+  padding: 0 4px !important;
 }
 
-.aspx-select-compact ::ng-deep .ng-value-label {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-    white-space: nowrap !important;
+::ng-deep .stage-detail-button .dx-icon {
+  font-size: 12px !important;
 }
 
-.aspx-select-compact ::ng-deep .ng-placeholder {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-.aspx-select-compact ::ng-deep .ng-input {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-    padding: 0 5px !important;
-}
-
-.aspx-select-compact ::ng-deep .ng-input > input {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-.aspx-select-compact ::ng-deep .ng-arrow-wrapper {
-    padding: 0 5px !important;
-    width: auto !important;
-    flex-shrink: 0 !important;
-}
-
-/* ========================================
-   ESTILOS PARA EL DIV DENTRO DE NG-OPTION
-   ======================================== */
-
-/* Sobrescribir el estilo inline del div dentro de las opciones */
-.option-text {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-/* ========================================
-   PANEL DROPDOWN (SE RENDERIZA FUERA)
-   ======================================== */
-
-::ng-deep .ng-dropdown-panel {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-    min-width: 80px !important;
-    width: auto !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items {
-    font-size: 11px !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-option {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-    padding: 5px 10px !important;
-    white-space: nowrap !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-option-label {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-/* CRÍTICO: Sobrescribir TODOS los divs dentro de las opciones */
-::ng-deep .ng-dropdown-panel .ng-option div {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-option span {
-    font-size: 11px !important;
-    font-family: Tahoma, Geneva, sans-serif !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-option-selected {
-    background-color: #f5f5f5 !important;
-}
-
-::ng-deep .ng-dropdown-panel .ng-option-marked {
-    background-color: #e9ecef !important;
+.money-link {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #006f9f;
+  cursor: pointer;
+  text-align: right;
+  font: inherit;
 }
 
 
-/* Asegura que el contenedor del tab y sus hijos directos ocupen el 100% */
-.flex-height-container {
-    height: calc(100vh - 150px); /* Ajusta según tu cabecera principal */
+.money-link:hover {
+  text-decoration: underline;
 }
 
-/* Forzar a que los contenedores intermedios de Bootstrap no corten el flujo */
-.full-height-row, .full-height-col {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+/* Material de Empaque se distingue del resto de procesos porque su costo
+   se asigna directamente a Entero / Cola / Valor Agregado y no usa libras. */
+.row-material-empaque td {
+  background: #f5fbf3;
 }
 
-::ng-deep .dx-multiview-wrapper, 
-::ng-deep .dx-multiview-item-container,
-::ng-deep .dx-multiview-item-content {
-    height: 100% !important;
+.row-material-empaque .sticky-concept {
+  background: #f5fbf3;
+}
+
+.material-empaque-concepto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.material-empaque-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #9fc894;
+  border-radius: 10px;
+  background: #eef8eb;
+  color: #3f6f36;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.material-empaque-note {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-left: 3px solid #6aa85d;
+  background: #f2faef;
+  color: #365e2f;
+  font-size: 11px;
+}
+
+.row-spacer td {
+  height: 15px;
+  padding: 0;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.row-section td {
+  background: #fff;
+}
+
+.row-section .section-label {
+  background: #eef3f6;
+  border-left: 3px solid #8ca5b3;
+  font-weight: 700;
+}
+
+
+.row-section.major-section td {
+  background: #eef3f6;
+  border-top: 2px solid #9aaeb8;
+  border-bottom: 1px solid #c9d4da;
+}
+
+.row-section.major-section .section-label {
+  background: #eef3f6;
+  border-left: 4px solid #6f8f9f;
+  color: #24414f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.row-total td,
+.row-total-general td {
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+.row-total .sticky-concept,
+.row-total-general .sticky-concept {
+  background: #d9d9d9;
+}
+
+.row-total-procesos td {
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+.row-total-procesos .sticky-concept {
+  background: #d9d9d9;
+}
+
+.row-total-procesos td:nth-last-child(2),
+.row-total-procesos td:nth-last-child(3) {
+  background: #d9d9d9;
+}
+
+.unit-cost {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.warren-summary-row td {
+  height: 28px;
+  border-top: 2px solid #aaa;
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+.warren-summary-row .sticky-concept {
+  background: #d9d9d9;
+}
+
+.warren-summary-row .summary-warren {
+  background: #d9d9d9;
+}
+
+.empty-state {
+  padding: 25px 10px;
+  color: #777;
+  text-align: center;
+  font-size: 12px;
+  border: 1px dashed #d8d8d8;
+}
+
+/* ========================================================= */
+/* MODALES EMBEBIDOS EN EL MISMO COMPONENTE                  */
+/* ========================================================= */
+.modal-header-costos {
+  padding: 10px 15px;
+  border-bottom: 1px solid #d8d8d8;
+  background: #f5f5f5;
+}
+
+.modal-header-costos .modal-title {
+  margin: 0;
+  color: #0087b9;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.modal-body-costos {
+  padding: 12px 15px;
+}
+
+.margin-container {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.modal-summary-row {
+  margin-bottom: 6px;
+}
+
+.grid-titulo {
+  margin: 5px 0 8px;
+  padding: 6px 10px;
+  border-bottom: 2px solid #0087b9;
+  color: #444;
+  background: #f7f7f7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.modal-note {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-left: 3px solid #0087b9;
+  background: #f2f9fc;
+  color: #444;
+  font-size: 11px;
+}
+
+.mock-warning {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-left: 3px solid #d9a400;
+  background: #fff9db;
+  color: #665200;
+  font-size: 11px;
+}
+
+.modal-table-wrap {
+  max-height: 58vh;
+  overflow: auto;
+  border: 1px solid #e5e5e5;
+}
+
+.modal-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.modal-table th,
+.modal-table td {
+  padding: 6px 8px;
+  border: 1px solid #dedede;
+}
+
+.modal-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f3f3f3;
+  text-align: center;
+  font-weight: 700;
+}
+
+.modal-total-row td {
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+::ng-deep .modal-costos-paramproc .modal-dialog {
+  max-width: 95vw;
+}
+
+::ng-deep .modal-costos-paramproc .modal-content {
+  border-radius: 4px;
+}
+
+::ng-deep .modal-costos-paramproc .modal-footer {
+  padding: 8px 15px;
+}
+
+@media (max-width: 768px) {
+  .filter-item {
+    width: 140px;
+  }
+
+  .cost-sheet {
+    font-size: 10px;
+  }
+
+  .cost-sheet-wrap {
+    max-height: calc(100vh - 330px);
+  }
+
+  .modal-table {
+    min-width: 820px;
+  }
+}
+
+/* ========================================================= */
+/* DEVEXTREME EN MODALES                                     */
+/* ========================================================= */
+.modal-grid-wrap {
+  width: 100%;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+::ng-deep .modal-costos-paramproc .dx-datagrid {
+  font-family: Calibri, "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+}
+
+::ng-deep .modal-costos-paramproc .dx-datagrid-headers {
+  font-weight: 700;
+}
+
+::ng-deep .modal-costos-paramproc .dx-datagrid-total-footer > .dx-datagrid-content {
+  background: #d9d9d9;
+  font-weight: 700;
+}
+
+::ng-deep .modal-costos-paramproc .dx-group-row {
+  background: #f2f9fc;
+  font-weight: 700;
+}
+
+::ng-deep .modal-costos-paramproc .dx-datagrid-group-panel {
+  min-height: 34px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #d8d8d8;
+  background: #fafafa;
+}
+
+::ng-deep .modal-costos-paramproc .dx-datagrid-search-panel {
+  margin: 6px 8px 6px 0;
+}
+
+
+/* ========================================================= */
+/* DETALLE CONTABLE AGRUPADO                                 */
+/* ========================================================= */
+::ng-deep .modal-costos-paramproc .cuentas-grupo-grid .dx-data-row {
+  cursor: pointer;
+}
+
+::ng-deep .modal-costos-paramproc .cuentas-grupo-grid .dx-data-row:hover > td {
+  background: #f2f9fc;
+}
+
+::ng-deep .modal-cuentas-grupo .modal-dialog {
+  max-width: 95vw;
 }

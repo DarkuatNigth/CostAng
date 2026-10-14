@@ -1,49 +1,46 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CONNECTION_PROD,CONNECTION_SGCAM, URL_CONSULT, URL_APICOSTOS } from 'src/app/config/url.servicios';
+import { CONNECTION_PROD, URL_APICOSTOS, URL_CONSULT } from 'src/app/config/url.servicios';
 import { ResultWS } from 'src/app/Interfaces/interfaces';
+import { GuardarCierreParamProcRequest, GuardarWarrenRequest } from './param-proc.models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class FrmparametrizacionprocesoService {
+  constructor(private readonly http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
+  getDataParametros() {
+    const ListParam: any[] = [];
+    const base = {
+      sp: 'dbo.SP_DATA_UTILIDADCONTENEDOR',
+      param: ListParam,
+      conexion: CONNECTION_PROD
+    };
+    return this.http.post<ResultWS>(URL_CONSULT, base);
+  }
 
-    
-    getDataParametros(){
-      const ListParam = [];
-  
-      const base = {
-        sp: 'dbo.SP_DATA_UTILIDADCONTENEDOR',
-        param: ListParam,
-        conexion: CONNECTION_PROD
-      };
-      //console.log(base);
-      return this.http.post<ResultWS>(URL_CONSULT, base);
+  getProcParametros(parametros: any) {
+    const url = URL_APICOSTOS + 'ProcesoParametro/param-proc';
+    let params = new HttpParams();
+
+    if (parametros) {
+      Object.keys(parametros).forEach((key) => {
+        const value = parametros[key];
+        if (value !== null && value !== undefined) {
+          params = params.append(key, value);
+        }
+      });
     }
 
-    
-    getProcParametros(parametros){
-      const URL_PROC_PARAM= URL_APICOSTOS +'ProcesoParametro/param-proc';
-      // Convertimos el objeto simple en HttpParams
-      let params = new HttpParams();
-      if (parametros) {
-        Object.keys(parametros).forEach(key => {
-          if (parametros[key] !== null && parametros[key] !== undefined) {
-            params = params.append(key, parametros[key]);
-          }
-        });
-      }
+    return this.http.get<ResultWS>(url, { params });
+  }
 
-      //console.log('Solicitando URL:', URL_PROC_PARAM, 'con params:', params.toString());
-      return this.http.get<ResultWS>(URL_PROC_PARAM, { params });
-    }
-    
-    
-    postProcParametros(parametros){
-      const URL_PROC_PARAM= URL_APICOSTOS +'ProcesoParametro/guardar-param-pfr';
-      //console.log('postProcParametros',parametros);
-      return this.http.post<ResultWS>(URL_PROC_PARAM,parametros);
-    }
+  guardarWarren(request: GuardarWarrenRequest) {
+    const url = URL_APICOSTOS + 'ProcesoParametro/guardar-warren';
+    return this.http.post<ResultWS>(url, request);
+  }
+
+  guardarCierre(request: GuardarCierreParamProcRequest) {
+    const url = URL_APICOSTOS + 'ProcesoParametro/guardar-cierre-param-proc';
+    return this.http.post<ResultWS>(url, request);
+  }
 }
