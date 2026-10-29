@@ -1,0 +1,289 @@
+/* Reutiliza la paleta del panel-custom existente. */
+
+.req {
+  color: #d9534f;
+  font-weight: 700;
+}
+
+.control-label-aspx {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.btn-group-aspx {
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Toolbar del Tab 1 (copiar mes + chip de cuadre) ---- */
+.tab1-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 4px 12px;
+}
+
+.copiar-mes-wrapper {
+  min-width: 180px;
+}
+
+.cuadre-chip {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+
+  &.ok {
+    background: #e6f4ea;
+    color: #1e7e34;
+    border: 1px solid #bfe3c9;
+  }
+  &.bad {
+    background: #fdecea;
+    color: #b02a37;
+    border: 1px solid #f5c2c7;
+  }
+}
+
+/* ---- Caja de cuadre debe/haber en Tab 2 ---- */
+.cuadre-box {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 6px;
+}
+
+.cuadre-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.cuadre-lbl {
+  font-size: 11px;
+  color: #6c757d;
+  text-transform: none;
+}
+
+.cuadre-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.cuadre-sep {
+  width: 1px;
+  background: #d5dbe1;
+  align-self: stretch;
+}
+
+.desc-ok .cuadre-val {
+  color: #1e7e34;
+}
+.desc-warn .cuadre-val {
+  color: #c77700;
+}
+
+/* ---- Estado vacío ---- */
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* Ajuste menor para que el tab-panel respire */
+:host ::ng-deep .dx-tabpanel .dx-multiview-wrapper {
+  padding-top: 10px;
+}
+
+.req {
+  color: #d9534f;
+  font-weight: 700;
+}
+
+/* NumberBox compacto igual que los ng-select (30px, borde gris) */
+::ng-deep .nb-aspx.dx-numberbox,
+::ng-deep .nb-aspx .dx-texteditor-container {
+  min-height: 30px !important;
+  height: 30px !important;
+}
+
+::ng-deep .nb-aspx.dx-textbox .dx-texteditor-input,
+::ng-deep .nb-aspx .dx-texteditor-input {
+  font-family: Tahoma, Geneva, sans-serif !important;
+  font-size: 11px !important;
+  min-height: 30px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .nb-aspx.dx-editor-outlined {
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+}
+
+/* ---- Toolbar del Tab 1 ---- */
+.tab1-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 4px 12px;
+}
+
+.copiar-mes-wrapper {
+  min-width: 160px;
+}
+
+.cuadre-chip {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Tahoma, Geneva, sans-serif;
+
+  &.ok  { background: #e6f4ea; color: #1e7e34; border: 1px solid #bfe3c9; }
+  &.bad { background: #fdecea; color: #b02a37; border: 1px solid #f5c2c7; }
+}
+
+/* ---- Caja de cuadre debe/haber (Tab 2) ---- */
+.cuadre-box {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #f7f9fb;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+}
+
+.cuadre-col   { display: flex; flex-direction: column; min-width: 120px; }
+.cuadre-lbl   { font-size: 11px; color: #6c757d; font-family: Tahoma, Geneva, sans-serif; }
+.cuadre-val   { font-size: 15px; font-weight: 700; color: #212529; }
+.cuadre-sep   { width: 1px; background: #d5dbe1; align-self: stretch; }
+.desc-ok   .cuadre-val { color: #1e7e34; }
+.desc-warn .cuadre-val { color: #c77700; }
+
+/* ---- Estado vacío ---- */
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 13px;
+  font-family: Tahoma, Geneva, sans-serif;
+}
+
+.req { color: #d9534f; font-weight: 700; }
+
+/* NumberBox compacto tipo ASPX */
+::ng-deep .nb-aspx.dx-editor-outlined {
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  min-height: 30px !important;
+}
+::ng-deep .nb-aspx .dx-texteditor-input {
+  font-family: Tahoma, Geneva, sans-serif !important;
+  font-size: 11px !important;
+  min-height: 30px !important;
+}
+
+/* ---- Bloques de totales (SONGA / COMÚN) ---- */
+.totales-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 6px 0 10px;
+}
+.totales-grupo {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  background: #fafafa;
+  min-width: 300px;
+}
+.totales-titulo {
+  display: block;
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #0087B9;
+  margin-bottom: 6px;
+}
+.totales-campos { display: flex; gap: 12px; }
+.campo { display: flex; flex-direction: column; min-width: 140px; }
+
+/* ---- Cuadrito split fijo (62/38 o 100%) ---- */
+.split-box {
+  margin-top: 8px;
+  border: 1px solid #e3e8ee;
+  border-radius: 3px;
+  background: #eef4f7;
+  padding: 4px 8px;
+}
+.split-row {
+  display: grid;
+  grid-template-columns: 48px 110px auto;
+  gap: 8px;
+  align-items: center;
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 11px;
+  padding: 2px 0;
+}
+.split-pct   { font-weight: bold; color: #333; text-align: right; }
+.split-monto { color: #1e7e34; font-weight: bold; text-align: right; }
+.split-lbl   { color: #0087B9; font-weight: bold; }
+
+/* ---- Toolbar Tab 1 ---- */
+.tab1-toolbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 4px 12px;
+}
+.copiar-mes-wrapper { min-width: 160px; }
+.nota-editable {
+  margin-left: auto; font-size: 11px; color: #6c757d; font-family: Tahoma, Geneva, sans-serif;
+}
+
+/* ---- Tab 2: encabezado de asiento ---- */
+.asiento-header {
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 12px; font-weight: bold; color: #0087B9;
+  background: #f2f2f2; border: 1px solid #ddd; border-bottom: none;
+  padding: 5px 10px; margin-top: 12px;
+}
+
+/* ---- Caja de cuadre ---- */
+.cuadre-box {
+  display: flex; align-items: stretch; flex-wrap: wrap; gap: 18px;
+  margin: 0 0 6px; padding: 10px 14px;
+  background: #f7f9fb; border: 1px solid #e3e8ee; border-radius: 0 0 4px 4px;
+}
+.cuadre-col { display: flex; flex-direction: column; min-width: 120px; }
+.cuadre-lbl { font-size: 11px; color: #6c757d; font-family: Tahoma, Geneva, sans-serif; }
+.cuadre-val { font-size: 14px; font-weight: 700; color: #212529; }
+.cuadre-sep { width: 1px; background: #d5dbe1; align-self: stretch; }
+.desc-ok   .cuadre-val { color: #1e7e34; }
+.desc-warn .cuadre-val { color: #c77700; }
+
+/* ---- Estado vacío ---- */
+.empty-state {
+  padding: 32px 16px; text-align: center; color: #6c757d;
+  font-size: 13px; font-family: Tahoma, Geneva, sans-serif;
+}
+.grupos-flex { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.grupo-card { flex: 1 1 480px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; }
+.grupo-titulo-main {
+  font-family: Tahoma, sans-serif; font-size: 12px; font-weight: bold;
+  color: #fff; background: #0087B9; padding: 5px 10px; margin: -8px -8px 8px; border-radius: 3px 3px 0 0;
+}

@@ -1,0 +1,374 @@
+<dx-load-panel
+  shadingColor="rgba(0,0,0,0.30)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="container-fluid mt-3">
+  <div class="panel panel-custom">
+    <div class="panel-heading panel-heading-costos">
+      <div>
+        <h3 class="panel-title">Costos y gastos por proceso productivo</h3>
+        <div class="panel-subtitle">
+          Auxiliar contable SONG · niveles de costeo · distribución por libras
+        </div>
+      </div>
+      <div class="estado-cierre" *ngIf="resumen"
+        [class.estado-ok]="resumen.cuadra"
+        [class.estado-error]="!resumen.cuadra">
+        {{ estadoCuadreTexto }}
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="toolbar-costos">
+        <div class="filter-item filter-anio">
+          <label class="control-label-aspx">Año:</label>
+          <dx-select-box
+            [items]="listAnios"
+            [(value)]="cmbAnio"
+            [searchEnabled]="false"
+            [showClearButton]="false"
+            [height]="30">
+          </dx-select-box>
+        </div>
+
+        <div class="filter-item filter-mes">
+          <label class="control-label-aspx">Mes:</label>
+          <dx-select-box
+            [items]="listMeses"
+            displayExpr="nombre"
+            valueExpr="id"
+            [(value)]="cmbMes"
+            [searchEnabled]="true"
+            [showClearButton]="false"
+            [height]="30">
+          </dx-select-box>
+        </div>
+
+        <div class="filter-actions">
+          <dx-button
+            text="Consultar"
+            type="default"
+            icon="search"
+            [height]="30"
+            (onClick)="onClickConsultar()">
+          </dx-button>
+
+          <dx-button
+            class="ml-2"
+            text="Guardar"
+            type="success"
+            icon="save"
+            [height]="30"
+            [disabled]="listadoTotal.length === 0 || !resumen?.cuadra"
+            (onClick)="onGuardarClick()">
+          </dx-button>
+        </div>
+
+        <div class="toolbar-spacer"></div>
+
+        <dx-button
+          text="Exportar"
+          stylingMode="outlined"
+          icon="exportxlsx"
+          [height]="30"
+        
+          (onClick)="exportarExcel()">
+        </dx-button>
+      </div>
+
+      <div class="rule-strip">
+        <span><strong>SI:</strong> libras × 1.</span>
+        <span><strong>Cajas:</strong> solo segundo proceso, Entero/Cola.</span>
+        <span><strong>Descongelado:</strong> PT recibido × $0.02; se reclasifica desde V. Agregado.</span>
+        <span><strong>Proceso configurado:</strong> Q/pc_codigo manda. Una cuenta 504 puede ser Logística, Túnel o costo estructural según su configuración.</span>
+      </div>
+
+      <div class="kpi-grid" *ngIf="resumen">
+        <div class="kpi-card">
+          <span class="kpi-label">Monto auxiliar</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.montoCuenta) }}</span>
+          <span class="kpi-note">{{ resumen.cuentasContables }} cuentas</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Entero + Cola</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.subtotal) }}</span>
+          <span class="kpi-note">Entero {{ formatoMonedaEntera(resumen.entero) }} · Cola {{ formatoMonedaEntera(resumen.cola) }}</span>
+        </div>
+
+        <div class="kpi-card kpi-va">
+          <span class="kpi-label">Valor agregado bruto</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.valorAgregadoBruto) }}</span>
+          <span class="kpi-note">Antes de Descongelado</span>
+        </div>
+
+        <div class="kpi-card kpi-descongelado">
+          <span class="kpi-label">Descongelado</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.descongelado) }}</span>
+          <span class="kpi-note">{{ customizeLibras({ value: resumen.librasDescongelado }) }} lb × {{ resumen.tarifaDescongelado | number:'1.4-4' }}</span>
+        </div>
+
+        <div class="kpi-card kpi-va">
+          <span class="kpi-label">Valor agregado neto</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.valorAgregadoNeto) }}</span>
+          <span class="kpi-note">Reclasificado {{ formatoMonedaEntera(resumen.reclasificadoDescongelado) }}</span>
+        </div>
+
+        <div class="kpi-card kpi-struct">
+          <span class="kpi-label">Directos</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.costoDirectoFijo + resumen.costoDirectoVariable) }}</span>
+          <span class="kpi-note">Fijo {{ formatoMonedaEntera(resumen.costoDirectoFijo) }} · Variable {{ formatoMonedaEntera(resumen.costoDirectoVariable) }}</span>
+        </div>
+
+        <div class="kpi-card kpi-struct">
+          <span class="kpi-label">Indirectos</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.costoIndirectoFijo + resumen.costoIndirectoVariable) }}</span>
+          <span class="kpi-note">Fijo {{ formatoMonedaEntera(resumen.costoIndirectoFijo) }} · Variable {{ formatoMonedaEntera(resumen.costoIndirectoVariable) }}</span>
+        </div>
+
+        <div class="kpi-card" [class.kpi-error]="!resumen.cuadra" [class.kpi-ok]="resumen.cuadra">
+          <span class="kpi-label">Cuadre</span>
+          <span class="kpi-value">{{ formatoMonedaEntera(resumen.diferencia) }}</span>
+          <span class="kpi-note">
+            Sin asignar DSC: {{ formatoMonedaEntera(resumen.descongeladoSinAsignar) }}
+            · Cuentas sin SONG: {{ resumen.cuentasSinSaldo }}
+          </span>
+        </div>
+      </div>
+
+      <div class="grid-metropolis-style">
+        <dx-data-grid
+          id="gridCostosProductivos"
+          [dataSource]="listadoTotal"
+          keyExpr="id"
+          [showBorders]="false"
+          [showRowLines]="true"
+          [showColumnLines]="false"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="true"
+          [wordWrapEnabled]="true"
+          [hoverStateEnabled]="true"
+          [allowColumnResizing]="true"
+          [allowColumnReordering]="true"
+          columnResizingMode="widget"
+          [noDataText]="'No existen datos para el período seleccionado'"
+          (onCellPrepared)="onCellPrepared($event)">
+
+          <dxo-scrolling mode="standard"></dxo-scrolling>
+          <dxo-group-panel [visible]="false"></dxo-group-panel>
+          <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+          <dxo-paging [pageSize]="40"></dxo-paging>
+          <dxo-pager
+            [visible]="true"
+            [showInfo]="true"
+            [showNavigationButtons]="true"
+            [showPageSizeSelector]="false">
+          </dxo-pager>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-search-panel
+            [visible]="true"
+            [width]="280"
+            placeholder="Buscar etapa, cuenta, centro...">
+          </dxo-search-panel>
+
+          <!-- ETAPA SIEMPRE PRIMERA -->
+          <dxi-column
+            dataField="etapaVista"
+            caption="Etapa / Proceso"
+            cssClass="col-etapa"
+            [width]="165"
+            sortOrder="asc"
+            [sortIndex]="0"
+            [sortingMethod]="ordenarEtapas">
+          </dxi-column>
+
+          <dxi-column dataField="grupoEtapa" caption="Etapa general" [width]="155"></dxi-column>
+          <dxi-column dataField="origen" caption="Origen" [width]="90"></dxi-column>
+          <dxi-column dataField="cuenta" caption="Cuenta" [width]="125"></dxi-column>
+          <dxi-column dataField="centroCosto" caption="Centro costo" [minWidth]="190"></dxi-column>
+          <dxi-column dataField="subcentroCosto" caption="Subcentro costo" [minWidth]="210"></dxi-column>
+          <dxi-column dataField="tipo" caption="Tipo" [width]="140" [visible]="true" [allowHiding]="false"></dxi-column>
+          <dxi-column dataField="tipoCosto" caption="Tipo costo" [width]="95"></dxi-column>
+          <dxi-column dataField="agrupacionCentro" caption="Agrupación" [minWidth]="300"></dxi-column>
+          <dxi-column dataField="grupoCentro" caption="Grupo" [minWidth]="190"></dxi-column>
+          <dxi-column dataField="rubro" caption="Rubro" [minWidth]="200"></dxi-column>
+          <dxi-column dataField="auxiliar" caption="Auxiliar" [minWidth]="190"></dxi-column>
+
+          <dxi-column dataField="entero" caption="Entero" cssClass="col-entero" alignment="right" [width]="115" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="cola" caption="Cola" cssClass="col-cola" alignment="right" [width]="115" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="subtotal" caption="Sub-total" cssClass="col-subtotal" alignment="right" [width]="120" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="valorAgregado" caption="V. agregado" cssClass="col-va" alignment="right" [width]="125" [customizeText]="customizeMonedaEntera"></dxi-column>
+
+          <dxi-column dataField="costoDirectoFijo" caption="C. directo fijo" cssClass="col-cdf" alignment="right" [width]="125" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="costoDirectoVariable" caption="C. directo variable" cssClass="col-cdv" alignment="right" [width]="145" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="costoIndirectoFijo" caption="C. indirecto fijo" cssClass="col-cif" alignment="right" [width]="135" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="costoIndirectoVariable" caption="C. indirecto variable" cssClass="col-civ" alignment="right" [width]="155" [customizeText]="customizeMonedaEntera"></dxi-column>
+
+          <dxi-column dataField="reclasificadoDescongelado" caption="Reclasif. Descongelado" cssClass="col-descongelado" alignment="right" [width]="165" [customizeText]="customizeMonedaEntera"></dxi-column>
+          <dxi-column dataField="total" caption="Total" cssClass="col-total" alignment="right" [width]="120" [customizeText]="customizeMonedaEntera"></dxi-column>
+
+          <!-- AUDITORIA: disponibles en selector de columnas -->
+          <dxi-column dataField="montoCuenta" caption="Monto cuenta" [visible]="false" alignment="right" [customizeText]="customizeMonto"></dxi-column>
+          <dxi-column dataField="montoFuenteSong" caption="Monto fuente SONG" [visible]="false" alignment="right" [customizeText]="customizeMonto"></dxi-column>
+          <dxi-column dataField="factorAsignacion" caption="Factor cuenta" [visible]="false"></dxi-column>
+          <dxi-column dataField="debe" caption="Debe" [visible]="false" alignment="right" [customizeText]="customizeMonto"></dxi-column>
+          <dxi-column dataField="credito" caption="Crédito" [visible]="false" alignment="right" [customizeText]="customizeMonto"></dxi-column>
+          <dxi-column dataField="librasDriver" caption="Libras driver" [visible]="false" alignment="right" [customizeText]="customizeLibras"></dxi-column>
+          <dxi-column dataField="pesoDriver" caption="Peso driver" [visible]="false" alignment="right" [customizeText]="customizeLibras"></dxi-column>
+          <dxi-column dataField="origenDistribucion" caption="Origen distribución" [visible]="false" [width]="170"></dxi-column>
+          <dxi-column
+            caption="Procesos aplicables"
+            [width]="205"
+            [allowFiltering]="false"
+            [allowHeaderFiltering]="false"
+            cellTemplate="procesosAplicablesTemplate">
+          </dxi-column>
+
+          <div *dxTemplate="let cell of 'procesosAplicablesTemplate'">
+            <button
+              *ngIf="tieneDetalleProcesos(cell.data)"
+              type="button"
+              class="btn-link-procesos"
+              (click)="abrirDetalleProcesos(cell.data)">
+              <i class="dx-icon dx-icon-search"></i>
+              Ver tipos proceso productivos
+              <span class="badge-procesos">{{ cantidadDetalleProcesos(cell.data) }}</span>
+            </button>
+
+            <span
+              *ngIf="!tieneDetalleProcesos(cell.data)"
+              class="procesos-sin-detalle">
+              Sin procesos configurados con dólares
+            </span>
+          </div>
+          <dxi-column dataField="diferencia" caption="Diferencia" [visible]="false" alignment="right" [customizeText]="customizeMonto"></dxi-column>
+          <dxi-column dataField="cuadra" caption="Cuadra" [visible]="false"></dxi-column>
+
+          <dxo-summary>
+            <dxi-total-item column="cuenta" summaryType="count" displayFormat="Filas: {0}"></dxi-total-item>
+            <dxi-total-item column="entero" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="cola" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="subtotal" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="valorAgregado" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="costoDirectoFijo" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="costoDirectoVariable" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="costoIndirectoFijo" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="costoIndirectoVariable" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+            <dxi-total-item column="total" summaryType="sum" [customizeText]="customizeMonedaEntera"></dxi-total-item>
+          </dxo-summary>
+        </dx-data-grid>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- MODAL: DÓLARES POR TIPO DE PROCESO PRODUCTIVO                   -->
+<!-- ================================================================ -->
+<dx-popup
+  [(visible)]="popupProcesosVisible"
+  [showTitle]="true"
+  [title]="'Tipos proceso productivos - ' + (filaProcesosSeleccionada?.etapaVista || '')"
+  [width]="760"
+  [height]="'auto'"
+  [maxHeight]="650"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="true"
+  [showCloseButton]="true"
+  (onHidden)="cerrarDetalleProcesos()">
+
+  <div *dxTemplate="let data of 'content'" class="detalle-procesos-popup">
+    <div class="detalle-procesos-resumen">
+      <div>
+        <span class="detalle-label">Cuenta</span>
+        <strong>{{ filaProcesosSeleccionada?.cuenta || 'Derivado' }}</strong>
+      </div>
+      <div>
+        <span class="detalle-label">Etapa / Proceso</span>
+        <strong>{{ filaProcesosSeleccionada?.etapaVista || '' }}</strong>
+      </div>
+      <div class="detalle-total">
+        <span class="detalle-label">Total a distribuir</span>
+        <strong>{{ formatoMonedaEntera(totalDetalleProcesos) }}</strong>
+      </div>
+    </div>
+
+    <div class="modal-note-procesos">
+      Se muestran únicamente los dólares que corresponden a cada tipo de proceso productivo,
+      calculados con el mismo peso del driver usado por el backend. No se muestran libras para
+      mantener el detalle compacto.
+    </div>
+
+    <dx-data-grid
+      [dataSource]="detalleProcesosAplicables"
+      [showBorders]="true"
+      [showRowLines]="true"
+      [showColumnLines]="true"
+      [rowAlternationEnabled]="true"
+      [columnAutoWidth]="true"
+      [wordWrapEnabled]="true"
+      [hoverStateEnabled]="true"
+      [height]="420">
+
+      <dxo-search-panel
+        [visible]="true"
+        [width]="250"
+        placeholder="Buscar proceso productivo...">
+      </dxo-search-panel>
+
+      <dxo-filter-row [visible]="true"></dxo-filter-row>
+      <dxo-paging [pageSize]="20"></dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [showInfo]="true"
+        [showPageSizeSelector]="true"
+        [allowedPageSizes]="[10, 20, 50]">
+      </dxo-pager>
+
+      <dxi-column
+        dataField="codigoProceso"
+        caption="Código"
+        [width]="105">
+      </dxi-column>
+
+      <dxi-column
+        dataField="proceso"
+        caption="Tipo de proceso productivo"
+        [minWidth]="380">
+      </dxi-column>
+
+      <dxi-column
+        dataField="dolares"
+        caption="Dólares a aplicar"
+        dataType="number"
+        format="$ #,##0"
+        alignment="right"
+        [width]="165">
+      </dxi-column>
+
+      <dxo-summary>
+        <dxi-total-item
+          column="dolares"
+          summaryType="sum"
+          valueFormat="$ #,##0"
+          displayFormat="{0}">
+        </dxi-total-item>
+      </dxo-summary>
+    </dx-data-grid>
+
+    <div class="detalle-procesos-footer">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        (click)="cerrarDetalleProcesos()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</dx-popup>

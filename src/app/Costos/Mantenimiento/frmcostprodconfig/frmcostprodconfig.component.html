@@ -1,0 +1,859 @@
+<dx-load-panel
+  shadingColor="rgba(0,0,0,0.35)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="container-fluid mt-3 configuracion-costos-page">
+  <div class="panel panel-custom">
+    <div class="panel-heading d-flex justify-content-between align-items-center flex-wrap">
+      <div>
+        <h3 class="panel-title">Configuración de Costos Productivos</h3>
+        <small>
+          Mantenimiento de niveles, matriz de aplicación y cuentas contables.
+          La matriz conserva reglas especiales aunque la vista principal sea True / False.
+        </small>
+      </div>
+
+      <div class="header-actions">
+        <dx-button
+          text="Recargar"
+          type="normal"
+          icon="refresh"
+          (onClick)="cargar()">
+        </dx-button>
+
+        <dx-button
+          text="Exportar Excel"
+          type="normal"
+          icon="export"
+          [disabled]="exportandoExcel || loadingVisible"
+          (onClick)="exportarExcel()">
+        </dx-button>
+
+        <dx-button
+          text="Guardar cambios"
+          type="success"
+          icon="save"
+          [disabled]="!hayCambios"
+          (onClick)="guardarCambios()">
+        </dx-button>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="maintenance-note">
+        <strong>Lectura rápida:</strong>
+        el switch encendido significa que el costo participa. Los códigos TAR, DEP, PRO,
+        FIC, D y NA se mantienen como reglas especiales para no perder la semántica del
+        archivo <em>niveles de costeo</em>. Doble clic sobre una celda para cambiar la regla exacta.
+      </div>
+
+      <div class="config-tabs" role="tablist" aria-label="Configuración de costos productivos">
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'matriz'"
+          (click)="seleccionarTab('matriz')">
+          Matriz de Costeo
+        </button>
+
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'tipos'"
+          (click)="seleccionarTab('tipos')">
+          Tipos / Niveles
+        </button>
+
+        <button
+          type="button"
+          class="config-tab"
+          [class.active]="tabActiva === 'cuentas'"
+          (click)="seleccionarTab('cuentas')">
+          Cuentas Contables
+        </button>
+        <button type="button" class="config-tab" [class.active]="tabActiva === 'procesos'" (click)="seleccionarTab('procesos')">Procesos</button>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- MATRIZ                                                           -->
+      <!-- ================================================================ -->
+      <section [hidden]="tabActiva !== 'matriz'" class="tab-panel-content">
+        <div class="section-heading">
+          <div>
+            <h4>Matriz por tipo de liquidación</h4>
+            <p>
+              Una fila por TIPOLIQ y una columna por costo/proceso, siguiendo la estructura del Excel.
+            </p>
+          </div>
+          <span class="pending-badge" *ngIf="hayCambios">Cambios sin guardar</span>
+        </div>
+
+<dx-data-grid #tabGrid
+          class="matrix-grid"
+          [columns]="columnasMatriz"
+          [dataSource]="filasMatriz"
+          keyExpr="codigo"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [showColumnLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="false"
+          [allowColumnResizing]="true"
+          columnResizingMode="widget"
+          [wordWrapEnabled]="true"
+          [hoverStateEnabled]="true"
+          (onCellDblClick)="abrirReglaDesdeCelda($event)">
+
+          <dxo-search-panel
+            [visible]="true"
+            [width]="280"
+            placeholder="Buscar TIPOLIQ...">
+          </dxo-search-panel>
+
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-scrolling mode="standard" showScrollbar="always"></dxo-scrolling>
+          <dxo-paging [enabled]="false"></dxo-paging>
+
+          <div *dxTemplate="let cell of 'nivelCell'" class="level-cell">
+            NV{{ cell.value }}
+          </div>
+
+          <div *dxTemplate="let cell of 'reglaCell'" class="rule-cell">
+            <dx-switch
+              class="matrix-switch"
+              [value]="aplicaRegla(cell.data, cell.column.name)"
+              switchedOnText="Sí"
+              switchedOffText="No"
+              (onValueChanged)="cambiarAplicacion(cell.data, cell.column.name, $event.value)">
+            </dx-switch>
+
+            <button
+              *ngIf="etiquetaRegla(cell.data, cell.column.name)"
+              type="button"
+              class="rule-badge"
+              [ngClass]="claseRegla(cell.data, cell.column.name)"
+              [title]="'Regla: ' + etiquetaRegla(cell.data, cell.column.name)"
+              (click)="abrirRegla(cell.data, cell.column.name); $event.stopPropagation()">
+              {{ etiquetaRegla(cell.data, cell.column.name) }}
+            </button>
+          </div>
+        </dx-data-grid>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- TIPOS / NIVELES                                                  -->
+      <!-- ================================================================ -->
+      <section [hidden]="tabActiva !== 'tipos'" class="tab-panel-content">
+        <div class="section-heading">
+          <div>
+            <h4>Tipos de proceso y nivel de costeo</h4>
+            <p>
+              Alta, edición y activación de TIPOLIQ. El nivel guardado se carga al motor antes del costeo.
+            </p>
+          </div>
+
+          <dx-button
+            text="Nuevo tipo"
+            type="default"
+            icon="add"
+            (onClick)="nuevoTipo()">
+          </dx-button>
+        </div>
+
+<dx-data-grid #tabGrid
+          [dataSource]="tiposProceso"
+          keyExpr="codigo"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="true"
+          [allowColumnResizing]="true"
+          [hoverStateEnabled]="true">
+
+          <dxo-search-panel [visible]="true" [width]="280" placeholder="Buscar tipo..."></dxo-search-panel>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-paging [pageSize]="20"></dxo-paging>
+          <dxo-pager
+            [visible]="true"
+            [showInfo]="true"
+            [showNavigationButtons]="true"
+            [showPageSizeSelector]="true"
+            [allowedPageSizes]="[10,20,50]">
+          </dxo-pager>
+
+          <dxi-column dataField="codigo" caption="Código" [width]="90"></dxi-column>
+          <dxi-column dataField="nombre" caption="TIPOLIQ" [minWidth]="330"></dxi-column>
+          <dxi-column dataField="tipoLoteCodigo" caption="Tipo" [width]="90"></dxi-column>
+          <dxi-column dataField="tipoLote" caption="Tipo Lote" [width]="150"></dxi-column>
+          <dxi-column dataField="nivel" caption="Nivel" [width]="90" cellTemplate="nivelTipoCell"></dxi-column>
+          <dxi-column dataField="activo" caption="Activo" [width]="90" cellTemplate="activoCell"></dxi-column>
+          <dxi-column caption="" [width]="70" cellTemplate="accionesTipo"></dxi-column>
+
+          <div *dxTemplate="let cell of 'nivelTipoCell'" class="level-cell">NV{{ cell.value }}</div>
+          <div *dxTemplate="let cell of 'activoCell'" class="status-cell">
+            <span class="status-pill" [class.inactive]="!cell.value">
+              {{ cell.value ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div *dxTemplate="let cell of 'accionesTipo'" class="grid-actions">
+            <dx-button icon="edit" stylingMode="text" hint="Editar" (onClick)="editarTipo(cell.data)"></dx-button>
+          </div>
+        </dx-data-grid>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- CUENTAS                                                          -->
+      <!-- ================================================================ -->
+      <section [hidden]="tabActiva !== 'cuentas'" class="tab-panel-content cuentas-panel" id="cuentas-config-panel">
+<dx-load-panel [visible]="cuentasCargando && tabActiva === 'cuentas'" container="#cuentas-config-panel"
+          [position]="{ of: '#cuentas-config-panel' }" [shading]="false" [showIndicator]="true"
+          [showPane]="true" [hideOnOutsideClick]="false" message="Cargando cuentas..."></dx-load-panel>
+        <div class="section-heading">
+          <div>
+            <h4>Cuentas contables configuradas</h4>
+            <p>
+              <!-- Se mantiene la configuración física. Proceso, driver y modo de monto se resuelven en C#. -->
+              <!-- El proceso se resuelve por las reglas de la configuración; no se fuerza. Mover entre procesos queda fuera de esta entrega. -->
+              Transfiera cuentas entre procesos y presione Guardar para aplicar los cambios.
+            </p>
+          </div>
+
+          <div class="header-actions">
+            <dx-button text="Agregar cuentas" type="default" icon="add" (onClick)="abrirAgregarCuentas()"></dx-button>
+            <dx-button text="Transferencia cuentas" type="normal" class="btn-transferencia" (onClick)="abrirTransferirCuentas()"></dx-button>
+          </div>
+        </div>
+
+<dx-data-grid #tabGrid
+          class="account-grid"
+          [dataSource]="cuentas"
+          keyExpr="id"
+          [showBorders]="true"
+          [showRowLines]="true"
+          [rowAlternationEnabled]="true"
+          [columnAutoWidth]="false"
+          [allowColumnResizing]="true"
+          [wordWrapEnabled]="false" [cellHintEnabled]="true"
+          [hoverStateEnabled]="true">
+
+          <dxo-search-panel [visible]="true" [width]="300" placeholder="Buscar cuenta, centro o proceso..."></dxo-search-panel>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-column-chooser [enabled]="true"></dxo-column-chooser>
+          <dxo-paging [pageSize]="25"></dxo-paging>
+          <dxo-pager
+            [visible]="true"
+            [showInfo]="true"
+            [showNavigationButtons]="true"
+            [showPageSizeSelector]="true"
+            [allowedPageSizes]="[25,50,100]">
+          </dxo-pager>
+
+          <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+          <dxi-column dataField="cuentaNombre" caption="Nombre cuenta" [width]="280"></dxi-column>
+          <dxi-column dataField="auxiliarCodigo" caption="Auxiliar" [width]="110"></dxi-column>
+          <dxi-column dataField="auxiliarNombre" caption="Nombre auxiliar" [width]="230"></dxi-column>
+          <dxi-column dataField="centroNombre" caption="Nombre del centro" [width]="170"></dxi-column>
+          <dxi-column dataField="etapa" caption="Etapa General" [width]="150"></dxi-column>
+          <!-- proceso guardado o deducido cuando el API conserva NULL. -->
+          <dxi-column caption="Proceso productivo" [calculateCellValue]="textoProcesoCuenta" [width]="180"></dxi-column>
+          <dxi-column dataField="procesoNombre" caption="Etapa Específica" [width]="150" [calculateCellValue]="etapaEspecifica"></dxi-column>
+          <dxi-column dataField="modoMonto" caption="Modo Monto" [width]="110"></dxi-column>
+          <dxi-column dataField="requiereCreditoRetiro" caption="Retiro Crédito" [width]="110" dataType="boolean"></dxi-column>
+          <dxi-column dataField="activo" caption="Estado" [width]="100" cellTemplate="activoCuentaCell"></dxi-column>
+          <dxi-column caption="" [width]="60" cellTemplate="accionesCuenta" [allowHiding]="false" [showInColumnChooser]="false"></dxi-column>
+          <dxi-column dataField="empresa" caption="Empresa" [width]="80" [visible]="false"></dxi-column>
+          <dxi-column dataField="etapaCodigo" caption="Código etapa" [width]="110" [visible]="false"></dxi-column>
+          <dxi-column dataField="centroCodigo" caption="Centro" [width]="110" [visible]="false"></dxi-column>
+          <dxi-column dataField="subcentroCodigo" caption="Subcentro" [width]="120" [visible]="false"></dxi-column>
+          <dxi-column dataField="subcentroNombre" caption="Nombre subcentro" [width]="230" [visible]="false"></dxi-column>
+          <dxi-column dataField="procesoCodigo" caption="Código proceso" [width]="120" [visible]="false"></dxi-column>
+          <dxi-column dataField="driverResuelto" caption="Driver" [width]="150" [visible]="false"></dxi-column>
+
+          <div *dxTemplate="let cell of 'activoCuentaCell'" class="status-cell">
+            <dx-switch [value]="cell.value" (onValueChanged)="cambiarActivoCuenta(cell.data, $event.value)" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+          </div>
+          <div *dxTemplate="let cell of 'accionesCuenta'" class="grid-actions">
+            <dx-button icon="edit" stylingMode="text" hint="Editar" (onClick)="editarCuenta(cell.data)"></dx-button>
+          </div>
+        </dx-data-grid>
+      </section>
+      <section [hidden]="tabActiva !== 'procesos'" class="tab-panel-content">
+        <div class="section-heading">
+          <div><h4>Procesos</h4><p>Un proceso sin cuentas es válido.</p></div>
+          <dx-button text="+ Nuevo proceso" type="default" (onClick)="nuevoProceso()"></dx-button>
+        </div>
+<dx-data-grid #tabGrid [dataSource]="procesos" [showBorders]="true" [showRowLines]="true"
+          [rowAlternationEnabled]="true" [columnAutoWidth]="true" [wordWrapEnabled]="true">
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-paging [pageSize]="25"></dxo-paging>
+          <dxi-column dataField="codigo" caption="Código"></dxi-column>
+          <dxi-column dataField="nombre" caption="Nombre"></dxi-column>
+          <dxi-column dataField="etapa" caption="Etapa"></dxi-column>
+          <dxi-column dataField="orden" caption="Orden" dataType="number"></dxi-column>
+          <dxi-column dataField="cantidadCuentas" caption="Cuentas" dataType="number"></dxi-column>
+          <!-- uso filtrable y distintivo suave. -->
+          <dxi-column dataField="uso" caption="Uso" [calculateCellValue]="usoProcesoTexto" [allowHeaderFiltering]="true" cellTemplate="usoProcesoCell"></dxi-column>
+          <div *dxTemplate="let cell of 'usoProcesoCell'"><span [class.proceso-uso-diario]="esProcesoDiario(cell.data)">{{ cell.value }}</span></div>
+          <dxi-column dataField="modoValor" caption="Modo de valor" [calculateCellValue]="etiquetaModoProceso"></dxi-column>
+          <dxi-column dataField="tipoProceso" caption="Tipo proceso" [calculateCellValue]="tipoProcesoTexto"></dxi-column>
+          <!-- información de ficha y tipos de la matriz. -->
+<dxi-column dataField="esFichaTecnica" caption="Ficha técnica" [calculateCellValue]="fichaProcesoValor" dataType="boolean" trueText="Sí" falseText="No"
+            [allowFiltering]="true" cellTemplate="tarifaProcesoCell"></dxi-column>
+          <dxi-column name="tiposMatriz" caption="Tipos" [calculateCellValue]="tiposProcesoMatrizTexto"></dxi-column>
+<dxi-column dataField="esTarifa" caption="Tarifa" [calculateCellValue]="tarifaProcesoValor" dataType="boolean" trueText="Sí" falseText="No" cellTemplate="tarifaProcesoCell"></dxi-column>
+          <dxi-column dataField="activo" caption="Activo" dataType="boolean" cellTemplate="activoProcesoCell"></dxi-column>
+<div *dxTemplate="let cell of 'tarifaProcesoCell'">{{ esProcesoDiario(cell.data) ? '' : (cell.value ? 'Sí' : 'No') }}</div>
+          <div *dxTemplate="let cell of 'activoProcesoCell'" class="status-cell">
+            <span class="status-pill" [class.inactive]="!cell.value">{{ cell.value ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+          <dxi-column caption="Editar" cellTemplate="editarProcesoCell" [width]="70"></dxi-column>
+          <div *dxTemplate="let cell of 'editarProcesoCell'" class="grid-actions">
+            <dx-button icon="edit" stylingMode="text" hint="Editar" (onClick)="editarProceso(cell.data)"></dx-button>
+          </div>
+        </dx-data-grid>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- POPUP REGLA AVANZADA                                                   -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupReglaVisible"
+  [showTitle]="true"
+  title="Regla de aplicación"
+  [width]="520"
+  [height]="360"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearRegla()">
+
+  <div *dxTemplate="let data of 'content'" class="popup-form">
+    <ng-container *ngIf="popupReglaVisible">
+    <div class="popup-context">
+      <div><strong>TIPOLIQ:</strong> {{ reglaTipoCodigo }} - {{ reglaTipoNombre }}</div>
+      <div><strong>Proceso:</strong> {{ reglaProcesoCodigo }} - {{ reglaProcesoNombre }}</div>
+    </div>
+
+    <label class="control-label-aspx">Regla</label>
+    <dx-select-box
+      [dataSource]="reglasDisponibles"
+      displayExpr="descripcion"
+      valueExpr="codigo"
+      [(value)]="reglaSeleccionada"
+      [searchEnabled]="true">
+    </dx-select-box>
+
+    <div class="rule-help">
+      El switch de la matriz es una representación simple. Este valor es el que realmente se guarda en
+      <code>tb_configTipoLiquidacion_procesoCosto</code>.
+    </div>
+
+    </ng-container>
+  </div>
+
+  <!-- toolbarItems en el footer; se conservan los handlers originales. -->
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerRegla0"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerRegla0'"><dx-button text="Cancelar" type="normal" (onClick)="popupReglaVisible=false"></dx-button></div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerRegla1"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerRegla1'"><dx-button text="Aplicar" type="success" icon="check" (onClick)="aplicarReglaAvanzada()"></dx-button></div>
+</dx-popup>
+
+<!-- ======================================================================= -->
+<!-- POPUP TIPO / NIVEL                                                     -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupTipoVisible"
+  [showTitle]="true"
+  [title]="tipoEdicion.esNuevo ? 'Nuevo tipo de proceso' : 'Editar tipo de proceso'"
+  [width]="620"
+  [height]="510"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearTipo()">
+
+<div *dxTemplate="let data of 'content'" class="popup-form form-grid" id="modal-tipo-config">
+    <dx-load-panel [visible]="popupTipoVisible && loadingVisible" container="#modal-tipo-config"
+      [position]="{ of: '#modal-tipo-config' }" [shading]="true" [showIndicator]="true"
+      [showPane]="true" [hideOnOutsideClick]="false" message="Procesando..."></dx-load-panel>
+    <ng-container *ngIf="popupTipoVisible">
+    <div *ngIf="tipoEdicion.esNuevo" class="form-field form-field-wide">
+      <label class="control-label-aspx">Tipo de proceso disponible (obligatorio)</label>
+      <dx-select-box [dataSource]="tiposProcesoDisponibles" valueExpr="codigo" [displayExpr]="textoTipoDisponible"
+        [value]="tipoDisponibleCodigo" [searchEnabled]="true" [searchExpr]="['codigo','nombre','tipoLoteCodigo']"
+        [showClearButton]="true" [inputAttr]="{ 'aria-required': 'true' }"
+        (onValueChanged)="seleccionarTipoDisponible($event.value)"></dx-select-box>
+      <small *ngIf="!tiposProcesoDisponibles.length" class="proceso-ayuda">No hay tipos de proceso disponibles.</small>
+      <small *ngIf="tipoDisponibleSeleccionado && !tipoDisponibleSeleccionado.loteValido" class="tipo-error" role="alert">El tipo de lote no existe o no está activo. No se puede guardar este tipo.</small>
+    </div>
+    <div class="form-field">
+      <label class="control-label-aspx">Código</label>
+<dx-text-box [(value)]="tipoEdicion.codigo" [readOnly]="true" [maxLength]="10"></dx-text-box>
+    </div>
+
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Descripción TIPOLIQ</label>
+<dx-text-box [(value)]="tipoEdicion.nombre" [readOnly]="!!tipoEdicion.esNuevo" [maxLength]="180"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Tipo de lote</label>
+<dx-select-box *ngIf="!tipoEdicion.esNuevo"
+        [dataSource]="tiposLote"
+        displayExpr="nombre"
+        valueExpr="codigo"
+        [(value)]="tipoEdicion.tipoLoteCodigo">
+      </dx-select-box>
+      <dx-text-box *ngIf="tipoEdicion.esNuevo" [value]="tipoEdicion.tipoLoteCodigo + ' - ' + tipoEdicion.tipoLote" [readOnly]="true"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Nivel</label>
+<dx-select-box [items]="tipoEdicion.esNuevo ? [1,2,3,4,5,6,7,8,9] : [1,2,3,4,5]" [(value)]="tipoEdicion.nivel"></dx-select-box>
+    </div>
+
+    <div class="form-field switch-field">
+      <label class="control-label-aspx">Activo</label>
+      <dx-switch [(value)]="tipoEdicion.activo" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+    </div>
+
+    <div class="form-field form-field-wide info-box">
+      Al crear un TIPOLIQ nuevo, el front genera automáticamente todas sus celdas de matriz con regla
+      <strong>NA</strong>. Luego se pueden activar con el switch o definir TAR/DEP/PRO/FIC/D.
+    </div>
+
+    </ng-container>
+  </div>
+
+  <!-- toolbarItems en el footer; se conservan los handlers originales. -->
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerTipo0"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerTipo0'"><dx-button text="Cancelar" type="normal" (onClick)="popupTipoVisible=false"></dx-button></div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerTipo1"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerTipo1'">
+<dx-button text="Aceptar" type="success" icon="check" [disabled]="tipoNuevoInvalido || loadingVisible" (onClick)="guardarTipoLocal()"></dx-button></div>
+</dx-popup>
+
+<!-- ======================================================================= -->
+<!-- POPUP CUENTA                                                           -->
+<!-- ======================================================================= -->
+<dx-popup
+  [(visible)]="popupCuentaVisible"
+  [showTitle]="true"
+  [title]="cuentaEdicion.esNuevo ? 'Nueva cuenta productiva' : 'Editar cuenta productiva'"
+  [width]="680"
+  [height]="570"
+  [dragEnabled]="true"
+  [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearCuenta()">
+
+<div *dxTemplate="let data of 'content'" class="popup-form form-grid" id="modal-cuenta-config">
+    <dx-load-panel [visible]="popupCuentaVisible && loadingVisible" container="#modal-cuenta-config"
+      [position]="{ of: '#modal-cuenta-config' }" [shading]="true" [showIndicator]="true"
+      [showPane]="true" [hideOnOutsideClick]="false" message="Procesando..."></dx-load-panel>
+    <ng-container *ngIf="popupCuentaVisible">
+    <div class="form-field">
+      <label class="control-label-aspx">Empresa</label>
+      <dx-text-box [value]="empresa.descripcion" [readOnly]="true"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Cuenta</label>
+      <dx-text-box [(value)]="cuentaEdicion.cuenta" [maxLength]="13"></dx-text-box>
+    </div>
+
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Etapa</label>
+<dx-select-box
+        [dataSource]="etapasProductivas"
+        displayExpr="nombre"
+        valueExpr="codigo"
+        [value]="cuentaEdicion.etapaCodigo"
+        (onValueChanged)="cambiarEtapaCuenta($event.value)"
+        [searchEnabled]="true">
+      </dx-select-box>
+    </div>
+
+    <!-- asignación explícita del proceso de la cuenta. -->
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Proceso productivo</label>
+      <dx-select-box [dataSource]="procesosCuentaDisponibles" displayExpr="nombre" valueExpr="codigo"
+        [(value)]="cuentaEdicion.procesoCodigo" [searchEnabled]="true" [disabled]="!cuentaEdicion.etapaCodigo"></dx-select-box>
+      <small *ngIf="!cuentaEdicion.procesoCodigo && cuentaEdicion.procesoResuelto" class="proceso-ayuda">{{ textoProcesoCuenta(cuentaEdicion) }}</small>
+      <small *ngIf="cuentaProcesoInvalido" class="proceso-ayuda" role="status">Seleccione un proceso activo de la etapa antes de aceptar.</small>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Centro</label>
+      <dx-text-box [(value)]="cuentaEdicion.centroCodigo"></dx-text-box>
+    </div>
+
+    <div class="form-field">
+      <label class="control-label-aspx">Subcentro</label>
+      <dx-text-box [(value)]="cuentaEdicion.subcentroCodigo"></dx-text-box>
+    </div>
+
+    <div class="form-field switch-field">
+      <label class="control-label-aspx">Activo</label>
+      <dx-switch [(value)]="cuentaEdicion.activo" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+    </div>
+
+    <div class="form-field form-field-wide info-box">
+      Al cambiar la etapa debe seleccionar un proceso productivo. Las cuentas heredadas sin
+      proceso guardado conservan la resolución por regla mientras no cambie su asignación.
+    </div>
+
+    </ng-container>
+  </div>
+
+  <!-- toolbarItems en el footer; se conservan los handlers originales. -->
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerCuenta0"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerCuenta0'"><dx-button text="Cancelar" type="normal" (onClick)="popupCuentaVisible=false"></dx-button></div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerCuenta1"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerCuenta1'"><dx-button text="Aceptar" type="success" icon="check" [disabled]="cuentaProcesoInvalido" (onClick)="guardarCuentaLocal()"></dx-button></div>
+</dx-popup>
+
+<!-- agregar cuentas del catálogo SONGA, individualmente o en grupo. -->
+<dx-popup [(visible)]="popupAgregarVisible" [showTitle]="true" title="Agregar cuentas"
+  [width]="1100" [maxWidth]="'95vw'" [height]="'90vh'" [dragEnabled]="true" [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearAgregar()">
+<div *dxTemplate="let data of 'content'" class="popup-form form-grid agregar-cuentas-form" id="modal-agregar-config">
+    <dx-load-panel [visible]="popupAgregarVisible && (agregarCargando || loadingVisible)" container="#modal-agregar-config"
+      [position]="{ of: '#modal-agregar-config' }" [shading]="true" [showIndicator]="true"
+      [showPane]="true" [hideOnOutsideClick]="false" message="Procesando..."></dx-load-panel>
+    <ng-container *ngIf="popupAgregarVisible">
+    <div class="form-field form-field-wide">
+      <dx-radio-group [items]="[{v:'unica',t:'Cuenta única'},{v:'grupo',t:'Grupo'}]" valueExpr="v" displayExpr="t"
+        [(value)]="modoAgregar" layout="horizontal"></dx-radio-group>
+    </div>
+    <div class="form-field">
+      <label class="control-label-aspx">Empresa</label><span>{{ empresa.descripcion }}</span>
+    </div>
+    <div class="form-field catalogo-ayuda">Catálogo: todas las cuentas de nivel 5 del maestro SONG</div>
+    <div class="form-field">
+      <label class="control-label-aspx">Buscar en el catálogo</label>
+      <dx-text-box [value]="agregarTexto" valueChangeEvent="input" (onValueChanged)="onTextoCatalogoCambio($event.value)"
+        placeholder="Cuenta, nombre, auxiliar, centro o subcentro"></dx-text-box>
+    </div>
+    <div class="form-field">
+      <dx-check-box [(value)]="agregarSoloDisponibles" text="Solo disponibles" (onValueChanged)="onBusquedaCambio()"></dx-check-box>
+
+    </div>
+    <div *ngIf="modoAgregar === 'unica'" class="form-field form-field-wide">
+      <label class="control-label-aspx">Cuenta</label>
+      <!-- disabledExpr="asignada" no existe en 23.1.7; los elementos usan disabled. -->
+      <small class="agregar-mensaje">Use el buscador superior para encontrar una cuenta en todo el catálogo.</small>
+      <dx-select-box [dataSource]="agregarDisponibles" displayExpr="cuenta" [value]="agregarUnica"
+        [searchEnabled]="false" [showClearButton]="true" [disabled]="agregarCargando"
+        itemTemplate="cuentaDisponibleItem" (onValueChanged)="onSeleccionUnica($event.value)">
+        <div *dxTemplate="let item of 'cuentaDisponibleItem'">
+          <div>{{ item.cuenta }} — {{ item.cuentaNombre }}</div>
+          <small class="agregar-mensaje">{{ item.centroCodigo }} / {{ item.subcentroCodigo }} / {{ item.auxiliarCodigo }}</small>
+          <small class="agregar-mensaje">Proceso actual: {{ item.procesoActualCodigo }} {{ item.procesoActualNombre }}</small>
+          <small *ngIf="item.asignada" class="agregar-mensaje">{{ item.mensaje }}</small>
+          <small *ngIf="item.anulada" class="agregar-mensaje">Se reactivará</small>
+        </div>
+      </dx-select-box>
+      <div class="agregar-detalle">
+        <div><label class="control-label-aspx">Centro</label>
+          <dx-text-box [value]="agregarUnica ? agregarUnica.centroCodigo + ' - ' + agregarUnica.centroNombre : ''" [readOnly]="true"></dx-text-box>
+        </div>
+        <div><label class="control-label-aspx">Subcentro</label>
+          <dx-text-box [value]="agregarUnica ? agregarUnica.subcentroCodigo + ' - ' + agregarUnica.subcentroNombre : ''" [readOnly]="true"></dx-text-box>
+        </div>
+        <div><label class="control-label-aspx">Auxiliar</label>
+          <dx-text-box [value]="agregarUnica ? agregarUnica.auxiliarCodigo + ' - ' + agregarUnica.auxiliarNombre : ''" [readOnly]="true"></dx-text-box>
+        </div>
+        <div><label class="control-label-aspx">Proceso actual</label>
+          <dx-text-box [value]="agregarUnica ? agregarUnica.procesoActualCodigo + ' - ' + agregarUnica.procesoActualNombre : ''" [readOnly]="true"></dx-text-box>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="modoAgregar === 'grupo'" class="form-field form-field-wide">
+      <small class="agregar-mensaje">Los filtros de nombres y auxiliar comparten el texto de búsqueda global; al cambiar uno se reemplaza el anterior. Los códigos se combinan con ese texto.</small>
+      <dx-data-grid class="agregar-cuentas-grid" [dataSource]="agregarFuente" [remoteOperations]="{ filtering: true }"
+        [keyExpr]="['empresa','cuenta','centroCodigo','subcentroCodigo']" [selectedRowKeys]="agregarClaves"
+        [showBorders]="true" [columnAutoWidth]="false" [allowColumnResizing]="true" [cellHintEnabled]="true" [wordWrapEnabled]="true" [height]="300"
+        (onOptionChanged)="onFiltroAgregarCambio($event)" (onEditorPreparing)="onEditorAgregarPreparando($event)"
+        [disabled]="agregarCargando" (onRowPrepared)="onFilaDisponible($event)" (onSelectionChanged)="onSeleccionGrupo($event)">
+        <dxo-selection mode="multiple" showCheckBoxesMode="always" selectAllMode="page"></dxo-selection>
+        <dxo-filter-row [visible]="true"></dxo-filter-row>
+        <!-- sin listas de encabezado parciales; la API no admite listas OR/exclusiones. -->
+        <dxo-header-filter [visible]="false"></dxo-header-filter>
+        <dxo-search-panel [visible]="true" [text]="agregarTexto" placeholder="Buscar en todo el catálogo..."></dxo-search-panel>
+        <!-- la paginacion externa ya recibe una pagina del servidor. -->
+        <dxo-paging [enabled]="false"></dxo-paging>
+        <dxo-pager [visible]="false"></dxo-pager>
+        <dxi-column dataField="cuenta" caption="Cuenta" [width]="130" [filterValue]="agregarFiltros['cuenta']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="cuentaNombre" caption="Nombre cuenta" [width]="280" [filterValue]="agregarFiltros['cuentaNombre']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="auxiliarCodigo" caption="Auxiliar" [width]="110" [filterValue]="agregarFiltros['auxiliarCodigo']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="centroCodigo" caption="Centro" [width]="110" [filterValue]="agregarFiltros['centroCodigo']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="centroNombre" caption="Nombre centro" [width]="170" [filterValue]="agregarFiltros['centroNombre']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="subcentroCodigo" caption="Subcentro" [width]="120" [filterValue]="agregarFiltros['subcentroCodigo']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="subcentroNombre" caption="Nombre subcentro" [width]="230" [filterValue]="agregarFiltros['subcentroNombre']" [filterOperations]="['contains']" selectedFilterOperation="contains"></dxi-column>
+        <dxi-column dataField="etapaNombre" caption="Etapa" [width]="150" [allowFiltering]="false" [allowHeaderFiltering]="false" [allowSearch]="false"></dxi-column>
+        <dxi-column dataField="procesoActualNombre" caption="Proceso actual" [width]="150" [allowFiltering]="false" [allowHeaderFiltering]="false" [allowSearch]="false"></dxi-column>
+        <dxi-column dataField="mensaje" caption="Estado" cellTemplate="estadoDisponibleCell" [width]="280" [allowFiltering]="false" [allowHeaderFiltering]="false" [allowSearch]="false"></dxi-column>
+        <div *dxTemplate="let cell of 'estadoDisponibleCell'" class="agregar-mensaje">
+          {{ cell.data.asignada ? cell.data.mensaje : cell.data.anulada ? 'Se reactivará' : cell.data.mensaje }}
+        </div>
+      </dx-data-grid>
+      <div class="agregar-contador">Seleccionadas: {{ agregarSeleccion.length }} cuentas</div>
+    </div>
+    <div class="form-field form-field-wide agregar-paginacion">
+      <dx-button text="Anterior" [disabled]="agregarCargando || agregarPagina <= 1" (onClick)="buscarDisponibles(agregarPagina - 1)"></dx-button>
+      <!-- total del catalogo filtrado devuelto por la API. -->
+      <span>Página {{ agregarPagina }} · {{ agregarTotal }} cuentas encontradas</span>
+      <dx-button text="Siguiente" [disabled]="agregarCargando || agregarPagina * 50 >= agregarTotal" (onClick)="buscarDisponibles(agregarPagina + 1)"></dx-button>
+    </div>
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Etapa (obligatoria)</label>
+<dx-select-box [dataSource]="etapasProductivas" displayExpr="nombre" valueExpr="codigo" [(value)]="agregarEtapa"
+        (onValueChanged)="cambiarEtapaAgregar()" [searchEnabled]="true" [inputAttr]="{ 'aria-required': 'true' }"></dx-select-box>
+    </div>
+    <div class="form-field form-field-wide">
+      <label class="control-label-aspx">Proceso productivo (obligatorio)</label>
+      <dx-select-box [dataSource]="procesosAgregarDisponibles" displayExpr="nombre" valueExpr="codigo"
+        [(value)]="agregarProceso" [searchEnabled]="true" [disabled]="!agregarEtapa"
+        [inputAttr]="{ 'aria-required': 'true' }"></dx-select-box>
+      <small class="proceso-ayuda">La etapa y el proceso determinan dónde se aplica la cuenta.</small>
+      <!-- requisitos visibles en ambos modos. -->
+      <small *ngIf="mensajeAgregar" class="proceso-ayuda" role="status">{{ mensajeAgregar }}</small>
+    </div>
+    </ng-container>
+  </div>
+
+  <!-- toolbarItems en el footer; se conservan los handlers originales. -->
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerAgregar0"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerAgregar0'"><dx-button text="Cancelar" type="normal" (onClick)="popupAgregarVisible=false"></dx-button></div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerAgregar1"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerAgregar1'"><dx-button text="Agregar" type="success" icon="add" [disabled]="agregarCargando || !!mensajeAgregar" (onClick)="confirmarAgregar()"></dx-button></div>
+</dx-popup>
+
+<!-- transferencia local; el guardado global persiste los cambios. -->
+<dx-popup [(visible)]="popupTransferirVisible" [showTitle]="true" title="Transferencia de cuentas"
+  [wrapperAttr]="{ class: 'popup-transferencia' }" [width]="1100" [maxWidth]="'95vw'" [height]="'90vh'" [dragEnabled]="true"
+  [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearTransferir()">
+  <div *dxTemplate="let data of 'content'" class="popup-form form-grid transferir-form" id="modal-transferir-config">
+    <dx-load-panel [visible]="popupTransferirVisible && (cuentasCargando || loadingVisible)"
+      container="#modal-transferir-config" [position]="{ of: '#modal-transferir-config' }"
+      [shading]="true" [showIndicator]="true" [showPane]="true" [hideOnOutsideClick]="false"
+      message="Cargando cuentas..."></dx-load-panel>
+    <ng-container *ngIf="popupTransferirVisible">
+      <div class="form-field">
+        <label class="control-label-aspx">Origen: etapa</label>
+<dx-select-box [dataSource]="etapasProductivas" displayExpr="nombre" valueExpr="codigo"
+          [(value)]="transferirEtapaOrigen" [searchEnabled]="true" [disabled]="cuentasCargando || loadingVisible"
+          (onValueChanged)="actualizarOrigenTransferencia()"></dx-select-box>
+      </div>
+      <div class="form-field">
+        <label class="control-label-aspx">Origen: proceso activo</label>
+        <dx-select-box [dataSource]="transferirProcesosOrigen" [displayExpr]="textoOrigenTransferencia" valueExpr="codigo"
+          [(value)]="transferirProcesoOrigen" [searchEnabled]="true" [disabled]="!transferirEtapaOrigen || cuentasCargando || loadingVisible"
+          (onValueChanged)="actualizarCuentasTransferencia()"></dx-select-box>
+      </div>
+      <div class="form-field form-field-wide">
+        <dx-data-grid [dataSource]="transferirCuentas" keyExpr="id" [(selectedRowKeys)]="transferirClaves"
+          [showBorders]="true" [height]="320" [columnAutoWidth]="false" [cellHintEnabled]="true"
+          [allowColumnResizing]="true" [wordWrapEnabled]="true" [remoteOperations]="false"
+          [disabled]="cuentasCargando || loadingVisible"
+          [noDataText]="transferirProcesoOrigen ? (transferirCuentas.length ? 'No hay cuentas que coincidan con los filtros' : 'Este proceso no tiene cuentas activas') : 'Seleccione un proceso origen'">
+          <!-- claves persistentes; seleccionar todas usa los datos filtrados de todas las páginas. -->
+          <dxo-selection [deferred]="false" mode="multiple" showCheckBoxesMode="always" [allowSelectAll]="true" selectAllMode="allPages"></dxo-selection>
+          <dxo-filter-row [visible]="true"></dxo-filter-row>
+          <dxo-header-filter [visible]="true"></dxo-header-filter>
+          <dxo-search-panel [visible]="true" placeholder="Buscar en las cuentas..."></dxo-search-panel>
+          <dxo-paging [pageSize]="25"></dxo-paging>
+          <dxo-pager [visible]="true" [showInfo]="true" [showNavigationButtons]="true"></dxo-pager>
+          <dxi-column dataField="cuenta" caption="Cuenta" [width]="130"></dxi-column>
+          <dxi-column dataField="cuentaNombre" caption="Nombre cuenta" [width]="280" cellTemplate="cuentaTransferenciaCell"></dxi-column>
+          <!-- indicador informativo recibido del backend. -->
+          <div *dxTemplate="let cell of 'cuentaTransferenciaCell'">
+            {{ cell.value }}
+            <small *ngIf="cell.data.procesoGuardado === false" class="transferir-proceso-calculado">proceso calculado</small>
+          </div>
+          <dxi-column dataField="auxiliarCodigo" caption="Auxiliar" [width]="110"></dxi-column>
+          <dxi-column dataField="auxiliarNombre" caption="Nombre auxiliar" [width]="230"></dxi-column>
+          <dxi-column dataField="centroCodigo" caption="Centro" [width]="110"></dxi-column>
+          <dxi-column dataField="centroNombre" caption="Nombre centro" [width]="170"></dxi-column>
+          <dxi-column dataField="subcentroCodigo" caption="Subcentro" [width]="120"></dxi-column>
+          <dxi-column dataField="subcentroNombre" caption="Nombre subcentro" [width]="230"></dxi-column>
+        </dx-data-grid>
+        <div class="agregar-contador" role="status">Seleccionadas: {{ transferirClaves.length }}</div>
+      </div>
+      <div class="form-field">
+        <label class="control-label-aspx">Destino: etapa</label>
+<dx-select-box [dataSource]="etapasProductivas" displayExpr="nombre" valueExpr="codigo"
+          [(value)]="transferirEtapaDestino" [searchEnabled]="true"
+          (onValueChanged)="actualizarDestinoTransferencia()"></dx-select-box>
+      </div>
+      <div class="form-field">
+        <label class="control-label-aspx">Destino: proceso activo</label>
+        <dx-select-box [dataSource]="transferirProcesosDestino" [displayExpr]="textoOrigenTransferencia" valueExpr="codigo"
+          [(value)]="transferirProcesoDestino" [searchEnabled]="true" [disabled]="!transferirEtapaDestino"></dx-select-box>
+      </div>
+      <small class="proceso-ayuda form-field-wide">Puede seleccionar procesos nuevos agregados en la pestaña Procesos. Presione Guardar después de transferir para aplicar los cambios.</small>
+      <!-- advertencia visible antes del footer de transferencia. -->
+      <p class="aviso-anulacion form-field-wide" role="note">Al guardar se anularán TODAS las valorizaciones de MP (fresco y reproceso) de todos los meses; se ejecuta por niveles y verá el estado.</p>
+    </ng-container>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerTransferirCancelar"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerTransferirCancelar'">
+    <dx-button text="Cancelar" type="normal" (onClick)="popupTransferirVisible=false"></dx-button>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerTransferirConfirmar"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerTransferirConfirmar'">
+    <dx-button text="Transferir" type="success" [disabled]="!puedeTransferir" (onClick)="confirmarTransferencia()"></dx-button>
+  </div>
+</dx-popup>
+
+<!-- aviso de recosteo con acciones en el footer y limpieza completa al ocultarse. -->
+<dx-popup [(visible)]="popupAvisoRecosteoVisible" [showTitle]="true" title="Se debe costear nuevamente"
+  [width]="620" [maxWidth]="'95vw'" [height]="'auto'" [maxHeight]="'90vh'" [dragEnabled]="true"
+  [hideOnOutsideClick]="false" [showCloseButton]="true" (onHidden)="resetearAvisoRecosteo()">
+  <div *dxTemplate="let data of 'content'" class="popup-form aviso-recosteo">
+    <p>Al agregar un proceso nuevo y mover cuentas contables entre procesos, el consolidado de ParamProc ya costeado deja de ser válido. Después de guardar, debe volver a costear (recalcular) el consolidado de ParamProc de los períodos afectados.</p>
+    <!-- reutiliza el aviso v9 para las transferencias pendientes del guardado global. -->
+    <p *ngIf="avisoRecosteoGuardar && hayTransferenciasPendientes" class="aviso-anulacion" role="note">Al guardar se anularán TODAS las valorizaciones de MP (fresco y reproceso) de todos los meses; se ejecuta por niveles y verá el estado.</p>
+    <p *ngFor="let proceso of avisoRecosteoProcesos" class="popup-context">
+      Proceso agregado: <strong>{{ proceso.nombre }}</strong> — Código: <strong>{{ proceso.codigo }}</strong>
+    </p>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerAvisoRecosteoCancelar"
+    [visible]="avisoRecosteoGuardar"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerAvisoRecosteoCancelar'">
+    <dx-button text="Cancelar" type="normal" (onClick)="popupAvisoRecosteoVisible=false"></dx-button>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerAvisoRecosteoAceptar"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerAvisoRecosteoAceptar'">
+    <dx-button [text]="avisoRecosteoGuardar ? 'Guardar de todos modos' : 'Entendido'"
+      type="success" (onClick)="aceptarAvisoRecosteo()"></dx-button>
+  </div>
+</dx-popup>
+
+<!-- mantenimiento de tb_procesocosto. -->
+<dx-popup [(visible)]="popupProcesoVisible" [showTitle]="true" title="Proceso"
+  [width]="620" [maxWidth]="'95vw'" [height]="'80vh'" [dragEnabled]="true"
+  [hideOnOutsideClick]="true" [showCloseButton]="true" (onHidden)="resetearProceso()">
+<div *dxTemplate="let data of 'content'" class="popup-form form-grid proceso-form" id="modal-proceso-config">
+    <dx-load-panel [visible]="popupProcesoVisible && loadingVisible" container="#modal-proceso-config"
+      [position]="{ of: '#modal-proceso-config' }" [shading]="true" [showIndicator]="true"
+      [showPane]="true" [hideOnOutsideClick]="false" message="Procesando..."></dx-load-panel>
+    <ng-container *ngIf="popupProcesoVisible">
+      <!-- uso editable solo al crear. -->
+      <div class="form-field form-field-wide">
+        <label class="control-label-aspx">Tipo de proceso</label>
+        <dx-select-box [dataSource]="usosProceso" displayExpr="descripcion" valueExpr="codigo"
+          [value]="procesoEdicion.uso" [readOnly]="procesoEnEdicion"
+          (onValueChanged)="cambiarUsoProceso($event.value)"></dx-select-box>
+      </div>
+      <p *ngIf="procesoDiario" class="form-field-wide proceso-diario-aviso" role="status">Un proceso de diarios no se costea línea a línea. Sus cuentas se configuran en la ventana de diarios contables.</p>
+      <div class="form-field form-field-wide">
+        <label class="control-label-aspx">Nombre</label>
+        <dx-text-box [(value)]="procesoEdicion.nombre" [maxLength]="100" [readOnly]="nombreProcesoBloqueado"
+          valueChangeEvent="keyup" (onValueChanged)="actualizarCodigoProceso()"></dx-text-box>
+        <small *ngIf="nombreProcesoBloqueado" class="proceso-ayuda">La descripción es llave del costeo</small>
+      </div>
+      <div class="form-field form-field-wide">
+        <label class="control-label-aspx">Código</label>
+        <dx-text-box [(value)]="procesoEdicion.codigo" [maxLength]="5"
+          [readOnly]="!procesoEdicion.esNuevo || !procesoEdicion.editarCodigo || procesoEnEdicion"
+          [inputAttr]="{ 'aria-label': 'Código de 3 a 5 caracteres A-Z o 0-9' }"></dx-text-box>
+        <dx-check-box *ngIf="procesoEdicion.esNuevo && !procesoEnEdicion" [(value)]="procesoEdicion.editarCodigo"
+          text="Editar código" (onValueChanged)="actualizarCodigoProceso()"></dx-check-box>
+        <small *ngIf="procesoEdicion.esNuevo && !procesoEdicion.editarCodigo" class="proceso-ayuda">Vista previa; el código definitivo se genera al guardar.</small>
+      </div>
+      <div class="form-field">
+        <label class="control-label-aspx">Etapa</label>
+<dx-text-box *ngIf="procesoDiario" value="DM - Diarios de Movimientos" [readOnly]="true" [disabled]="true"></dx-text-box>
+<!-- los diarios no participan en la matriz productiva. -->
+<dx-check-box *ngIf="procesoDiario" text="En matriz" [value]="false" [disabled]="true"></dx-check-box>
+<dx-select-box *ngIf="!procesoDiario" [dataSource]="etapasProductivas" displayExpr="nombre" valueExpr="codigo" [(value)]="procesoEdicion.etapaCodigo"
+          (onValueChanged)="actualizarOrdenProceso()" [searchEnabled]="true" [readOnly]="!!procesoEdicion.sinProceso"></dx-select-box>
+      </div>
+      <div class="form-field">
+        <label class="control-label-aspx">Orden</label>
+<dx-number-box [(value)]="procesoEdicion.orden" [readOnly]="true"></dx-number-box>
+        <small *ngIf="procesoEdicion.esNuevo" class="proceso-ayuda">Orden automático de la etapa; se confirma al guardar.</small>
+      </div>
+<div *ngIf="!procesoDiario" class="form-field form-field-wide">
+        <label class="control-label-aspx">Modo de valor</label>
+        <dx-select-box [dataSource]="modosProcesoDisponibles" displayExpr="descripcion" valueExpr="codigo"
+          [(value)]="procesoEdicion.modoValor" [readOnly]="!!procesoEdicion.sinProceso && procesoEdicion.modoValor === modo.TARIFA"></dx-select-box>
+      </div>
+      <!-- tipos originales informativos, independientes del selector TARIFA. -->
+<div *ngIf="!procesoDiario" class="form-field">
+        <label class="control-label-aspx">Tipos con TAR</label>
+        <dx-text-box [value]="tiposTarifaProcesoLectura" [readOnly]="true"></dx-text-box>
+      </div>
+<div *ngIf="!procesoDiario" class="form-field">
+        <label class="control-label-aspx">Tipos con FIC</label>
+        <dx-text-box [value]="procesoEdicion.tiposFicha || ''" [readOnly]="true"></dx-text-box>
+      </div>
+<div *ngIf="!procesoDiario && procesoEdicion.modoValor === modo.TARIFA" class="form-field form-field-wide">
+        <label class="control-label-aspx">Tipo proceso (obligatorio)</label>
+<dx-select-box *ngIf="!procesoEdicion.sinProceso" [dataSource]="tiposTarifaDisponibles" displayExpr="nombre" valueExpr="codigo"
+          [(value)]="procesoEdicion.tipoProcesoCodigo" [searchEnabled]="true" [inputAttr]="{ 'aria-required': 'true' }"></dx-select-box>
+        <dx-text-box *ngIf="procesoEdicion.sinProceso" [value]="tipoProcesoTexto(procesoEdicion)" [readOnly]="true"></dx-text-box>
+      </div>
+      <div class="form-field switch-field">
+        <label class="control-label-aspx">Activo</label>
+        <dx-switch [(value)]="procesoEdicion.activo" switchedOnText="Sí" switchedOffText="No"></dx-switch>
+      </div>
+    </ng-container>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerProceso0"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerProceso0'"><dx-button text="Cancelar" type="normal" (onClick)="popupProcesoVisible=false"></dx-button></div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerProceso1"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerProceso1'"><dx-button text="Aceptar" type="success" icon="check" (onClick)="guardarProcesoLocal()"></dx-button></div>
+</dx-popup>
+
+<!-- ejecución secuencial con acciones en el footer. -->
+<dx-popup [(visible)]="popupEjecucionVisible" [showTitle]="true" title="Estado de la ejecución" titleTemplate="tituloEjecucion"
+  [width]="760" [maxWidth]="'95vw'" [height]="'auto'" [maxHeight]="'90vh'"
+  [hideOnOutsideClick]="false" [showCloseButton]="false"
+  (onHiding)="impedirCierreEjecucion($event)" (onHidden)="resetearEjecucion()">
+  <!-- contexto capturado una vez, compartido con todos los niveles. -->
+  <div *dxTemplate="let data of 'tituloEjecucion'" class="ejecucion-encabezado">
+    <strong>Estado de la ejecución</strong>
+    <div *ngFor="let transferencia of transferenciasEjecucion" class="ejecucion-transferencia">{{ transferencia }}</div>
+  </div>
+  <div *dxTemplate="let data of 'content'" class="ejecucion-niveles" aria-live="polite">
+    <div *ngFor="let nivel of nivelesEjecucion; let i = index" class="ejecucion-nivel"
+      [class.ejecucion-error]="nivel.estado === 'Error'">
+      <span class="ejecucion-icono" [class.ejecucion-spinner]="nivel.estado === 'En ejecución'" aria-hidden="true">{{ nivel.estado === 'En ejecución' ? '' : nivel.estado === 'Completado' ? '✓' : nivel.estado === 'Error' ? '!' : '○' }}</span>
+      <div class="ejecucion-detalle">
+        <strong>{{ i + 1 }}. {{ nivel.titulo }}</strong>
+        <!-- origen → destino en los niveles 1, 2 y 3. -->
+        <div *ngFor="let transferencia of transferenciasEjecucion" class="ejecucion-transferencia">{{ transferencia }}</div>
+        <div>{{ nivel.estado }}</div>
+        <!-- aviso sin porcentaje, solo mientras el nivel 1 sigue ejecutándose. -->
+        <p *ngIf="nivel.clave === 'GUARDAR' && nivel.estado === 'En ejecución' && nivel.esperaProlongada"
+          class="ejecucion-espera" role="status">Esperando a la base de datos... otra operación puede estar bloqueando el guardado.</p>
+        <pre *ngIf="nivel.mensaje" class="ejecucion-mensaje">{{ nivel.mensaje }}</pre>
+      </div>
+    </div>
+    <p *ngIf="resumenEjecucion" class="ejecucion-resumen">{{ resumenEjecucion }}</p>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerEjecucionReintentar"
+    [visible]="hayErrorEjecucion"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerEjecucionReintentar'">
+    <dx-button text="Reintentar" type="success" [disabled]="ejecucionEnCurso" (onClick)="ejecutarNiveles()"></dx-button>
+  </div>
+  <!-- acción manual junto a Cerrar, solo tras finalizar con los niveles 2 y 3 omitidos. -->
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerEjecucionAnular"
+    [visible]="puedeAnularValorizacionesManualmente"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerEjecucionAnular'">
+    <dx-button text="Anular valorizaciones de todos modos" type="normal" class="ejecucion-anular-manual"
+      [disabled]="ejecucionEnCurso" (onClick)="anularValorizacionesManualmente()"></dx-button>
+  </div>
+  <dxi-toolbar-item toolbar="bottom" location="after" template="footerEjecucionCerrar"></dxi-toolbar-item>
+  <div *dxTemplate="let data of 'footerEjecucionCerrar'">
+    <dx-button text="Cerrar" type="normal" [disabled]="ejecucionEnCurso" (onClick)="popupEjecucionVisible=false"></dx-button>
+  </div>
+</dx-popup>

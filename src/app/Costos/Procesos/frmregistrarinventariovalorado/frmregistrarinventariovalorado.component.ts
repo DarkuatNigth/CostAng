@@ -17,12 +17,12 @@ export enum AccionInventario {
   styleUrl: './frmregistrarinventariovalorado.component.scss'
 })
 export class FrmregistrarinventariovaloradoComponent implements OnInit {
-  // ✅ Expone el enum al template
+  // Expone el enum al template
   AccionInventario = AccionInventario;
   loadingVisible = false;
   blVerBtnGuardar: boolean = true;
   disabledBtnGuardar = false;
-  // ✅ Variable global que almacena la respuesta completa del servidor (una sola vez)
+  // Variable global que almacena la respuesta completa del servidor (una sola vez)
   objConstantePlantilla: any = null;
   lstAnio: any[] = [];
   lstMes: any[] = [];
@@ -85,13 +85,13 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
   }
 
   async onClickGuardar() {
-    // ✅ Guard: año y mes obligatorios
+    // Guard: año y mes obligatorios
     if (!this.combosCompletos) {
       await showAlert('Atención', 'Debe seleccionar el Año y el Mes antes de guardar.', 'warning');
       return;
     }
 
-    // ✅ Re-validar fecha de corte al guardar (por si acaso)
+    // Re-validar fecha de corte al guardar (por si acaso)
     const puedeGuardar = this.validarFechaCorte();
     if (!puedeGuardar) return;
 
@@ -106,7 +106,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
       // Creamos una copia para no afectar la vista del usuario en el Grid
       const filaLimpia = { ...row };
 
-      // Esta función hace la magia: convierte "$ -62,575.66" en -62575.66
+      // Convierte "$ -62,575.66" en -62575.66
       const parsearANumero = (valor: any): number => {
         if (valor === null || valor === undefined || valor === '') return 0;
 
@@ -202,7 +202,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
 
       reader.onload = async (e: any) => {
         try {
-          // ✅ Usa objConstantePlantilla en lugar de volver a llamar al servicio
+          // Usa objConstantePlantilla en lugar de volver a llamar al servicio
           const firstRow = this.objConstantePlantilla;
           const expectedHeaders = Object.keys(firstRow).map((h: string) => h.trim()).filter(h => h.toLowerCase() !== 'codtal');
 
@@ -298,7 +298,6 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
         throw new Error('No se pudo obtener la estructura desde el servidor.');
       }
       this.objConstantePlantilla = plantillaRes.Dt.Table[0] || [];
-      // ✅ Fix: lstAnio y lstMes correctamente separados
       this.lstAnio = plantillaRes.Dt.Table1.filter((row: any) => row.tipoData === 'ANIO');
       this.lstMes = plantillaRes.Dt.Table1.filter((row: any) => row.tipoData === 'MES');
       this.lstFechaCorte = plantillaRes.Dt.Table2;
@@ -327,7 +326,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
     const fechaCorteStr = this.getFechaCorte();
     //console.log('validarFechaCorte.Lista: ', this.lstFechaCorte, '\n', 'validarFechaCorte.creada:', fechaCorteStr);
     const existe = this.lstFechaCorte.some((f: any) => {
-      // 1. Si el objeto tiene propiedades Year, Month, Day (como muestra tu consola)
+      // 1. Si el objeto tiene propiedades Year, Month, Day
       if (f.Year && f.Month && f.Day) {
         const y = f.Year;
         const m = String(f.Month).padStart(2, '0');
@@ -356,7 +355,7 @@ export class FrmregistrarinventariovaloradoComponent implements OnInit {
         this.fechaCorteDetectada = null;
         return false;
       }
-      // ✅ Confirmó actualizar
+      // Confirmó actualizar
       this.accionActual = AccionInventario.Actualizar;
     } else {
       this.fechaCorteDetectada = null;

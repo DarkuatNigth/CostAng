@@ -33,7 +33,7 @@ import { AuthGuard } from 'src/app/_guards';
     NgSelectModule,
     DxCalendarModule,
     RouterModule.forChild([
-          { path: 'ext-consultageneral',    canActivate: [AuthGuard], component: FrmconsultageneralComponent },
+          { path: 'ext-consultageneral', canActivate: [AuthGuard],   component: FrmconsultageneralComponent },
     ]) 
   ],
     exports: [

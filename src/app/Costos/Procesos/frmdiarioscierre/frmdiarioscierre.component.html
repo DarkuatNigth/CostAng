@@ -1,0 +1,544 @@
+<dx-load-panel
+  shadingColor="rgba(0,0,0,0.32)"
+  [(visible)]="loadingVisible"
+  [showIndicator]="true"
+  [showPane]="true"
+  [shading]="true"
+  [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="diarios-page">
+  <div class="dx-card diarios-card">
+
+    <div class="page-title-bar">
+      <div>
+        <h3 class="page-title">Diarios de Cierre de Costos</h3>
+        <div class="page-subtitle">
+          Consulta, revisión y confirmación de diarios generados por el backend.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== FILTROS ===================== -->
+    <div class="filters-panel">
+      <div class="filter-field">
+        <label class="control-label-aspx">Año</label>
+        <dx-select-box
+          [dataSource]="listAnios"
+          displayExpr="DESCRIPCION"
+          valueExpr="CODIGO"
+          [(value)]="cmbAnio"
+          [searchEnabled]="true"
+          [showClearButton]="false"
+          [searchTimeout]="200"
+          placeholder="Seleccione año">
+        </dx-select-box>
+      </div>
+
+      <div class="filter-field">
+        <label class="control-label-aspx">Mes</label>
+        <dx-select-box
+          [dataSource]="listMeses"
+          displayExpr="DESCRIPCION"
+          valueExpr="CODIGO"
+          [(value)]="cmbMes"
+          [searchEnabled]="true"
+          [showClearButton]="false"
+          [searchTimeout]="200"
+          placeholder="Seleccione mes">
+        </dx-select-box>
+      </div>
+
+      <div class="actions-field">
+        <dx-button
+          text="Consultar"
+          type="default"
+          icon="search"
+          [disabled]="loadingVisible"
+          (onClick)="onClickConsultar()">
+        </dx-button>
+
+        <dx-button
+          text="Exportar Excel"
+          type="normal"
+          icon="exportxlsx"
+          [disabled]="!consultado || !data"
+          (onClick)="onExportarExcel()">
+        </dx-button>
+
+        <dx-button
+          text="Guardar"
+          type="success"
+          icon="save"
+          [disabled]="!puedeGuardar"
+          (onClick)="onGuardar()">
+        </dx-button>
+      </div>
+    </div>
+
+    <!-- ===================== CABECERA DEL PERÍODO ===================== -->
+    <ng-container *ngIf="consultado && data">
+      <div class="period-summary">
+        <div class="period-item">
+          <span class="period-label">Período</span>
+          <span class="period-value">{{ data.periodoTexto }}</span>
+        </div>
+
+        <div class="period-item">
+          <span class="period-label">Generación</span>
+          <span class="period-value"># {{ data.idGeneracion }}</span>
+        </div>
+
+        <div class="period-item">
+          <span class="period-label">Estado</span>
+          <span
+            class="status-badge"
+            [class.status-ok]="data.guardado"
+            [class.status-pending]="!data.guardado">
+            {{ data.guardado ? 'CONFIRMADO' : (data.estado || 'PENDIENTE') }}
+          </span>
+        </div>
+
+        <div
+          class="period-item period-balance"
+          [class.period-balance-ok]="todoCuadrado"
+          [class.period-balance-error]="!todoCuadrado">
+          <span class="period-label">Cuadre general</span>
+          <span
+            class="status-badge"
+            [class.status-ok]="todoCuadrado"
+            [class.status-error]="!todoCuadrado">
+            {{ todoCuadrado ? 'CUADRADO' : 'DESCUADRADO' }}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ===================== TABS ===================== -->
+    <div class="tabs-container" *ngIf="consultado && data">
+      <dx-tab-panel
+        [dataSource]="tabs"
+        [selectedIndex]="tabSeleccionado"
+        [loop]="false"
+        [swipeEnabled]="false"
+        [animationEnabled]="false"
+        [deferRendering]="false"
+        (onSelectionChanged)="onTabSelectionChanged($event)">
+
+        <div *dxTemplate="let tab of 'title'">
+          <span class="dx-icon-{{ tab.icon }}"></span>
+          <span class="tab-title-text">{{ tab.text }}</span>
+        </div>
+
+        <div *dxTemplate="let tab of 'item'">
+
+          <!-- =========================================================
+               TAB 1 - RETORNO DE CONTENEDORES
+               Estructura basada en la hoja DIARIOS del Excel de retornos.
+               ========================================================= -->
+          <ng-container *ngIf="tab.id === 0">
+            <div class="section-header">
+              <div>
+                <div class="section-title">{{ data.retornos.titulo }}</div>
+                <div class="section-note" *ngIf="data.retornos.mensaje">
+                  {{ data.retornos.mensaje }}
+                </div>
+              </div>
+
+              <div class="section-count">
+                {{ data.retornos.diarios.length }} diario(s)
+              </div>
+            </div>
+
+            <ng-container *ngIf="data.retornos.diarios?.length; else sinRetornos">
+              <div
+                class="journal-card"
+                *ngFor="let diario of data.retornos.diarios"
+                [class.journal-card-ok]="cuadresRetorno[diario.id]?.cuadrado"
+                [class.journal-card-error]="cuadresRetorno[diario.id] && !cuadresRetorno[diario.id].cuadrado">
+
+                <div class="journal-head">
+                  <div class="journal-heading-text">
+                    <div class="journal-title">{{ diario.titulo }}</div>
+                    <div class="journal-subtitle" *ngIf="diario.subtitulo">
+                      {{ diario.subtitulo }}
+                    </div>
+                  </div>
+
+                  <div class="journal-meta">
+                    <div *ngIf="diario.numeroDocumento">
+                      <span class="meta-label">Documento</span>
+                      <span class="meta-value">{{ diario.numeroDocumento }}</span>
+                    </div>
+                    <div *ngIf="diario.referencia">
+                      <span class="meta-label">Referencia</span>
+                      <span class="meta-value">{{ diario.referencia }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-shell">
+                  <dx-data-grid
+                    [dataSource]="diario.filas"
+                    keyExpr="id"
+                    [showBorders]="true"
+                    [showRowLines]="true"
+                    [showColumnLines]="true"
+                    [columnAutoWidth]="true"
+                    [wordWrapEnabled]="true"
+                    [rowAlternationEnabled]="true"
+                    [allowColumnResizing]="true"
+                    [allowColumnReordering]="true"
+                    columnResizingMode="widget"
+                    noDataText="No existen líneas para este diario">
+
+                    <dxo-scrolling
+                      mode="standard"
+                      showScrollbar="always">
+                    </dxo-scrolling>
+
+                    <dxo-paging [enabled]="false"></dxo-paging>
+
+                    <dxo-search-panel
+                      [visible]="true"
+                      [width]="280"
+                      placeholder="Buscar en el diario...">
+                    </dxo-search-panel>
+
+                    <dxo-filter-row [visible]="true"></dxo-filter-row>
+                    <dxo-header-filter [visible]="true"></dxo-header-filter>
+                    <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+
+                    <dxi-column
+                      dataField="orden"
+                      caption="#"
+                      [width]="55"
+                      alignment="center"
+                      [visible]="false">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="codigo"
+                      caption="Código"
+                      [width]="100">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="cuentaContable"
+                      caption="Cuenta Contable"
+                      [width]="145">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="clave"
+                      caption="Clave"
+                      [width]="90">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="descripcion"
+                      caption="Descripción"
+                      [minWidth]="280">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="moneda"
+                      caption="Moneda"
+                      [width]="90"
+                      alignment="center">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="debe"
+                      caption="DEBE ($)"
+                      dataType="number"
+                      alignment="right"
+                      [width]="145"
+                      format="$ #,##0.00">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="haber"
+                      caption="HABER ($)"
+                      dataType="number"
+                      alignment="right"
+                      [width]="145"
+                      format="$ #,##0.00">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="detalle"
+                      caption="Detalle"
+                      [minWidth]="240">
+                    </dxi-column>
+                  </dx-data-grid>
+                </div>
+
+                <div class="journal-footer">
+                  <div
+                    class="cuadre-box"
+                    [class.balance-ok]="cuadresRetorno[diario.id]?.cuadrado"
+                    [class.balance-error]="cuadresRetorno[diario.id] && !cuadresRetorno[diario.id].cuadrado">
+
+                    <div class="cuadre-col estado-cuadre">
+                      <span class="cuadre-label">ESTADO DEL CUADRE</span>
+                      <span class="cuadre-status">
+                        {{ cuadresRetorno[diario.id]?.cuadrado ? 'CUADRADO' : 'DESCUADRADO' }}
+                      </span>
+                    </div>
+
+                    <div class="cuadre-col">
+                      <span class="cuadre-label">TOTAL DEBE</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresRetorno[diario.id]?.totalDebe ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+
+                    <div class="cuadre-col">
+                      <span class="cuadre-label">TOTAL HABER</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresRetorno[diario.id]?.totalHaber ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+
+                    <div
+                      class="cuadre-col"
+                      [class.cuadre-ok]="cuadresRetorno[diario.id]?.cuadrado"
+                      [class.cuadre-error]="cuadresRetorno[diario.id] && !cuadresRetorno[diario.id].cuadrado">
+                      <span class="cuadre-label">DIFERENCIA</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresRetorno[diario.id]?.diferencia ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="glosa-box" *ngIf="diario.glosa">
+                    <span class="glosa-label">Glosa</span>
+                    <span class="glosa-text">{{ diario.glosa }}</span>
+                  </div>
+                </div>
+
+              </div>
+            </ng-container>
+
+            <ng-template #sinRetornos>
+              <div class="empty-tab-state">
+                El backend no devolvió diarios de retorno para el período seleccionado.
+              </div>
+            </ng-template>
+          </ng-container>
+
+          <!-- =========================================================
+               TAB 2 - TRANSFERENCIAS / DIARIOS DE CIERRE
+               La hoja ENE contiene varios bloques contables.
+               Cada bloque se presenta y valida por separado.
+               ========================================================= -->
+          <ng-container *ngIf="tab.id === 1">
+            <div class="section-header">
+              <div>
+                <div class="section-title">{{ data.transferenciaGif.titulo }}</div>
+                <div class="section-note">{{ data.transferenciaGif.periodoTexto }}</div>
+              </div>
+
+              <div class="section-count">
+                {{ data.transferenciaGif.diarios.length }} diario(s)
+              </div>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Base de cálculo</span>
+                <span class="kpi-value">
+                  {{ data.transferenciaGif.baseCalculo | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+              </div>
+
+              <div class="kpi-card">
+                <span class="kpi-label">Gasto indirecto a transferir</span>
+                <span class="kpi-value">
+                  {{ data.transferenciaGif.totalGastoIndirecto | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <ng-container *ngIf="data.transferenciaGif.diarios?.length; else sinTransferencias">
+              <div
+                class="journal-card transfer-journal-card"
+                *ngFor="let diario of data.transferenciaGif.diarios"
+                [class.journal-card-ok]="cuadresTransferencia[diario.id]?.cuadrado"
+                [class.journal-card-error]="cuadresTransferencia[diario.id] && !cuadresTransferencia[diario.id].cuadrado">
+
+                <div class="journal-head transfer-journal-head">
+                  <div class="journal-heading-text">
+                    <div class="transfer-group-label">
+                      {{ diario.codigo || diario.grupoLabel || 'DIARIO' }}
+                    </div>
+                    <div class="journal-title"> {{ diario.titulo || diario.descripcion }}</div>
+                  </div>
+
+                  <div class="journal-meta">
+                    <div>
+                      <span class="meta-label">Líneas</span>
+                      <span class="meta-value">{{ diario.filas.length }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid-shell gif-grid">
+                  <dx-data-grid
+                    [dataSource]="diario.filas"
+                    keyExpr="id"
+                    [showBorders]="true"
+                    [showRowLines]="true"
+                    [showColumnLines]="true"
+                    [columnAutoWidth]="true"
+                    [wordWrapEnabled]="true"
+                    [rowAlternationEnabled]="true"
+                    [allowColumnResizing]="true"
+                    [allowColumnReordering]="true"
+                    columnResizingMode="widget"
+                    noDataText="No existen líneas para este diario">
+
+                    <dxo-scrolling
+                      mode="standard"
+                      showScrollbar="always">
+                    </dxo-scrolling>
+
+                    <dxo-paging [enabled]="false"></dxo-paging>
+
+                    <dxo-search-panel
+                      [visible]="true"
+                      [width]="280"
+                      placeholder="Buscar código, clave o cuenta...">
+                    </dxo-search-panel>
+
+                    <dxo-filter-row [visible]="true"></dxo-filter-row>
+                    <dxo-header-filter [visible]="true"></dxo-header-filter>
+                    <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+
+                    <dxi-column
+                      dataField="orden"
+                      caption="#"
+                      [width]="55"
+                      alignment="center"
+                      [visible]="false">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="calculo"
+                      caption="Cálculo"
+                      dataType="number"
+                      alignment="right"
+                      [width]="115"
+                      [visible]="diario.mostrarCalculo === true">
+                      <dxo-format type="percent" [precision]="4"></dxo-format>
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="origen"
+                      caption="Origen"
+                      [width]="150"
+                      [visible]="diario.mostrarOrigen === true">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="codigo"
+                      caption="Código"
+                      [width]="150">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="clave"
+                      caption="Clave"
+                      [width]="105">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="nombreCuenta"
+                      caption="Nombre de Cuenta"
+                      [minWidth]="360">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="debe"
+                      caption="DEBE ($)"
+                      dataType="number"
+                      alignment="right"
+                      [width]="150"
+                      format="$ #,##0.00">
+                    </dxi-column>
+
+                    <dxi-column
+                      dataField="haber"
+                      caption="HABER ($)"
+                      dataType="number"
+                      alignment="right"
+                      [width]="150"
+                      format="$ #,##0.00">
+                    </dxi-column>
+                  </dx-data-grid>
+                </div>
+
+                <div class="journal-footer gif-footer">
+                  <div
+                    class="cuadre-box"
+                    [class.balance-ok]="cuadresTransferencia[diario.id]?.cuadrado"
+                    [class.balance-error]="cuadresTransferencia[diario.id] && !cuadresTransferencia[diario.id].cuadrado">
+
+                    <div class="cuadre-col estado-cuadre">
+                      <span class="cuadre-label">ESTADO DEL CUADRE</span>
+                      <span class="cuadre-status">
+                        {{ cuadresTransferencia[diario.id]?.cuadrado ? 'CUADRADO' : 'DESCUADRADO' }}
+                      </span>
+                    </div>
+
+                    <div class="cuadre-col">
+                      <span class="cuadre-label">TOTAL DEBE</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresTransferencia[diario.id]?.totalDebe ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+
+                    <div class="cuadre-col">
+                      <span class="cuadre-label">TOTAL HABER</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresTransferencia[diario.id]?.totalHaber ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+
+                    <div
+                      class="cuadre-col"
+                      [class.cuadre-ok]="cuadresTransferencia[diario.id]?.cuadrado"
+                      [class.cuadre-error]="cuadresTransferencia[diario.id] && !cuadresTransferencia[diario.id].cuadrado">
+                      <span class="cuadre-label">DIFERENCIA</span>
+                      <span class="cuadre-value">
+                        {{ (cuadresTransferencia[diario.id]?.diferencia ?? 0) | currency:'USD':'symbol':'1.2-2' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #sinTransferencias>
+              <div class="empty-tab-state">
+                El backend no devolvió diarios de transferencia para el período seleccionado.
+              </div>
+            </ng-template>
+          </ng-container>
+
+        </div>
+      </dx-tab-panel>
+    </div>
+
+    <!-- ===================== ESTADO INICIAL ===================== -->
+    <div class="empty-state" *ngIf="!consultado">
+      <span class="dx-icon-search empty-icon"></span>
+      <div class="empty-title">Seleccione un período</div>
+      <div class="empty-description">
+        El backend devolverá la información del período y esta pantalla validará visualmente el cuadre Debe/Haber.
+      </div>
+    </div>
+
+  </div>
+</div>

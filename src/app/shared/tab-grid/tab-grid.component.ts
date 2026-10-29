@@ -7,7 +7,12 @@ import { DxTabPanelModule, DxDataGridModule, DxTemplateModule } from 'devextreme
 import {
   GRUPO_META, GRUPO_ORDEN, GRUPOS_GENERALES,
   GRUPOS_SIN_SUBTAB, GRUPOS_LIBRAS_UNICAS,
-  ProcesoAgrupado, ProcesoGeneral
+  ProcesoAgrupado, ProcesoGeneral,
+  LibrasParticion,
+  construirParticiones,
+  ProcesoParticion,
+  construirTotalesParticion,
+  PARTICION_ORDEN
 } from './procesos-agrupacion.config';
 
 @Component({
@@ -15,12 +20,14 @@ import {
   standalone: true,
   imports: [CommonModule, DxTabPanelModule, DxDataGridModule, DxTemplateModule],
   templateUrl: './tab-grid.component.html',
+  styleUrl: './tab-grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TabGridComponent {
 
   private _dataSource: ProcesoAgrupado[] = [];
 
+  private _dataEstructura: LibrasParticion[] = [];
   // Mapa de tooltips por descripción
   readonly tooltipMap: Record<string, string> = {
     'Hidratacion': 'Mano de obra + Materiales'
@@ -37,6 +44,15 @@ export class TabGridComponent {
   subTabsFresco: any[] = [];
   subTabsSecundario: any[] = [];
   dataTarifas: ProcesoAgrupado[] = [];
+  librasParticion: LibrasParticion[] = [];
+  dataPartFRS: ProcesoParticion[] = [];
+  dataPartRPC: ProcesoParticion[] = [];
+  dataPartPG:  ProcesoParticion[] = [];
+  totalesPartFRS: any[] = [];
+  totalesPartRPC: any[] = [];
+  totalesPartPG:  any[] = [];
+  ordenarGrupo = (a: any, b: any) => (GRUPO_ORDEN[a] ?? 99) - (GRUPO_ORDEN[b] ?? 99);
+  ordenarParticion = (a: any, b: any) => (PARTICION_ORDEN[a] ?? 99) - (PARTICION_ORDEN[b] ?? 99);
   summaryFnPG = this.getCustomSummaryFn('PG');
   summaryFnFRS = this.getCustomSummaryFn('FRS');
   summaryFnRPC = this.getCustomSummaryFn('RPC');
@@ -62,8 +78,14 @@ export class TabGridComponent {
       this._dataSource = value;
       this.generarEstructuraTabs();
       this.refreshFilteredData();
+      this.reconstruirParticiones();      // ← NUEVO
       this.objCdr.detectChanges();
     }
+  }
+  // ─── INPUT estructura (Table3) ──────────────────────────────
+  @Input() set dataEstructura(value: LibrasParticion[] | null) {
+    this._dataEstructura = value ?? [];
+    this.reconstruirParticiones();
   }
   get dataSource(): ProcesoAgrupado[] { return this._dataSource; }
 
@@ -78,6 +100,23 @@ export class TabGridComponent {
     this.subTabsSecundario = this.generarSubTabsConTotales('RPC');
   }
 
+  private reconstruirParticiones() {
+    // Espera a tener ambos: costos y estructura
+    if (!this._dataSource?.length || !this._dataEstructura?.length) return;
+
+    const costFRS = this._dataSource.filter(i => i.origen === 'FRS');
+    const costRPC = this._dataSource.filter(i => i.origen === 'RPC');
+
+    this.dataPartFRS = construirParticiones(costFRS, this._dataEstructura, 'FRS');
+    this.dataPartRPC = construirParticiones(costRPC, this._dataEstructura, 'RPC');
+    this.dataPartPG = construirParticiones(this.dataGenerales, this._dataEstructura, 'PG');
+
+    this.totalesPartFRS = construirTotalesParticion(this.dataPartFRS);
+    this.totalesPartRPC = construirTotalesParticion(this.dataPartRPC);
+    this.totalesPartPG  = construirTotalesParticion(this.dataPartPG);
+
+    this.objCdr.detectChanges();
+  }
   private generarSubTabsConTotales_PG(): any[] {
     const subTabs = GRUPOS_GENERALES
       .filter(grupo => this.dataGenerales.some(i => i.grupo === grupo))
@@ -183,24 +222,10 @@ export class TabGridComponent {
       return;
     }
 
-    // Lógica original para FRS, RPC, TAR
-    const item = this._dataSource.find(
-      i => i.Codigo === rowData.Codigo && i.origen === origen
-    );
-
-    if (item) {
-      item.Valor = rowData.Valor;
-
-      if (item.Libras_Proceso > 0) {
-        const calculo = (origen === 'TAR')
-          ? item.Valor * item.Libras_Proceso
-          : item.Valor / item.Libras_Proceso;
-        item.Costo_Unitario = Number(calculo.toFixed(4));
-      }
-
-      this.generarEstructuraTabs();   // ← regenera Totales también
-      this.refreshFilteredData();
-      this.onDataChanged.emit([...this._dataSource]);
+     // ── NUEVO: edición por partición en FRS/RPC ──
+    if ((origen === 'FRS' || origen === 'RPC') && rowData.particionCod) {
+      this.handleParticionChange(rowData, origen);
+      return;
     }
   }
 
@@ -257,6 +282,36 @@ export class TabGridComponent {
     this.onDataChanged.emit([...this._dataSource]);
     this.objCdr.detectChanges();
   }
+
+  private handleParticionChange(rowData: any, origen: string) {
+    const desc = rowData.Descripcion as string;
+    const cod = rowData.particionCod as string;
+    const src = origen === 'FRS' ? this.dataPartFRS : this.dataPartRPC;
+
+    // 1. fija el valor editado en la hoja
+    const leaf = src.find(x => x.Descripcion === desc && x.particionCod === cod);
+    if (leaf) {
+      leaf.Valor = rowData.Valor;
+      leaf.Costo_Unitario = leaf.Libras_Proceso > 0 ? leaf.Valor / leaf.Libras_Proceso : 0;
+    }
+
+    // 2. total del proceso = suma de sus particiones
+    const totalProc = src.filter(x => x.Descripcion === desc).reduce((s, x) => s + (x.Valor || 0), 0);
+
+    // 3. actualiza el item real (ProcesoAgrupado) que se guarda
+    const item = this._dataSource.find(i => i.origen === origen && i.Descripcion === desc);
+    if (item) {
+      item.Valor = totalProc;
+      item.Costo_Unitario = item.Libras_Proceso > 0 ? totalProc / item.Libras_Proceso : 0;
+    }
+
+    // 4. recomputa SOLO el cuadro Totales del origen (no reconstruye particiones)
+    if (origen === 'FRS') this.totalesPartFRS = construirTotalesParticion(this.dataPartFRS);
+    else this.totalesPartRPC = construirTotalesParticion(this.dataPartRPC);
+
+    this.onDataChanged.emit([...this._dataSource]);
+    this.objCdr.detectChanges();
+  }
   // ─── HELPERS ──────────────────────────────────────────────────────────────
   getGridData(origen: string): ProcesoAgrupado[] {
     return this.filteredData[origen] || [];
@@ -274,6 +329,39 @@ export class TabGridComponent {
   getCustomSummaryFn(proceso: string) {
     return (options: any) => {
 
+      // ── RESÚMENES POR GRUPO (fila "Grupo: ...") ──
+      if (options.name === 'LibrasGrupo' || options.name === 'CU_Grupo') {
+        switch (options.summaryProcess) {
+          case 'start':
+            options.__v = 0; options.__lSuma = 0; options.__lPrim = null;
+            options.__grupo = null; options.__part = null; options.__mismaPart = true;
+            break;
+          case 'calculate': {
+            const r = options.value;
+            options.__grupo = r.grupo;
+            options.__v += r.Valor || 0;
+            if (options.__lPrim === null) options.__lPrim = r.Libras_Proceso || 0;
+            options.__lSuma += r.Libras_Proceso || 0;
+            if (options.__part === null) options.__part = r.particionCod;
+            else if (options.__part !== r.particionCod) options.__mismaPart = false;
+            break;
+          }
+          case 'finalize': {
+            // libras compartidas SOLO cuando el grupo las comparte y todas las filas
+            // son de la misma partición (detalle Proceso Primario). En Totales las
+            // filas son distintas particiones → se suman.
+            const compartidas = GRUPOS_LIBRAS_UNICAS.includes(options.__grupo) && options.__mismaPart;
+            const libras = compartidas ? (options.__lPrim ?? 0) : options.__lSuma;
+            options.totalValue = options.name === 'LibrasGrupo'
+              ? libras
+              : (libras > 0 ? options.__v / libras : 0);
+            break;
+          }
+        }
+        return;
+      }
+
+      // ── RESÚMENES DEL PIE (lo que ya tenías) ──
       switch (options.summaryProcess) {
         case 'start':
           options.totalValue = 0;
@@ -283,7 +371,6 @@ export class TabGridComponent {
           if (options.name === 'LibrasTotal') {
             options.totalValue = this.calcularLibrasTotales(datos);
           } else {
-            // 'CostoUnitarioTotal'
             options.totalValue = this.calcularPromedio(datos, proceso);
           }
           break;
@@ -295,23 +382,27 @@ export class TabGridComponent {
   private calcularLibrasTotales(datos: any[]): number {
     if (!datos.length) return 0;
 
-    // Cuadro Totales: todas las filas son nombres de grupos
-    const esCuadroTotales = datos.every(r => GRUPOS_GENERALES.includes(r.Descripcion) 
-      && !GRUPOS_SIN_SUBTAB.includes(r.Descripcion));
-    const esGrupoSinSubtab = datos.every(r => GRUPOS_SIN_SUBTAB.includes(r.Descripcion));
-    if (esCuadroTotales) {
-      const filaPP = datos.find(r => r.Descripcion === 'Proceso Primario') ;
-      return filaPP?.Libras_Proceso ?? 0;
+    const grupos = new Set(datos.map(r => r.grupo));
+
+    // Cuadro Totales (varios grupos) → base = total de Proceso Primario (EN+SH+...)
+    if (grupos.size > 1) {
+      const pp = datos.filter(r => r.grupo === 'Proceso Primario');
+      if (pp.length) return pp.reduce((s, r) => s + (r.Libras_Proceso || 0), 0);
     }
 
-
-    // Sub-tab: grupo del primer elemento
-    const grupoReal: string = datos[0]?.grupo ?? '';
-    if (GRUPOS_LIBRAS_UNICAS.includes(grupoReal) || esGrupoSinSubtab) {
-      return datos[0]?.Libras_Proceso ?? 0;
+    // Sub-tab de detalle (un solo grupo)
+    const grupoReal = datos[0]?.grupo ?? '';
+    if (GRUPOS_LIBRAS_UNICAS.includes(grupoReal)) {
+      // libras compartidas: una por partición, luego sumar particiones
+      const porPart = new Map<string, number>();
+      datos.forEach(r => {
+        if (!porPart.has(r.particionCod)) porPart.set(r.particionCod, r.Libras_Proceso || 0);
+      });
+      return [...porPart.values()].reduce((s, v) => s + v, 0);
     }
 
-    return datos.reduce((s: number, r: any) => s + (r.Libras_Proceso || 0), 0);
+    // grupo normal: suma todas las filas
+    return datos.reduce((s, r) => s + (r.Libras_Proceso || 0), 0);
   }
 
   calcularPromedio(datos: any[], proceso: string): number {
@@ -331,5 +422,17 @@ export class TabGridComponent {
     // Si quieres esconder FRS y RPC, los filtramos:
     return this.tabs;
     //.filter(tab => tab.id !== 'FRS' && tab.id !== 'RPC');
+  }
+  getParticiones(origen: string, grupo: string): ProcesoParticion[] {
+    const src = origen === 'FRS' ? this.dataPartFRS
+              : origen === 'RPC' ? this.dataPartRPC
+              : this.dataPartPG;
+    return src.filter(x => x.grupo === grupo);
+  }
+
+  getTotales(origen: string): any[] {
+  return origen === 'FRS' ? this.totalesPartFRS
+       : origen === 'RPC' ? this.totalesPartRPC
+       : this.totalesPartPG;
   }
 }

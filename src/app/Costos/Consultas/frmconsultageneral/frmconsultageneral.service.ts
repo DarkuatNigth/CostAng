@@ -55,6 +55,19 @@ export class FrmconsultageneralService {
       let strFechaFin = ListParam.find(item => item.Name == "fecFin");
       sp = sp.replace("[dtFechaIn]",strFechaIn.Value).replace("[dtFechaFi]", strFechaFin.Value);
       //console.log('getConsultaDatosByFilters',sp);
+      const queryIndex = sp.indexOf('?');
+      const ruta = queryIndex === -1 ? sp : sp.substring(0, queryIndex);
+      if (ruta.startsWith('Reporting/') && ruta !== 'Reporting/inv-estructura' && ruta !== 'Reporting/exportar-excel') {
+        const body: Record<string, string | number | boolean> = Object.create(null);
+        const query = queryIndex === -1 ? '' : sp.substring(queryIndex + 1);
+        query.split('&').filter(param => param !== '').forEach(param => {
+          const valueIndex = param.indexOf('=');
+          const key = decodeURIComponent(valueIndex === -1 ? param : param.substring(0, valueIndex));
+          const value = decodeURIComponent(valueIndex === -1 ? '' : param.substring(valueIndex + 1));
+          body[key] = value === 'true' ? true : value === 'false' ? false : /^[+-]?\d+$/.test(value) ? Number(value) : value;
+        });
+        return this.http.post<ResultWS>(URL_APICOSTOS.concat(ruta), body);
+      }
       return this.http.get<ResultWS>(URL_APICOSTOS.concat(sp));
     }
     else {

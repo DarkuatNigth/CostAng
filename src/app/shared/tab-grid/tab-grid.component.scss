@@ -1,0 +1,44 @@
+/* El componente entero no debe exceder a su contenedor */
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Panel principal y su multiview */
+::ng-deep dx-tab-panel,
+::ng-deep .dx-tabpanel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Wrappers internos de DevExtreme: la clave es min-width:0 para que encojan */
+::ng-deep .dx-multiview-wrapper,
+::ng-deep .dx-multiview-item-container,
+::ng-deep .dx-item-content,
+::ng-deep .dx-tabpanel-container {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* La franja de tabs se queda dentro y usa las flechas de scroll */
+::ng-deep .dx-tabs,
+::ng-deep .dx-tabs-wrapper {
+  max-width: 100%;
+}
+
+/* Subtabs (lo que ya tenías) */
+::ng-deep .subtab-custom {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Si el grid empuja el ancho, que scrollee él solo */
+::ng-deep .dx-datagrid,
+::ng-deep .dx-datagrid-rowsview {
+  max-width: 100%;
+}

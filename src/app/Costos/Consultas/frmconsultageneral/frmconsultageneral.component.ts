@@ -51,7 +51,7 @@ export class FrmconsultageneralComponent {
   rowIniTitle = 0;
   rowEndTitle = 0;
   numRowColumns = 0;
-  dataCostUni !: CostosUnitarios | null;
+  dataCostUni !: CostosUnitarios  | undefined;
 
   positionRowDelete: any[] = [];
   detalleGrupos: any[] = [];
@@ -645,7 +645,7 @@ export class FrmconsultageneralComponent {
       this._objConsultaService.getDataParametros(this.selectedItemConsulta.idConsulta)
     );
     if (resp.ok) {
-      console.log('cargarParametros', resp);
+      // console.log('cargarParametros', resp);
       if (Object.keys(resp.data.Dt).length > 0) {
         //console.log('cargarParametros', resp);
         this.filtrosConsulta = resp.data.Dt.Table;

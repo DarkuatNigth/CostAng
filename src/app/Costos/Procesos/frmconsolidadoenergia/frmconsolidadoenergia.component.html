@@ -1,0 +1,138 @@
+<dx-load-panel #loadPanel shadingColor="rgba(0,0,0,0.4)" [(visible)]="loadingVisible" [showIndicator]="true"
+    [showPane]="true" [shading]="true" [hideOnOutsideClick]="false">
+</dx-load-panel>
+
+<div class="container-fluid mt-3">
+    <div class="panel panel-custom">
+
+        <div class="panel-heading">
+            <h3 class="panel-title">Consolidado de Energía Eléctrica</h3>
+        </div>
+
+        <div class="panel-body">
+
+            <!-- ===== Filtro de año ===== -->
+            <div class="row align-items-end">
+                <div class="col-md-2 mb-2">
+                    <label class="control-label-aspx">Año:</label>
+                    <div class="select-wrapper-compact">
+                        <ng-select bindLabel="DESCRIPCION" [(ngModel)]="cmbAnio" [searchable]="true"
+                            [clearable]="false">
+                            <ng-option *ngFor="let data of listAnios" [value]="data.CODIGO">
+                                <div class="option-text" title="{{ data.DESCRIPCION }}">{{ data.DESCRIPCION }}</div>
+                            </ng-option>
+                        </ng-select>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <div class="btn-group-aspx">
+                        <dx-button text="Consultar" type="default" icon="search" (onClick)="onClickConsultar()">
+                        </dx-button>
+                    </div>
+                </div>
+            </div>
+
+            <ng-container *ngIf="consultado">
+
+                <div class="tabla-titulo">Consolidado con Kwh — {{ cmbAnio }}</div>
+                <div class="grid-metropolis-style mb-3">
+                    <dx-data-grid [dataSource]="tablaCombinada" keyExpr="planta" [showBorders]="true"
+                        [wordWrapEnabled]="false" [rowAlternationEnabled]="true">
+                        <dxo-scrolling mode="standard" [useNative]="true"></dxo-scrolling>
+                        <dxo-paging [enabled]="false"></dxo-paging>
+
+                        <dxi-column dataField="planta" caption="Planta" [width]="80" [fixed]="true"></dxi-column>
+                        <dxi-column dataField="codigo" caption="Código" [width]="85" [fixed]="true"></dxi-column>
+
+                        <!-- Una banda por mes con 3 hijos -->
+                        <dxi-column *ngFor="let m of meses; let i = index" [caption]="m" alignment="center">
+                            <dxi-column [dataField]="'usd' + i" caption="USD" alignment="right" [width]="95"
+                                format="$ #,##0.00"></dxi-column>
+                            <dxi-column [dataField]="'kwh' + i" caption="Kwh" alignment="right" [width]="100"
+                                format="#,##0"></dxi-column>
+                            <dxi-column [dataField]="'ratio' + i" caption="USD/KWH" alignment="right" [width]="80"
+                                format="#,##0.0000"></dxi-column>
+                        </dxi-column>
+
+                        <!-- Banda TOTAL -->
+                        <dxi-column caption="TOTAL" alignment="center" cssClass="col-total">
+                            <dxi-column dataField="totUsd" caption="USD" alignment="right" [width]="110"
+                                format="$ #,##0.00" cssClass="col-total"></dxi-column>
+                            <dxi-column dataField="totKwh" caption="Kwh" alignment="right" [width]="120" format="#,##0"
+                                cssClass="col-total"></dxi-column>
+                            <dxi-column dataField="totRatio" caption="USD/KWH" alignment="right" [width]="85"
+                                format="#,##0.0000" cssClass="col-total"></dxi-column>
+                        </dxi-column>
+                    </dx-data-grid>
+                </div>
+
+                <!-- ============ GRÁFICO: Consumo de Energía por Kwh ============ -->
+                <div class="tabla-titulo">Consumo de Energía Eléctrica por Kwh</div>
+                <dx-chart class="mb-4" [dataSource]="serieKwh" [rotated]="false" palette="Soft">
+                    <dxo-common-series-settings argumentField="mes" type="line" [hoverMode]="'includePoints'">
+                        <dxo-point [visible]="true" [size]="7"></dxo-point>
+                    </dxo-common-series-settings>
+                    <dxi-series valueField="SONGA 1" name="SONGA 1"></dxi-series>
+                    <dxi-series valueField="SONGA 2" name="SONGA 2"></dxi-series>
+                    <dxi-series valueField="COMIN" name="COMIN"></dxi-series>
+                    <dxi-series valueField="TOTAL" name="TOTAL" [dashStyle]="'dash'"></dxi-series>
+
+                    <dxo-argument-axis>
+                        <dxo-label [overlappingBehavior]="'rotate'"></dxo-label>
+                    </dxo-argument-axis>
+                    <dxi-value-axis>
+                        <dxo-title text="Kwh"></dxo-title>
+                        <dxo-label format="#,##0"></dxo-label>
+                    </dxi-value-axis>
+
+                    <dxo-legend verticalAlignment="bottom" horizontalAlignment="center"></dxo-legend>
+                    <dxo-tooltip [enabled]="true" format="#,##0.00"></dxo-tooltip>
+                    <dxo-export [enabled]="true"></dxo-export>
+                </dx-chart>
+
+                <!-- ============ GRÁFICO: Consumo en USD ============ -->
+                <div class="tabla-titulo">Consumo de Energía Eléctrica en USD</div>
+                <dx-chart class="mb-4" [dataSource]="serieUsd" palette="Bright">
+                    <dxo-common-series-settings argumentField="mes" type="bar"></dxo-common-series-settings>
+                    <dxi-series valueField="SONGA 1" name="SONGA 1"></dxi-series>
+                    <dxi-series valueField="SONGA 2" name="SONGA 2"></dxi-series>
+                    <dxi-series valueField="COMIN" name="COMIN"></dxi-series>
+
+                    <dxo-argument-axis>
+                        <dxo-label [overlappingBehavior]="'rotate'"></dxo-label>
+                    </dxo-argument-axis>
+                    <dxi-value-axis>
+                        <dxo-title text="USD"></dxo-title>
+                        <dxo-label format="$ #,##0"></dxo-label>
+                    </dxi-value-axis>
+
+                    <dxo-legend verticalAlignment="bottom" horizontalAlignment="center"></dxo-legend>
+                    <dxo-tooltip [enabled]="true" format="$ #,##0.00"></dxo-tooltip>
+                    <dxo-export [enabled]="true"></dxo-export>
+                </dx-chart>
+
+                <!-- ============ TABLA 3: Recolección / Alumbrado ============ -->
+                <div class="tabla-titulo">Recolección de Basura / Alumbrado Público — {{ cmbAnio }}</div>
+                <div class="grid-metropolis-style mb-3">
+                    <dx-data-grid [dataSource]="tablaAlumbrado" keyExpr="planta" [showBorders]="true"
+                        [columnAutoWidth]="true" [wordWrapEnabled]="false" [rowAlternationEnabled]="true">
+                        <dxo-scrolling mode="standard" [useNative]="true"></dxo-scrolling>
+                        <dxo-paging [enabled]="false"></dxo-paging>
+                        <dxi-column dataField="planta" caption="Planta" [width]="90" [fixed]="true"></dxi-column>
+                        <dxi-column dataField="codigo" caption="Código" [width]="90" [fixed]="true"></dxi-column>
+                        <dxi-column *ngFor="let m of meses; let i = index" [caption]="m" [dataField]="'m' + i"
+                            alignment="right" [width]="105" format="$ #,##0.00"></dxi-column>
+                        <dxi-column dataField="total" caption="Total" alignment="right" [width]="120"
+                            format="$ #,##0.00" cssClass="col-total"></dxi-column>
+                    </dx-data-grid>
+                </div>
+
+            </ng-container>
+
+            <div class="empty-state" *ngIf="!consultado">
+                Cargando consolidado del año {{ cmbAnio }}...
+            </div>
+
+        </div>
+    </div>
+</div>
